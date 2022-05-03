@@ -293,20 +293,30 @@ template <class Key, class Value, class Compare = std::less<Key>>
 class Bptree{
     class Bptree_normal_node;
     class Bptree_leaf_node;
+    friend Bptree_normal_node;
+    friend Bptree_leaf_node;
   private:    
-    const children_maximum, record_maximum; // 最多允许的孩子数、记录数，对应于书上的 M 和 L
-    Bptree_leaf_node *root; //根节点
+    const int children_maximum, record_maximum; // 最多允许的孩子数、记录数，对应于书上的 M 和 L
+    int root, self_position; //根节点
   public:
+    //构造函数
+    Bptree() {
+      MemoryRiver<Bptree_normal_node> normal_node_list;
+      MemoryRiver<Bptree_leaf_node> leaf_node_list;
+      // todo
+    }
+    //析构函数
+    ~BpTree() {}
     //插入节点，失败返回0
     bool insert(const &std::pair<Key, Value> data);
     //删除节点，失败返回0
     bool delete(const &std::pair<Key, Value> data);
     //查找大于等于key_search的第一个叶节点，不存在返回NULL
-    Bptree_leaf_node *lower_bound(Key &key_search) const {};
+    Bptree_leaf_node lower_bound(Key &key_search) const {};
     //查找大于key_search的第一个叶节点，不存在返回NULL
-    Bptree_leaf_node *upper_bound(Key &key_search) const {};
+    Bptree_leaf_node upper_bound(Key &key_search) const {};
     //查找Key值在[key_l, key_r)中间的值
-    vector<Bptree_leaf_node*> range_search(Key &key_l, Key &key_r) const {};
+    vector<Bptree_leaf_node> range_search(Key &key_l, Key &key_r) const {};
 };
 ```
 
@@ -318,9 +328,10 @@ class Bptree_normal_node {
   public:
     friend Bptree;
   private:
-    Bptree_normal_node *parent;
-    Bptree_normal_node *children[M + 1]; //0-base，多出一个用做拆分时的临时节点
-    Key *key_list[M];
+    int parent;
+    int self_position;
+    int children[M + 1]; //0-base，多出一个用做拆分时的临时节点
+    Key key_list[M];
     
   public:
     //构造函数
@@ -343,10 +354,11 @@ class Bptree_leaf_node {
   public:
     friend Bptree;
   private:
-    Bptree_leaf_node *parent;
-    Bptree_leaf_node *predecessor，*successor;
-    Key *key_list[L];
-    Value *value_list[L];
+    int parent;
+    int self_position
+    int predecessor, successor;
+    Key key_list[L];
+    Value value_list[L];
   
   public:  
     //构造函数
