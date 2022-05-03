@@ -41,6 +41,20 @@ A train ticket management system based on B+ Tree
 
 ## 主体逻辑设计
 
+
+
+
+
+![](C:\Users\JerryGuo\Desktop\TrainTicketSystem_2022\development\示意图.png)
+
+
+
+
+
+
+
+
+
 ### 指令解析类（command_parser.cpp）
 
 #### 重要成员
