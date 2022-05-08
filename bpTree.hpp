@@ -156,16 +156,16 @@ private:
    bool erase(std::pair<Key, Value> data) {
       return 1;
    }
-   //查找大于等于key_search的第一个叶节点，不存在返回NULL
-   Bptree_leaf_node lower_bound(Key &key_search) const {
+   //查找大于等于key_search的第一个值，不存在返回NULL
+   Value lower_bound(Key &key_search) const {
       
    }
-   //查找大于key_search的第一个叶节点，不存在返回NULL
-   Bptree_leaf_node upper_bound(Key &key_search) const {
+   //查找大于key_search的第一个值，不存在返回NULL
+   Value upper_bound(Key &key_search) const {
       
    }
    //查找Key值在[key_l, key_r)中间的值
-   std::vector<Bptree_leaf_node> range_search(Key &key_l, Key &key_r) const {
+   std::vector<Value> range_search(Key &key_l, Key &key_r) const {
       
    }
 };
