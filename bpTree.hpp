@@ -148,6 +148,10 @@ private:
    ~Bptree() {
       
    }
+   //查看是否有插入指定key值的元素
+   bool find(Key data, Value &result) {
+      
+   }
    //插入节点，失败返回0
    bool insert(std::pair<Key, Value> data) {
       int now = root;
