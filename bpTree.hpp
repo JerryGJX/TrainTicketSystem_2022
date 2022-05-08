@@ -9,6 +9,7 @@ template <class Key, class Value, class Compare = std::less<Key>, int M = 10, in
 class Bptree{
 private:
    int root, normal_node_number, leaf_node_number;
+   std::string prefix_name;
    class Bptree_leaf_node;
    class Bptree_normal_node;
    MemoryRiver<Bptree_leaf_node, 1> leaf_node_manager;     // info：leaf_node个数
@@ -103,7 +104,7 @@ private:
          for (int i = 0; i < node2.size; ++i) {
             merge_node.children[i + node1.size] = node2.children[i];
          }
-         merge_node.key[node1.size - 1] = 
+//         merge_node.key[node1.size - 1] = 
       }
    };
          
@@ -137,7 +138,7 @@ private:
 
    //BpTree正文
    //构造函数
-   Bptree(std::string prefix_name) {
+   Bptree(std::string _prefix_name) : prefix_name(_prefix_name) {
       leaf_node_manager.initialise(prefix_name + "leaf_node");
       normal_node_manager.initialise(prefix_name + "normal_node");
       
