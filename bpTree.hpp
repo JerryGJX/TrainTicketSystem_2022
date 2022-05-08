@@ -170,7 +170,7 @@ private:
       
    }
    //查找Key值在[key_l, key_r)中间的值
-   std::vector<Value> range_search(Key &key_l, Key &key_r) const {
+   void range_search(Key &key_l, Key &key_r,  std::vector<Value> &result) const {
       
    }
 };
