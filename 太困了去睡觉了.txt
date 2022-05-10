@@ -1,0 +1,7 @@
+要注意的地方：
+key_min整条链上的更改还没写完
+虚根部分还没写完
+换根部分还没写完	
+modify可以用dfs_find实现
+lower_bound和upper_bound可以不写
+写完这个文档好像不困了但是还是去睡了

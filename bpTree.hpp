@@ -85,8 +85,9 @@ private:
          }
       }
       //超过数量限制时拆分节点
-      std::pair<Bptree_normal_node, Bptree_normal_node> split(const Bptree_normal_node &obj) const {
-         Bptree_normal_node x, y;
+      std::pair<Bptree_normal_node, Bptree_normal_node> split(const Bptree_normal_node &obj, const int &index, int &new_index) const {
+         Bptree_leaf_node x, y;
+         new_index = normal_node_manager.write(y);
          x.size = (obj.size + 1) / 2;
          y.size = obj.size / 2;
          x.lowest = y.lowest = obj.is_lowest;
@@ -248,16 +249,21 @@ private:
          normal_node_manager.read(node, pos);
          if (node.size == 0) return -1; // BpTree为空树
          for (int i = 0; i < node.size; ++i) {
-            if (data < node.key_list[i]) {
+            if (i + 1 == node.size || data < node.key_list[i]) {
                return dfs_find(node.children[i], node.is_lowest, data, result);
             }
          }
-         return dfs_find(node.children[node.size - 1], node.is_lowest, data, result);
       }
    }
    //插入节点，失败返回0（如果给定key值已有节点，也会返回0）
    bool insert(const Key &key, const Value &value) {
-      Bptree_normal_node virtual_root;
+      Bptree_normal_node real_root, virtual_root;
+      normal_node_manager.read(real_root, root);
+      virtual_root.size = 1;
+      virtual_root.is_lowest = 0;
+      virtual_root.key_min = 
+      virtual_root.children[0] = root;
+      
       return dfs_insert(root, 0, 0, virtual_root, key, key, value);
    }
    //另一个版本的insert
@@ -268,7 +274,79 @@ private:
    bool dfs_insert(int pos, bool is_leaf, int rank, Bptree_normal_node &parent, Key &key, Value &value) {
       if (is_leaf) {
          Bptree_leaf_node self;
-         
+         leaf_node_manager.read(self, pos);
+         for (int i = 0; i <= self.size; ++i) {
+            if (i != self.size && self.key_list[i] < key) continue;
+            if (i != self.size && self.key_list[i] == key) return 0;
+            for (int j = i; j < self.size; ++j) {
+               self.key_list[j + 1] = self.key_list[j];
+               self.value_list[j + 1] = self.value_list[j];
+            }
+            self.key_list[i] = key;
+            self.value_list[i] = value;
+            ++self.size;
+            break;
+         }
+         if (self.size <= L) {
+            leaf_node_manager.update(self, pos);
+         } else {
+            int new_index;
+            std::pair<Bptree_leaf_node, Bptree_leaf_node> tmp = Bptree_leaf_node::split(self, pos, new_index);
+            leaf_node_manager.update(tmp.first, pos);
+            leaf_node_manager.update(tmp.second, new_index);
+            for (int i = parent.size; i >= rank + 1; --i) {
+               if (i != rank + 1) {
+                  parent.children[i] = parent.children[i - 1];
+               }
+               if (i != parent.size) {
+                  parent.key_list[i] = parent.key_list[i - 1];
+               }
+            }
+            parent.children[rank + 1] = new_index;
+            parent.key_list[rank] = tmp.second.key_list[0];
+            ++parent.size;
+         }
+         return 1;
+      } else {
+         Bptree_normal_node self;
+         normal_node_manager.read(self, pos);
+         if (self.size == 0) { //如果是空树
+            Bptree_leaf_node tmp;
+            tmp.size = 1;
+            tmp.key_list[0] = key;
+            tmp.value_list[0] = value;
+            self.children[0] = leaf_node_manager.write(tmp);
+            self.size = 1;
+            self.key_min = key;
+            normal_node_manager.update(self, pos);
+            return 1;
+         }
+         for (int i = 0; i < self.size; ++i) {
+            if (i + 1 == self.size || key < self.key_list[i]) {
+               dfs_insert(self.children[i], self.is_lowest, i, self, key, value);
+               break;
+            }
+         }
+         if (self.size <= M) {
+            normal_node_manager.update(self, pos);
+         } else {
+            int new_index;
+            std::pair<Bptree_normal_node, Bptree_normal_node> tmp = Bptree_normal_node::split(self, pos, new_index);
+            normal_node_manager.update(tmp.first, pos);
+            normal_leaf_manager.update(tmp.second, new_index);
+            for (int i = parent.size; i >= rank + 1; --i) {
+               if (i != rank + 1) {
+                  parent.children[i] = parent.children[i - 1];
+               }
+               if (i != parent.size) {
+                  parent.key_list[i] = parent.key_list[i - 1];
+               }
+            }
+            parent.children[rank + 1] = new_index;
+            parent.key_list[rank] = tmp.second.key_min;
+            ++parent.size;
+         }
+         return 1;
       }
    }
    //删除节点，失败返回0
@@ -293,21 +371,25 @@ private:
                break;
             }
          }
-         if (flag && self.size < (L + 1) / 2) {
-            if (self.predecessor == -1 && self.succssor == -1) { //根节点直接挂下来的叶子节点
-               if (self.size == 0) { //整棵树删空
-                  parent.size = 0;
-                  parent.children[0] = -1;
+         if (flag) {
+            if (self.size < (L + 1) / 2) {
+               if (self.predecessor == -1 && self.succssor == -1) { //根节点直接挂下来的叶子节点
+                  if (self.size == 0) { //整棵树删空
+                     parent.size = 0;
+                     parent.children[0] = -1;
+                  }
+               } else {
+                  Bptree_leaf_node brother;
+                  if (rank + 1 != parent.size) { //向后一个兄弟合并
+                     leaf_node_manager.read(brother, parent.children[rank + 1]);
+                     maintain_size_decrease_leaf(rank, self, brother, parent);
+                  } else {
+                     leaf_node_manager.read(brother, parent.children[rank - 1]);
+                     maintain_size_decrease_leaf(rank - 1, brother, self, parent);
+                  }
                }
             } else {
-               Bptree_leaf_node brother;
-               if (rank + 1 != parent.size) { //向后一个兄弟合并
-                  leaf_node_manager.read(brother, parent.children[rank + 1]);
-                  maintain_size_decrease_leaf(rank, self, brother, parent);
-               } else {
-                  leaf_node_manager.read(brother, parent.children[rank - 1]);
-                  maintain_size_decrease_leaf(rank - 1, brother, self, parent);
-               }
+               leaf_node_manager.update(self, pos);
             }
          }
          return flag;
