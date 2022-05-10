@@ -73,6 +73,10 @@ private:
       //析构函数
       ~Bptree_normal_node() {}
       //用节点的儿子节点更新该点的
+      void pushup() {
+         Bptree_normal_node son;
+         normal_node_manager.
+      }
       //超过数量限制时拆分节点
       std::pair<Bptree_normal_node, Bptree_normal_node> split() {
          Bptree_normal_node x(*this), y;
