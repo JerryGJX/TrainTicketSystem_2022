@@ -138,7 +138,7 @@ private:
 
    //BpTree正文
    //构造函数
-   Bptree(std::string _prefix_name) : prefix_name(_prefix_name) {
+   Bptree(const std::string &_prefix_name) : prefix_name(_prefix_name) {
       leaf_node_manager.initialise(prefix_name + "leaf_node");
       normal_node_manager.initialise(prefix_name + "normal_node");
       
@@ -150,27 +150,31 @@ private:
    }
    //查看是否有插入指定key值的元素
    bool find(Key data, Value &result) {
-      
+      return 1;
    }
    //插入节点，失败返回0
-   bool insert(std::pair<Key, Value> data) {
+   bool insert(const std::pair<Key, Value> &data) {
       int now = root;
       return 1;
    }
    //删除节点，失败返回0
-   bool erase(std::pair<Key, Value> data) {
+   bool erase(const Key &data) {
+      return 1;
+   }
+   //修改指定key值的元素，如果不存在返回0
+   bool modify(const std::pair<Key, Value> &data) {
       return 1;
    }
    //查找大于等于key_search的第一个值，不存在返回NULL
-   Value lower_bound(Key &key_search) const {
+   Value lower_bound(const Key &key_search) const {
       
    }
    //查找大于key_search的第一个值，不存在返回NULL
-   Value upper_bound(Key &key_search) const {
+   Value upper_bound(const Key &key_search) const {
       
    }
    //查找Key值在[key_l, key_r)中间的值
-   void range_search(Key &key_l, Key &key_r,  std::vector<Value> &result) const {
+   void range_search(const Key &key_l, const Key &key_r,  const std::vector<Value> &result) const {
       
    }
 };
