@@ -261,9 +261,8 @@ private:
       normal_node_manager.read(real_root, root);
       virtual_root.size = 1;
       virtual_root.is_lowest = 0;
-      virtual_root.key_min = 
       virtual_root.children[0] = root;
-      
+      //virtual_root.key_min在dfs_insert中维护
       return dfs_insert(root, 0, 0, virtual_root, key, key, value);
    }
    //另一个版本的insert
@@ -286,6 +285,9 @@ private:
             self.value_list[i] = value;
             ++self.size;
             break;
+         }
+         if (rank == 0) {
+            parent.key_min = self.key_list[0];
          }
          if (self.size <= L) {
             leaf_node_manager.update(self, pos);
@@ -310,6 +312,7 @@ private:
       } else {
          Bptree_normal_node self;
          normal_node_manager.read(self, pos);
+         if (pos == root) parent.key_min = self.key_min;
          if (self.size == 0) { //如果是空树
             Bptree_leaf_node tmp;
             tmp.size = 1;
@@ -327,13 +330,16 @@ private:
                break;
             }
          }
+         if (rank == 0) {
+            parent.key_min = self.key_min;
+         }
          if (self.size <= M) {
             normal_node_manager.update(self, pos);
          } else {
             int new_index;
             std::pair<Bptree_normal_node, Bptree_normal_node> tmp = Bptree_normal_node::split(self, pos, new_index);
             normal_node_manager.update(tmp.first, pos);
-            normal_leaf_manager.update(tmp.second, new_index);
+            normal_node_manager.update(tmp.second, new_index);
             for (int i = parent.size; i >= rank + 1; --i) {
                if (i != rank + 1) {
                   parent.children[i] = parent.children[i - 1];
@@ -345,6 +351,9 @@ private:
             parent.children[rank + 1] = new_index;
             parent.key_list[rank] = tmp.second.key_min;
             ++parent.size;
+            if (pos == root) { //换根
+               root = normal_node_manager.write(parent);
+            }
          }
          return 1;
       }
@@ -435,6 +444,7 @@ private:
          for (int i = rank + 1; i < parent.size; ++i) {
             parent.children[i] = parent.children[i + 1];
          }
+         if (rank == 0) parent.key_min = node1.key_list[0];
          return 1;
       } else if (node1.size < (L + 1) / 2) {
          node1.key_list[node1.size] = node2.key_list[0];
@@ -445,6 +455,7 @@ private:
             node2.value_list[i] = node2.value_list[i + 1];
          }
          parent.key_list[rank] = node2.key_list[0];
+         if (rank == 0) parent.key_min = node1.key_list[0];
          leaf_node_manager.update(id1, node1);
          leaf_node_manager.update(id2, node2);
          return 0;
@@ -457,6 +468,7 @@ private:
          node2.key_list[0] = node1.key_list[node1.size];
          node2.value_list[0] = node1.value_list[node1.size];
          parent.key_list[rank] = node2.key_list[0];
+         if (rank == 0) parent.key_min = node1.key_list[0];
          leaf_node_manager.update(id1, node1);
          leaf_node_manager.update(id2, node2);
          return 0;
@@ -508,23 +520,56 @@ private:
    }
    //修改指定key值的元素，如果不存在返回0
    bool modify(const Key &key, const Value &value) {
-      return 1;
+      Value result;
+      int index = dfs_find(root, 0, key, result);
+      if (index == -1) return 0;
+      leaf_node_manager.update(value, index);
    }
    //另一个版本的modify
    bool modify(const std::pair<Key, Value> &data) {
       return modify(data.first, data.second);
    }
-   //查找大于等于key_search的第一个值，不存在返回NULL
-   Value lower_bound(const Key &key_search) const {
-      
+   //查找不超过key的最后一个叶节点，存在返回index，不存在返回-1
+   int lower_bound(const Key &key) const {
+      return dfs_lower_bound(root, key);
    }
-   //查找大于key_search的第一个值，不存在返回NULL
-   Value upper_bound(const Key &key_search) const {
-      
+   //lower_bound的辅助函数
+   int dfs_lower_bound(int pos, const Key &key) const {
+      Bptree_normal_node self;
+      normal_node_manager.read(self, pos);
+      if (self.size == 0) return -1;
+      for (int i = self.size - 1; i >= 0; --i) {
+         if (i == 0 || key >= self.key_list[i - 1]) {
+            if (self.is_lowest) {
+               return self.children[i];
+            } else {
+               return dfs_lower_bound(self.children[i], key);
+            }
+            break;
+         }
+      }
    }
    //查找Key值在[key_l, key_r)中间的值,按key升序放入rusult
    void range_search(const Key &key_l, const Key &key_r, const std::vector<std::pair<Key, Value>> &result) const {
-      
+      result.clear();
+      int index = lower_bound(key_l);
+      bool flag = 0;
+      while (index != -1) {
+         Bptree_leaf_node leaf;
+         leaf_node_manager.read(leaf, index);
+         if (leaf.size == 0 || leaf.key_list[0] >= key_r) break;
+         for (int i = 0; i < leaf.size; ++i) {
+            if (flag || key_l <= leaf.key_list[i]) {
+               flag = 1;
+               if (leaf.key_list < key_r)   {
+                  result.push_back(leaf.key_list[i]);
+               } else {
+                  break;
+               }
+            }
+         }
+         index = leaf.succssor;
+      }
    }
 };
 #endif
