@@ -562,7 +562,7 @@ private:
             if (flag || key_l <= leaf.key_list[i]) {
                flag = 1;
                if (leaf.key_list < key_r)   {
-                  result.push_back(leaf.key_list[i]);
+                  result.push_back(make_pair(leaf.key_list[i], leaf.value_list[i]));
                } else {
                   break;
                }
