@@ -7,13 +7,12 @@
 
 #include <iostream>
 #include <cstring>
-#include "order_manager.hpp"
-#include "train_manager.hpp"
+//#include "order_manager.hpp"
+//#include "train_manager.hpp"
 #include "user_manager.hpp"
 
 #include <vector>
 #include <unordered_map>
-using std::vector;
 
 
 /**
@@ -26,18 +25,17 @@ using std::vector;
 
 class CommandParser {
  private:
-  UserManager &user_manager_;
-  TrainManager &train_manager_;
-  OrderManager &order_manager_;
+  UserManager &user_manager;
+//  TrainManager &train_manager;
+//  OrderManager &order_manager;
   /**
    * @brief 根据指令的第一个单词查找对应的函数，供 run 函数使用
    */
-  std::unordered_map<std::string, void (CommandParser::*)(vector<std::string> &)> mapFunction;
+  std::unordered_map<std::string, void (CommandParser::*)(std::unordered_map<std::string, std::string> &)> mapFunction;
  public:
-  CommandParser();
-
-
-
+  CommandParser(UserManager &user_manager_
+                //, TrainManager &train_manager_, OrderManager &order_manager_
+                );
 
   /**
    * @brief 循环读入指令并解析，直到遇到 exit。
@@ -45,32 +43,46 @@ class CommandParser {
    */
   void Run();
 
-  void ParseAdd();
-  void ParseQuery();
 
   /**
    * @brief 解析 add_user -c -u -p -n -m -g -c（<cur_username>），创建一个账户名为 -u（<username>），密码为 -p（<password>），用户真实姓名为 -n（<name>），用户邮箱为 -m（<mailAddr>），权限为 -g（<privilege>）的用户
    * @param cmd 传入参数
    */
-  void ParseAddUser(vector<std::string> &cmd);
-  void ParseLogin(vector<std::string> &cmd);
-  void ParseLogout(vector<std::string> &cmd);
-  void ParseQueryProfile(vector<std::string> &cmd);
-  void ParseModifyProfile(vector<std::string> &cmd);
-  void ParseAddTrain(vector<std::string> &cmd);
-  void ParseReleaseTrain(vector<std::string> &cmd);
-  void ParseQueryTrain(vector<std::string> &cmd);
-  void ParseQueryTicket(vector<std::string> &cmd);
-  void ParseQueryTransfer(vector<std::string> &cmd);
-  void ParseBuyTicket(vector<std::string> &cmd);
-  void ParseQueryOrder(vector<std::string> &cmd);
-  void ParseRefundTicket(vector<std::string> &cmd);
-  void ParseRollback(vector<std::string> &cmd);
-  void ParseClean(vector<std::string> &cmd);
-  void ParseExit(vector<std::string> &cmd);
+  void ParseAddUser(std::unordered_map<std::string, std::string> &cmd);
+  void ParseLogin(std::unordered_map<std::string, std::string> &cmd);
+  void ParseLogout(std::unordered_map<std::string, std::string> &cmd);
+  void ParseQueryProfile(std::unordered_map<std::string, std::string> &cmd);
+  void ParseModifyProfile(std::unordered_map<std::string, std::string> &cmd);
+
+
+//  void ParseAddTrain(std::unordered_map<std::string, std::string> &cmd);
+//  void ParseDeleteTrain(std::unordered_map<std::string, std::string> &cmd);
+//  void ParseReleaseTrain(std::unordered_map<std::string, std::string> &cmd);
+//  void ParseQueryTrain(std::unordered_map<std::string, std::string> &cmd);
+//  void ParseQueryTicket(std::unordered_map<std::string, std::string> &cmd);
+//  void ParseQueryTransfer(std::unordered_map<std::string, std::string> &cmd);
+//  void ParseBuyTicket(std::unordered_map<std::string, std::string> &cmd);
+//
+//
+//  void ParseQueryOrder(std::unordered_map<std::string, std::string> &cmd);
+//  void ParseRefundTicket(std::unordered_map<std::string, std::string> &cmd);
+//  void ParseRollback(std::unordered_map<std::string, std::string> &cmd);
+//  void ParseClean(std::unordered_map<std::string, std::string> &cmd);
+//  void ParseExit(std::unordered_map<std::string, std::string> &cmd);
+
+
+  //---------------------tool----------------------
+
+  void SplitString(const std::string &cmd, std::vector<std::string> &x, const char &flag);
+
+  static void Success();
+  static void Failure();
+
+
+  //-------userManager easy form-----------------
+  bool ifReg(const std::string &username_);
+  int ifLog(const std::string &username_);
+  bool ifPass(const std::string &username_, const std::string &password_);
 };
-
-
-
 
 #endif //COMMAND_PARSER_HPP__COMMAND_PARSER_HPP_

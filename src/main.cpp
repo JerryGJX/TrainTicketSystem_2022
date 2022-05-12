@@ -2,12 +2,14 @@
 #include "tools/Char.hpp"
 #include "command_parser.hpp"
 
-
-
-
 int main() {
-  UserManager user_manager("userData");
+  freopen("test1.ans", "w", stdout);
 
-  std::cout << "Hello, World!" << std::endl;
-  return 0;
+  UserManager user_manager("userData");
+  //TrainManager train_manager("trainData", "dtts", "sdb");
+  CommandParser command_parser(user_manager);
+  while (true) {
+      command_parser.Run();
+  }
+
 }

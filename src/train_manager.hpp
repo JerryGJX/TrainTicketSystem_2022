@@ -3,58 +3,72 @@
 #ifndef COMMAND_PARSER_HPP__TRAIN_MANAGER_HPP_
 #define COMMAND_PARSER_HPP__TRAIN_MANAGER_HPP_
 
-
-
-
-
-
-
-
-
-
-
-
-
 # include "tools/Char.hpp"
-# include "ACMstl/bpTree.hpp"
-# include "ACMstl/UnorderedMap.hpp"
-#include "ACMstl/Vector.hpp"
+//# include "ACMstl/bpTree.hpp"
+//# include "ACMstl/UnorderedMap.hpp"
+//#include "ACMstl/Vector.hpp"
 #include "mydefs.hpp"
 #include "order_manager.hpp"
-#include "ACMstl/Queue.hpp"
+//#include "ACMstl/Queue.hpp"
+#include "tools/Time.hpp"
 
+#include <vector>
+#include <map>
 
 struct Train {
-  bool isReleased;
+  bool isReleased{};
   JerryGJX::trainIDType trainID;
-  int stationNum;
-  JerryGJX::stationType stations[JerryGJX::max_stationNum];
-  int totalSeatNum;
-  int sumPrice[JerryGJX::max_stationNum];//存价格前缀和，且sumPrice[0]=0
+  int stationNum{};
+  JerryGJX::stationType stations[JerryGJX::max_stationNum];//0 base
+  int totalSeatNum{};
+  int sumPrice[JerryGJX::max_stationNum]{};//存价格前缀和，且sumPrice[0]=0
   JerryGJX::timeType startTime;
   JerryGJX::timeType arrivingTime[JerryGJX::max_stationNum];//存到达时间，且arrivingTime[0]=0
   JerryGJX::timeType leavingTime[JerryGJX::max_stationNum];//存离站时间，且leavingTime[0]=startTime
   JerryGJX::timeType startSellDate;
   JerryGJX::timeType endSellDate;
-  char type;
+  char type{};
+  Train() = default;
+  Train(const std::string &trainID_,
+        int stationNum_,
+        int totalSeatNum_,
+        vector<std::string> &stations_,
+        vector<int> &sumPrice_,
+        const std::string &startTime_,
+        vector<std::string> &arrivingTimes_,//arrivingTime[0]无意义
+        vector<std::string> &leavingTimes_,
+        std::string &startSellDate_,
+        std::string &endSellDate_,
+        char type_);
+  Train(const Train &rhs);
+
+  bool operator<(const Train &rhs) const;
+  bool operator>(const Train &rhs) const;
+  bool operator<=(const Train &rhs) const;
+  bool operator>=(const Train &rhs) const;
 };
 
 class TrainManager {
  public:
-  Bptree<JerryGJX::trainIDType, Train> trainDataBase;
 
-  void addTrain(const std::string trainID_,
-                const int stationNum_,
-                const int totalSeatNum_,
-                Vector<std::string> stations,
-                Vector<int> Price_,
-                const std::string startTime_,
-                Vector<std::string> travelTimes_,
-                Vector<std::string> stopoverTimes_,
-                Vector<std::string> saleDate_,
-                const char type_);
+  std::map<JerryGJX::trainIDType, Train> trainDataBase;
 
-  bool isAdded(const std::string trainID_);
+  //Bptree<JerryGJX::trainIDType, Train> trainDataBase;
+
+  TrainManager(const string &filename_tdb, const string &filename_dtts, const string &filename_sdb);
+
+  void addTrain(const std::string &trainID_,
+                int stationNum_,
+                int totalSeatNum_,
+                std::vector<std::string> &stations,
+                std::vector<int> &Price_,
+                const std::string &startTime_,
+                std::vector<int> &travelTimes_,
+                std::vector<int> &stopoverTimes_,
+                std::vector<std::string> &saleDate_,
+                char type_);
+
+  bool isAdded(const std::string &trainID_);
   /**
    * @brief 修改对应列车的isreleased变量
    */
@@ -63,7 +77,9 @@ class TrainManager {
   /**
    * @brief 考虑到query_train,buy_ticket都需要知道release情况，可能此处可以用unordered map优化
    */
-  UnorderedMap<JerryGJX::trainIDType, bool> releasedDatabase;
+
+  std::unordered_map<JerryGJX::trainIDType, bool> releasedDatabase;
+  //UnorderedMap<JerryGJX::trainIDType, bool> releasedDatabase;
 
   bool isReleased(const std::string trainID_);//如果可以返回一个代表存储位置的量，此处可优化
   /**
@@ -72,7 +88,7 @@ class TrainManager {
   struct DayTrain {
     int seatRemain[JerryGJX::max_stationNum];
   };
-  Bptree<std::pair < JerryGJX::timeType, JerryGJX::trainIDType>,DayTrain>
+  Bptree<std::pair<JerryGJX::timeType, JerryGJX::trainIDType>, DayTrain>
       DayTrainToSeat;
   void queryTrain(JerryGJX::trainIDType trainId_, JerryGJX::timeType targetDate_);
 
@@ -90,19 +106,19 @@ class TrainManager {
    * @brief 此处用pair为了防止bpt中发生key碰撞，pair中内容换为字符串哈希可能更优
    * @brief 此处要求bpt具有将一定区间内所有符合情况返回的能力
    */
-  Bptree<std::pair < JerryGJX::stationType, JerryGJX::trainIDType>,TrainStation>
+  Bptree<std::pair<JerryGJX::stationType, JerryGJX::trainIDType>, TrainStation>
       stationDataBase;
 
   void QueryTicket(std::string startStation_,
                    std::string terminalStation_,
-                   UnorderedMap<std::string, std::string> info);
+                   std::unordered_map<std::string, std::string> &info);
   /**
    * @param info 传入是price还是time
    * @brief 直接输出结果
    */
   void QueryTransfer(std::string startStation_,
                      std::string terminalStation_,
-                     UnorderedMap<std::string, std::string> info);
+                     std::unordered_map<std::string, std::string> &info);
 
   struct Ticket {
     TrainStation startStation, endStation;
@@ -119,7 +135,7 @@ class TrainManager {
                  const std::string startStation_,
                  const std::string terminalStation_,
                  const bool if_wait,
-                 OrderManager* order_manager_);
+                 OrderManager *order_manager_);
 
   void Clear();
 };
