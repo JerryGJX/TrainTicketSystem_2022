@@ -5,10 +5,12 @@
 #ifndef COMMAND_PARSER_HPP_TOOLS_TIME_HPP_
 #define COMMAND_PARSER_HPP_TOOLS_TIME_HPP_
 
+
+
 #include <iostream>
 namespace JerryGJX {
-int mon[13] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-int monSum[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
+constexpr int mon[13] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+constexpr int monSum[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
 
 struct CalendarTime {
   int mm, dd;
@@ -48,6 +50,11 @@ struct CalendarTime {
     if (lhs.dd > mon[mm])lhs.dd -= mon[mm], lhs.mm++;
     return lhs;
   }
+
+  CalendarTime &operator+=(int x) {
+    *this = *this + x;
+    return *this;
+  }
   bool operator==(const CalendarTime &rhs) const {
     return mm == rhs.mm && dd == rhs.dd;
   }
@@ -60,6 +67,14 @@ struct CalendarTime {
     ans += (mm < 10 ? '0' + std::to_string(mm) : std::to_string(mm)) + '-';
     ans += (dd < 10 ? '0' + std::to_string(dd) : std::to_string(dd));
     return ans;
+  }
+
+  int ToDay() const {
+    return monSum[mm - 1] + dd;
+  }
+
+  int ToHour() const {
+    return (monSum[mm - 1] + dd) * 24 * 60;
   }
 
 };
@@ -125,7 +140,7 @@ struct ClockTime {
     return ans;
   }
 
-  int ToInt() const {
+  int ToMin() const {
     return day * 24 * 60 + hor * 60 + min;
   }
 };
@@ -148,15 +163,16 @@ struct Time {
   }
 
   Time operator+(int x) {
+    Time lhs;
     int sum = 24 * 60 * (calendar_time.dd + monSum[calendar_time.mm - 1]) + 60 * clock_time.hor + clock_time.min;
     sum += x;
     int day = sum / (24 * 60);
-    calendar_time.mm = int(std::lower_bound(monSum, monSum + 12, day) - monSum);
-    calendar_time.dd = day - monSum[calendar_time.mm - 1];
+    lhs.calendar_time.mm = int(std::lower_bound(monSum, monSum + 12, day) - monSum);
+    lhs.calendar_time.dd = day - monSum[lhs.calendar_time.mm - 1];
     sum -= day * 24 * 60;
-    clock_time.hor = sum / 60;
-    clock_time.min = sum - clock_time.hor * 60;
-    return *this;
+    lhs.clock_time.hor = sum / 60;
+    lhs.clock_time.min = sum - lhs.clock_time.hor * 60;
+    return lhs;
   }
 
   Time &operator+=(int x) {

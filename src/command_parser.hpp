@@ -8,8 +8,9 @@
 #include <iostream>
 #include <cstring>
 //#include "order_manager.hpp"
-//#include "train_manager.hpp"
+#include "train_manager.hpp"
 #include "user_manager.hpp"
+
 
 #include <vector>
 #include <unordered_map>
@@ -26,15 +27,15 @@
 class CommandParser {
  private:
   UserManager &user_manager;
-//  TrainManager &train_manager;
+  TrainManager &train_manager;
 //  OrderManager &order_manager;
   /**
    * @brief 根据指令的第一个单词查找对应的函数，供 run 函数使用
    */
   std::unordered_map<std::string, void (CommandParser::*)(std::unordered_map<std::string, std::string> &)> mapFunction;
  public:
-  CommandParser(UserManager &user_manager_
-                //, TrainManager &train_manager_, OrderManager &order_manager_
+  CommandParser(UserManager &user_manager_, TrainManager &train_manager_
+                //, OrderManager &order_manager_
                 );
 
   /**
@@ -55,13 +56,13 @@ class CommandParser {
   void ParseModifyProfile(std::unordered_map<std::string, std::string> &cmd);
 
 
-//  void ParseAddTrain(std::unordered_map<std::string, std::string> &cmd);
-//  void ParseDeleteTrain(std::unordered_map<std::string, std::string> &cmd);
-//  void ParseReleaseTrain(std::unordered_map<std::string, std::string> &cmd);
-//  void ParseQueryTrain(std::unordered_map<std::string, std::string> &cmd);
-//  void ParseQueryTicket(std::unordered_map<std::string, std::string> &cmd);
-//  void ParseQueryTransfer(std::unordered_map<std::string, std::string> &cmd);
-//  void ParseBuyTicket(std::unordered_map<std::string, std::string> &cmd);
+  void ParseAddTrain(std::unordered_map<std::string, std::string> &cmd);
+  void ParseDeleteTrain(std::unordered_map<std::string, std::string> &cmd);
+  void ParseReleaseTrain(std::unordered_map<std::string, std::string> &cmd);
+  void ParseQueryTrain(std::unordered_map<std::string, std::string> &cmd);
+  void ParseQueryTicket(std::unordered_map<std::string, std::string> &cmd);
+  //void ParseQueryTransfer(std::unordered_map<std::string, std::string> &cmd);
+  //void ParseBuyTicket(std::unordered_map<std::string, std::string> &cmd);
 //
 //
 //  void ParseQueryOrder(std::unordered_map<std::string, std::string> &cmd);
@@ -80,9 +81,15 @@ class CommandParser {
 
 
   //-------userManager easy form-----------------
-  bool ifReg(const std::string &username_);
-  int ifLog(const std::string &username_);
-  bool ifPass(const std::string &username_, const std::string &password_);
+  bool ifUReg(const std::string &username_);
+  int ifULog(const std::string &username_);
+  bool ifUPass(const std::string &username_, const std::string &password_);
+
+  //--------trainManager easy form---------
+  bool ifTAdd(const std::string &trainID_);
+  bool ifTRel(const std::string &trainID_);
+
+
 };
 
 #endif //COMMAND_PARSER_HPP__COMMAND_PARSER_HPP_

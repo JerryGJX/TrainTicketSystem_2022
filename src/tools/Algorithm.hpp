@@ -29,7 +29,7 @@ void Sort(T *a, int l, int r) {
   sort(a, mid + 1, r);
 }
 
-//int ToInt(std::string &str) {
+//int ToHour(std::string &str) {
 //  int ans = 0;
 //  int len = int(str.length());
 //  for (int i = 0; i < len; ++i) ans = ans * 10 + str[i] - '0';
