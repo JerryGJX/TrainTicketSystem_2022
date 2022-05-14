@@ -45,7 +45,7 @@ bool UserManager::Empty() const {
   return isEmpty;
 }
 
-unsigned long UserManager::CalHash(const std::string &username_) {
+ull UserManager::CalHash(const std::string &username_) {
   return hash_str(username_);
 }
 
@@ -85,7 +85,7 @@ bool UserManager::queryProfile(const std::string &username_,
                                int prv_c,
                                const std::string &cur_user) {
   User ca;
-  unsigned long Hash = UserManager::hash_str(username_);
+  ull Hash = UserManager::hash_str(username_);
   if (userDatabase.find(Hash) == userDatabase.end())return false;
   ca = userDatabase.find(Hash)->second;
   if (ca.privilege >= prv_c && username_ != cur_user)return false;
@@ -101,7 +101,7 @@ bool UserManager::modifyProfile(const std::string &username_,
   if (info.empty()) return queryProfile(username_, result, prv_c, cur_user);
 
   User ca;
-  unsigned long Hash = UserManager::hash_str(username_);
+  ull Hash = UserManager::hash_str(username_);
   if (userDatabase.find(Hash) == userDatabase.end())return false;
   ca = userDatabase.find(Hash)->second;
   if (ca.privilege >= prv_c && username_ != cur_user)return false;
