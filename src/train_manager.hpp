@@ -11,10 +11,13 @@
 //#include "order_manager.hpp"
 //#include "ACMstl/Queue.hpp"
 #include "tools/Time.hpp"
+#include "order_manager.hpp"
 
 #include <vector>
 #include <map>
 #include <unordered_map>
+
+using JerryGJX::ull;
 
 struct Train {
   bool isReleased{};
@@ -50,17 +53,24 @@ struct Train {
 };
 
 class TrainManager {
+
  private:
   struct DayTrain {
-    int seatRemain[JerryGJX::max_stationNum];
+    int seatRemain[JerryGJX::max_stationNum]{};
     DayTrain() = default;
+    DayTrain(const DayTrain &rhs);
+
+    int findMin(int lp, int rp);
+
+    void rangeAdd(int lp, int rp, int d);
   };
+
   struct TrainStation {
     JerryGJX::trainIDType trainID;
     JerryGJX::stationType station;
     int rank = 0, priceSum = 0;//rank表示从始发站向下的站次，priceSum表示始发站到该站的总价格
     JerryGJX::CalendarTime startSaleDate, endSaleDate;
-    int arrivingTime, leavingTime;
+    int arrivingTime{}, leavingTime{};
 
     TrainStation(const std::string &trainID_, JerryGJX::CalendarTime &startSellDate_,
                  JerryGJX::CalendarTime &endSellDate_);
@@ -69,26 +79,32 @@ class TrainManager {
     TrainStation startStation, endStation;
   };
 
-  std::map<unsigned long, Train> trainDataBase;
+  std::map<ull, Train> trainDataBase;
   //Bptree<JerryGJX::trainIDType, Train> trainDataBase;
-  std::unordered_map<unsigned long, bool> releasedDatabase;
+  std::unordered_map<ull, bool> releasedDatabase;
   //UnorderedMap<JerryGJX::trainIDType, bool> releasedDatabase;
-  std::map<std::pair<int, unsigned long>, DayTrain> DayTrainToSeat;//(第几天，hash(trainID))
+  std::map<std::pair<int, ull>, DayTrain> DayTrainToSeat;//(第几天，hash(trainID))
+
+
+
   /**
    * @brief 此处用pair为了防止bpt中发生key碰撞，pair中内容换为字符串哈希可能更优
    * @brief 此处要求bpt具有将一定区间内所有符合情况返回的能力
    */
-  std::map<std::pair<unsigned long, unsigned long>, TrainStation> stationDataBase;
+  std::map<std::pair<ull, ull>, TrainStation> stationDataBase;//(HashStation，HashTrain）
 
-  void StationDataBase_RangeFind(const std::pair<unsigned long, unsigned long> &lp,
-                                 const std::pair<unsigned long, unsigned long> &rp, std::vector<TrainStation> &result);
+
+
+
+  void StationDataBase_RangeFind(const std::pair<ull, ull> &lp,
+                                 const std::pair<ull, ull> &rp, std::vector<TrainStation> &result);
 
   std::hash<std::string> hash_str;
 
  public:
   TrainManager(const std::string &filename_tdb, const std::string &filename_dtts, const std::string &filename_sdb);
 
-  unsigned long CalHash(const std::string &str_);
+  ull CalHash(const std::string &str_);
 
   void addTrain(const std::string &trainID_,
                 int stationNum_,
@@ -135,9 +151,12 @@ class TrainManager {
    * @param order_manager_ 用于修改下单信息
    * @brief 判断用户是否登录在commandParser中完成
    */
-//  void BuyTicket(std::unordered_map<std::string, std::string> &info, OrderManager *order_manager_);
-//
-//  void Clear();
+  std::string BuyTicket(std::unordered_map<std::string, std::string> &info, OrderManager &order_manager_);
+
+  bool RefundTicket(const std::string &username_, int rank_, OrderManager &order_manager_);//从新到旧第rank_个(1-base)
+
+
+
 };
 
 #endif //COMMAND_PARSER_HPP__TRAIN_MANAGER_HPP_

@@ -3,8 +3,8 @@
 //
 
 #include "command_parser.hpp"
-CommandParser::CommandParser(UserManager &user_manager_, TrainManager &train_manager_)
-    : user_manager(user_manager_), train_manager(train_manager_) {
+CommandParser::CommandParser(UserManager &user_manager_, TrainManager &train_manager_, OrderManager &order_manager_)
+    : user_manager(user_manager_), train_manager(train_manager_), order_manager(order_manager_) {
   mapFunction.emplace("add_user", &CommandParser::ParseAddUser);
   mapFunction.emplace("login", &CommandParser::ParseLogin);
   mapFunction.emplace("logout", &CommandParser::ParseLogout);
@@ -16,9 +16,9 @@ CommandParser::CommandParser(UserManager &user_manager_, TrainManager &train_man
   mapFunction.emplace("query_train", &CommandParser::ParseQueryTrain);
   mapFunction.emplace("query_ticket", &CommandParser::ParseQueryTicket);
   //mapFunction.emplace("query_transfer", &CommandParser::ParseQueryTransfer);
-//  mapFunction.emplace("buy_ticket", &CommandParser::ParseBuyTicket);
-//  mapFunction.emplace("query_order", &CommandParser::ParseQueryOrder);
-//  mapFunction.emplace("refund_ticket", &CommandParser::ParseRefundTicket);
+  mapFunction.emplace("buy_ticket", &CommandParser::ParseBuyTicket);
+  mapFunction.emplace("query_order", &CommandParser::ParseQueryOrder);
+  mapFunction.emplace("refund_ticket", &CommandParser::ParseRefundTicket);
 //  mapFunction.emplace("rollback", &CommandParser::ParseRollback);
 //  mapFunction.emplace("clean", &CommandParser::ParseClean);
 //  mapFunction.emplace("exit", &CommandParser::ParseExit);
@@ -177,7 +177,37 @@ void CommandParser::ParseQueryTicket(std::unordered_map<std::string, std::string
 }
 //void CommandParser::ParseQueryTransfer(unordered_map<std::string, std::string> &cmd) {}
 
+
+void CommandParser::ParseBuyTicket(std::unordered_map<std::string, std::string> &cmd) {
+  if (!ifUReg(cmd["-u"]) || !ifULog(cmd["-u"]) || !ifTAdd(cmd["-i"]) || !ifTRel(cmd["-i"])) {
+    Failure();
+    return;
+  }
+  std::string ans = train_manager.BuyTicket(cmd, order_manager);
+  std::cout << ans << "\n";
+}
+
+void CommandParser::ParseRefundTicket(std::unordered_map<std::string, std::string> &cmd) {
+  if (!ifULog(cmd["-u"])) {
+    Failure();
+    return;
+  }
+  if (train_manager.RefundTicket(cmd["-u"], std::stoi(cmd["-n"]), order_manager))Success();
+  else Failure();
+
+}
+
 //------------------order manager-----------------
+void CommandParser::ParseQueryOrder(std::unordered_map<std::string, std::string> &cmd) {
+  if (!ifULog(cmd["u"])) {
+    Failure();
+    return;
+  }
+  std::vector<std::string> ans;
+  order_manager.QueryOrder(cmd["-u"], ans);
+  std::cout << ans[0] << "\n";
+  for (int i = ans.size() - 1; i >= 1; --i)std::cout << ans[i] << "\n";
+}
 
 
 //---------------------tool----------------------
@@ -227,6 +257,8 @@ bool CommandParser::ifTAdd(const std::string &trainID_) {
 bool CommandParser::ifTRel(const std::string &trainID_) {
   return train_manager.isReleased(trainID_);
 }
+
+
 
 
 

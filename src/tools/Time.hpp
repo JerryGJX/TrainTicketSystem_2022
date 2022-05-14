@@ -5,8 +5,6 @@
 #ifndef COMMAND_PARSER_HPP_TOOLS_TIME_HPP_
 #define COMMAND_PARSER_HPP_TOOLS_TIME_HPP_
 
-
-
 #include <iostream>
 namespace JerryGJX {
 constexpr int mon[13] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -46,9 +44,14 @@ struct CalendarTime {
 
   CalendarTime operator+(int x) {
     CalendarTime lhs = *this;
-    lhs.dd += x;
-    if (lhs.dd > mon[mm])lhs.dd -= mon[mm], lhs.mm++;
+    int sum = monSum[mm - 1] + dd + x;
+    lhs.mm = int(std::lower_bound(monSum, monSum + 12, sum) - monSum);
+    lhs.dd = sum - monSum[lhs.mm - 1];
     return lhs;
+  }
+
+  CalendarTime operator-(int x) {
+    return (*this + (-x));
   }
 
   CalendarTime &operator+=(int x) {
@@ -74,7 +77,7 @@ struct CalendarTime {
   }
 
   int ToHour() const {
-    return (monSum[mm - 1] + dd) * 24 * 60;
+    return (monSum[mm - 1] + dd) * 24;
   }
 
 };
@@ -92,7 +95,7 @@ struct ClockTime {
   ClockTime(const ClockTime &rhs) : hor(rhs.hor), min(rhs.min), day(rhs.day) {}
 
   ClockTime &operator=(const ClockTime &rhs) {
-    hor = rhs.hor, min = rhs.min;
+    day = rhs.day, hor = rhs.hor, min = rhs.min;
     return *this;
   }
 
@@ -120,11 +123,12 @@ struct ClockTime {
 
   ClockTime operator+(int x) {
     ClockTime lhs = *this;
-    lhs.min += x;
-    lhs.hor += lhs.min / 60;
-    lhs.min %= 60;
-    lhs.day = lhs.hor / 24;
-    lhs.hor %= 24;
+    int sum = lhs.day * 60 * 24 + lhs.hor * 60 + lhs.min + x;
+    lhs.day = sum / (24 * 60);
+    sum %= (24 * 60);
+    lhs.hor = sum / 60;
+    sum %= 60;
+    lhs.min = sum;
     return lhs;
   }
 

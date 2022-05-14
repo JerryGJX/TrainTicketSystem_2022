@@ -21,7 +21,7 @@
  */
 
 
-
+using JerryGJX::ull;
 
 class UserManager;
 class User {
@@ -31,7 +31,7 @@ class User {
   JerryGJX::usernameType username;
   JerryGJX::nameType name;
   JerryGJX::mailAddrType mailAddr;
-  int privilege;
+  int privilege{};
 
   User() = default;
   User(const std::string &username_,
@@ -49,14 +49,14 @@ class User {
 
 class UserManager {
  private:
-  std::map<unsigned long, User> userDatabase;//username -> User(class)
-  std::unordered_map<unsigned long, std::pair<int ,bool>> onlineUser;//维护在线用户
+  std::map<ull, User> userDatabase;//username -> User(class)
+  std::unordered_map<ull, std::pair<int ,bool>> onlineUser;//维护在线用户
   bool isEmpty = true;
   std::hash<std::string> hash_str;
  public:
   explicit UserManager(const std::string &filename);
 
-  unsigned long CalHash(const std::string &username_);
+  ull CalHash(const std::string &username_);
 
   bool Empty() const;
 

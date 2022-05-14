@@ -7,14 +7,12 @@
 
 #include <iostream>
 #include <cstring>
-//#include "order_manager.hpp"
+#include "order_manager.hpp"
 #include "train_manager.hpp"
 #include "user_manager.hpp"
 
-
 #include <vector>
 #include <unordered_map>
-
 
 /**
  * @brief 解析输入指令。
@@ -28,22 +26,19 @@ class CommandParser {
  private:
   UserManager &user_manager;
   TrainManager &train_manager;
-//  OrderManager &order_manager;
+  OrderManager &order_manager;
   /**
    * @brief 根据指令的第一个单词查找对应的函数，供 run 函数使用
    */
   std::unordered_map<std::string, void (CommandParser::*)(std::unordered_map<std::string, std::string> &)> mapFunction;
  public:
-  CommandParser(UserManager &user_manager_, TrainManager &train_manager_
-                //, OrderManager &order_manager_
-                );
+  CommandParser(UserManager &user_manager_, TrainManager &train_manager_, OrderManager &order_manager_);
 
   /**
    * @brief 循环读入指令并解析，直到遇到 exit。
    *
    */
   void Run();
-
 
   /**
    * @brief 解析 add_user -c -u -p -n -m -g -c（<cur_username>），创建一个账户名为 -u（<username>），密码为 -p（<password>），用户真实姓名为 -n（<name>），用户邮箱为 -m（<mailAddr>），权限为 -g（<privilege>）的用户
@@ -55,18 +50,17 @@ class CommandParser {
   void ParseQueryProfile(std::unordered_map<std::string, std::string> &cmd);
   void ParseModifyProfile(std::unordered_map<std::string, std::string> &cmd);
 
-
   void ParseAddTrain(std::unordered_map<std::string, std::string> &cmd);
   void ParseDeleteTrain(std::unordered_map<std::string, std::string> &cmd);
   void ParseReleaseTrain(std::unordered_map<std::string, std::string> &cmd);
   void ParseQueryTrain(std::unordered_map<std::string, std::string> &cmd);
   void ParseQueryTicket(std::unordered_map<std::string, std::string> &cmd);
   //void ParseQueryTransfer(std::unordered_map<std::string, std::string> &cmd);
-  //void ParseBuyTicket(std::unordered_map<std::string, std::string> &cmd);
-//
-//
-//  void ParseQueryOrder(std::unordered_map<std::string, std::string> &cmd);
-//  void ParseRefundTicket(std::unordered_map<std::string, std::string> &cmd);
+  void ParseBuyTicket(std::unordered_map<std::string, std::string> &cmd);
+
+
+  void ParseQueryOrder(std::unordered_map<std::string, std::string> &cmd);
+  void ParseRefundTicket(std::unordered_map<std::string, std::string> &cmd);
 //  void ParseRollback(std::unordered_map<std::string, std::string> &cmd);
 //  void ParseClean(std::unordered_map<std::string, std::string> &cmd);
 //  void ParseExit(std::unordered_map<std::string, std::string> &cmd);
@@ -79,7 +73,6 @@ class CommandParser {
   static void Success();
   static void Failure();
 
-
   //-------userManager easy form-----------------
   bool ifUReg(const std::string &username_);
   int ifULog(const std::string &username_);
@@ -88,7 +81,6 @@ class CommandParser {
   //--------trainManager easy form---------
   bool ifTAdd(const std::string &trainID_);
   bool ifTRel(const std::string &trainID_);
-
 
 };
 

@@ -5,10 +5,12 @@
 #ifndef TRAIN_MANAGER_CPP__MYDEFS_HPP_
 #define TRAIN_MANAGER_CPP__MYDEFS_HPP_
 
-
 #include "tools/Char.hpp"
 
 namespace JerryGJX {
+using ull = unsigned long long;
+constexpr unsigned long long ULL_Max = 18446744073709551615;
+
 /**
  * @brief user_manager中使用
  */
@@ -37,11 +39,9 @@ using timeType = Char<max_time_length_>;//完整时间
 /**
  * @brief order_manager中使用
  */
-enum orderStatusType{SUCCESS,PENDING,REFUNDED};
+enum orderStatusType { SUCCESS, PENDING, REFUNDED };
+
 
 }
-
-
-
 
 #endif //TRAIN_MANAGER_CPP__MYDEFS_HPP_
