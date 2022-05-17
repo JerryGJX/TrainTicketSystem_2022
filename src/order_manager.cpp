@@ -87,9 +87,9 @@ std::string OrderManager::OrderStr(Order &order_) {
     case JerryGJX::REFUNDED:ans += "[refunded] ";
   }
   JerryGJX::Time transfer;
-  transfer += order_.startDay.ToHour() * 60 + order_.startTime;
-  ans +=
-      order_.trainID.str() + " " + order_.startStation.str() + " " + (transfer + order_.leavingTime).ToStr() + " -> ";
+  transfer += order_.startDay.ToHour() * 60 ;
+  ans +=order_.trainID.str() + " " + order_.startStation.str() + " " + (transfer + order_.leavingTime).ToStr() + " -> ";
+
   ans += order_.endStation.str() + " " + (transfer + order_.arrivingTime).ToStr() + " " + std::to_string(order_.price)
       + " " + std::to_string(order_.num);
   return ans;

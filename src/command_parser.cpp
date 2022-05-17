@@ -15,7 +15,7 @@ CommandParser::CommandParser(UserManager &user_manager_, TrainManager &train_man
   mapFunction.emplace("release_train", &CommandParser::ParseReleaseTrain);
   mapFunction.emplace("query_train", &CommandParser::ParseQueryTrain);
   mapFunction.emplace("query_ticket", &CommandParser::ParseQueryTicket);
-  //mapFunction.emplace("query_transfer", &CommandParser::ParseQueryTransfer);
+//  mapFunction.emplace("query_transfer", &CommandParser::ParseQueryTransfer);
   mapFunction.emplace("buy_ticket", &CommandParser::ParseBuyTicket);
   mapFunction.emplace("query_order", &CommandParser::ParseQueryOrder);
   mapFunction.emplace("refund_ticket", &CommandParser::ParseRefundTicket);
@@ -39,7 +39,9 @@ void CommandParser::Run() {
       std::unordered_map<std::string, std::string> parser_list_to_use;
 
       SplitString(parser_carrier, parser_list, ' ');
-      int time_tag = std::stoi(parser_list[0].substr(1, parser_list[0].length() - 1));
+      std::string timestamp = parser_list[0].substr(1, parser_list[0].length() - 2);
+      //std::cout << "!!DEBUG!! " << timestamp << std::endl;
+      int time_tag = std::stoi(timestamp);
       std::string cmd_type = parser_list[1];
       for (int i = 2; i < parser_list.size(); i += 2) {
         parser_list_to_use.emplace(parser_list[i], parser_list[i + 1]);
@@ -167,8 +169,13 @@ void CommandParser::ParseQueryTrain(std::unordered_map<std::string, std::string>
   }
   std::vector<std::string> result;
   train_manager.queryTrain(cmd["-i"], cmd["-d"], result);
-  for (auto &i: result)std::cout << i << "\n";
-  Success();
+  if (result[0] == "-1") {
+    std::cout << result[0] << "\n";
+    return;
+  }
+  std::cout << result[0] << " ";
+  for (int i = 1; i < result.size(); ++i)std::cout << result[i] << "\n";
+  //Success();
 }
 void CommandParser::ParseQueryTicket(std::unordered_map<std::string, std::string> &cmd) {
   std::vector<std::string> result;
