@@ -59,7 +59,7 @@ TrainManager::DayTrain::DayTrain(const TrainManager::DayTrain &rhs) {
   for (int i = 0; i < JerryGJX::max_stationNum; ++i)seatRemain[i] = rhs.seatRemain[i];
 }
 int TrainManager::DayTrain::findMin(int lp, int rp) {
-  int ans = 2147483647;
+  int ans = INT32_MAX;
   for (int i = lp; i <= rp; ++i)ans = std::min(seatRemain[i], ans);
   return ans;
 }
@@ -113,9 +113,11 @@ void TrainManager::addTrain(const std::string &trainID_,
   }
   tmp += travelTimes_[stationNum_ - 2];
   arrivingTimes.push_back(tmp);
+  leavingTimes.push_back(INT32_MAX);
 
   //-------------station----------------
   std::vector<std::string> stations;
+  stations.reserve(stationNum_);
   for (int i = 0; i < stationNum_; ++i)stations.push_back(stations_[i]);
 
 //--------------price &seat remain--------------
@@ -153,7 +155,6 @@ void TrainManager::addTrain(const std::string &trainID_,
   int s_date_rank = startSellDate.ToDay(), e_date_rank = endSellDate.ToDay();
   for (int i = s_date_rank; i <= e_date_rank; ++i) {
     DayTrainToSeat.insert(std::make_pair(std::make_pair(i, tidHash), dt_ca));
-
   }
 
   TrainStation train_station(trainID_, startSellDate, endSellDate);
@@ -197,6 +198,10 @@ void TrainManager::queryTrain(const std::string &trainID_, const std::string &da
   JerryGJX::CalendarTime ca_t = date_;
   ull TrHash = CalHash(trainID_);
   Train tr_ca = trainDataBase[TrHash];
+  if (DayTrainToSeat.find(std::make_pair(ca_t.ToDay(), TrHash)) == DayTrainToSeat.end()) {
+    result.emplace_back("-1");
+    return;
+  }
   DayTrain dt_ca = DayTrainToSeat[std::make_pair(ca_t.ToDay(), TrHash)];
   result.push_back(trainID_);
   std::string st_ca;
@@ -212,7 +217,7 @@ void TrainManager::queryTrain(const std::string &trainID_, const std::string &da
 
   for (int i = 1; i < tr_ca.stationNum - 1; ++i) {
     st_ca.clear();
-    st_ca += std::string(tr_ca.stations[i]) + (transfer + tr_ca.arrivingTime[i] + add_min).ToStr() + " -> "
+    st_ca += std::string(tr_ca.stations[i]) +" "+ (transfer + tr_ca.arrivingTime[i] + add_min).ToStr() + " -> "
         + (transfer + tr_ca.leavingTime[i] + add_min).ToStr() + " ";
     st_ca += std::to_string(tr_ca.sumPrice[i]) + " " + std::to_string(dt_ca.seatRemain[i]);
     result.push_back(st_ca);
@@ -238,7 +243,7 @@ void TrainManager::QueryTicket(std::unordered_map<std::string, std::string> &inf
   std::unordered_map<ull, int> find_same;
   for (int i = 0; i < result_start.size(); ++i) {
     if (result_start[i].startSaleDate + result_start[i].leavingTime / (60 * 24) <= wanted_time
-        && result_start[i].endSaleDate + result_start[i].leavingTime / (60 * 24) >= wanted_time) {
+        && result_start[i].endSaleDate + result_start[i].leavingTime / (60 * 24) + 1 >= wanted_time) {
       find_same.insert(std::make_pair(CalHash(result_start[i].trainID), i));
     }
   }
@@ -281,10 +286,10 @@ void TrainManager::QueryTicket(std::unordered_map<std::string, std::string> &inf
 
     //int day_one_tag,day_two_tag,day_three_tag
 
-    int start_date = wanted_time.ToDay() - levT_f / (24 * 60) - (levT_f % (24 * 60) != 0);
+    int start_date = wanted_time.ToDay() - levT_f / (24 * 60);
 
-    DayTrain test = DayTrainToSeat[std::make_pair(start_date, CalHash(_trainID))];
-    int _seat = DayTrainToSeat[std::make_pair(start_date, CalHash(_trainID))].findMin(f_rank,t_rank);
+    //DayTrain test = DayTrainToSeat[std::make_pair(start_date, CalHash(_trainID))];
+    int _seat = DayTrainToSeat[std::make_pair(start_date, CalHash(_trainID))].findMin(f_rank, t_rank - 1);
     JerryGJX::Time _leaving_time = ans_time + result_start[i->second.first].leavingTime % (24 * 60);
     JerryGJX::Time _arrival_time =
         _leaving_time + (result_terminal[i->second.second].arrivingTime - result_start[i->second.first].leavingTime);
@@ -326,7 +331,7 @@ std::string TrainManager::BuyTicket(std::unordered_map<std::string, std::string>
 
   //int day_one_tag,day_two_tag,day_three_tag
 
-  int start_date = wanted_date - levT_f / (24 * 60) - (levT_f % (24 * 60) != 0);
+  int start_date = wanted_date - (levT_f / (24 * 60));
   JerryGJX::CalendarTime start_day;
   start_day += start_date;
 
@@ -341,20 +346,20 @@ std::string TrainManager::BuyTicket(std::unordered_map<std::string, std::string>
 
   if (seat < wanted_seat && info["-q"] == "false")return "-1";
 
-  int total_cost = wanted_seat * (wanted_train.sumPrice[t_rank] - wanted_train.sumPrice[f_rank]);
+  int price = wanted_train.sumPrice[t_rank] - wanted_train.sumPrice[f_rank];
 
   int Oid = order_manager_.QueryOid();
 
   Order or_ca(JerryGJX::SUCCESS, info["-i"], info["-u"], f_rank, t_rank,
               info["-f"], info["-t"], start_day, wanted_train.startTime, levT_f,
-              arvT_t, Oid, total_cost, wanted_seat);
+              arvT_t, Oid, price, wanted_seat);
 
   if (seat >= wanted_seat) {
     dt_ca.rangeAdd(f_rank, t_rank - 1, -wanted_seat);
     DayTrainToSeat.erase(std::make_pair(start_date, tidHash));
     DayTrainToSeat.insert(std::make_pair(std::make_pair(start_date, tidHash), dt_ca));
     order_manager_.AddOrder(info["-u"], or_ca);
-    return std::to_string(total_cost);
+    return std::to_string(price * wanted_seat);
   } else {
     or_ca.orderStatus = JerryGJX::PENDING;
     order_manager_.AddOrder(info["-u"], or_ca);

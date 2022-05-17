@@ -44,9 +44,9 @@ struct CalendarTime {
 
   CalendarTime operator+(int x) {
     CalendarTime lhs = *this;
-    int sum = monSum[mm - 1] + dd + x;
+    int sum = monSum[mm - (mm != 0)] + dd + x;
     lhs.mm = int(std::lower_bound(monSum, monSum + 12, sum) - monSum);
-    lhs.dd = sum - monSum[lhs.mm - 1];
+    lhs.dd = sum - monSum[lhs.mm - (lhs.mm != 0)];
     return lhs;
   }
 
@@ -73,11 +73,11 @@ struct CalendarTime {
   }
 
   int ToDay() const {
-    return monSum[mm - 1] + dd;
+    return monSum[mm - (mm != 0)] + dd;
   }
 
   int ToHour() const {
-    return (monSum[mm - 1] + dd) * 24;
+    return (monSum[mm - (mm != 0)] + dd) * 24;
   }
 
 };
@@ -168,11 +168,12 @@ struct Time {
 
   Time operator+(int x) {
     Time lhs;
-    int sum = 24 * 60 * (calendar_time.dd + monSum[calendar_time.mm - 1]) + 60 * clock_time.hor + clock_time.min;
+    int sum = 24 * 60 * (calendar_time.dd + monSum[calendar_time.mm - (calendar_time.mm != 0)]) + 60 * clock_time.hor
+        + clock_time.min;
     sum += x;
     int day = sum / (24 * 60);
     lhs.calendar_time.mm = int(std::lower_bound(monSum, monSum + 12, day) - monSum);
-    lhs.calendar_time.dd = day - monSum[lhs.calendar_time.mm - 1];
+    lhs.calendar_time.dd = day - monSum[lhs.calendar_time.mm - (lhs.calendar_time.mm != 0)];
     sum -= day * 24 * 60;
     lhs.clock_time.hor = sum / 60;
     lhs.clock_time.min = sum - lhs.clock_time.hor * 60;

@@ -55,7 +55,7 @@ class CommandParser {
   void ParseReleaseTrain(std::unordered_map<std::string, std::string> &cmd);
   void ParseQueryTrain(std::unordered_map<std::string, std::string> &cmd);
   void ParseQueryTicket(std::unordered_map<std::string, std::string> &cmd);
-  //void ParseQueryTransfer(std::unordered_map<std::string, std::string> &cmd);
+//  void ParseQueryTransfer(std::unordered_map<std::string, std::string> &cmd);
   void ParseBuyTicket(std::unordered_map<std::string, std::string> &cmd);
 
 
