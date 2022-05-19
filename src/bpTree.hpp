@@ -3,17 +3,23 @@
 #include "memory_manager.hpp"
 #include <iostream>
 
-template <class Key, class Value, class Compare = std::less<Key>, int M = 10, int L = 10>
+template <
+   class Key,
+   class Value,
+   class Compare = std::less<Key>, 
+   class Equal = std::equal_to<Key>,  
+   int M = 10, int L = 10
+>
 class Bptree{
 private:
-   int root, normal_node_number, leaf_node_number;
+   int root, normal_node_number;
    std::string prefix_name;
    class Bptree_leaf_node;
    class Bptree_normal_node;
-   MemoryRiver<Bptree_leaf_node, 1> leaf_node_manager;     // info：leaf_node个数
+   MemoryRiver<Bptree_leaf_node, 0> leaf_node_manager;     // info：leaf_node个数
    MemoryRiver<Bptree_normal_node, 2> normal_node_manager; // info：root的编号，normal_node个数
    
-   //一些辅助函数
+   //记录Bptree信息的文件操作函数
    //从文件中读取根节点
    void get_root() {
       normal_node_manager.get_info(root, 1);
@@ -30,15 +36,7 @@ private:
    void write_normal_node_number() {
       normal_node_manager.write_info(normal_node_number, 2);
    }
-   //从文件中读取leaf_node个数
-   void get_leaf_node_number() {
-      leaf_node_manager.get_info(leaf_node_number, 1);
-   }
-   //将leaf_node个数写入文件
-   void write_leaf_node_number() {
-      leaf_node_manager.write_info(leaf_node_number, 1);
-   }
-
+   
    // 一般节点类
    class Bptree_normal_node {
    public:
@@ -172,8 +170,8 @@ public:
       write_normal_node_number();
    }
    //查看是否有插入指定key值的元素, 如果有将value返回到result中
-   bool find(const Key &data, Value &result) {
-      return dfs_find(root, 0, data, result) != -1;
+   bool find(const Key &key, Value &result) {
+      return dfs_find(root, 0, key, result) != -1;
    }
    //插入节点，失败返回0（如果给定key值已有节点，也会返回0）
    bool insert(const Key &key, const Value &value) {
@@ -196,17 +194,14 @@ public:
    }
    //修改指定key值的元素，如果不存在返回0
    bool modify(const Key &key, const Value &value) {
-      Value result;
-      int index = dfs_find(root, 0, key, result);
-      if (index == -1) return 0;
-      leaf_node_manager.update(value, index);
+      return dfs_modify(root, 0, key, value) != -1;
    }
    //另一个版本的modify
    bool modify(const std::pair<Key, Value> &data) {
       return modify(data.first, data.second);
    }
    //查找Key值在[key_l, key_r)中间的值,按key升序放入rusult
-   void range_search(const Key &key_l, const Key &key_r, const std::vector<std::pair<Key, Value>> &result) {
+   void range_search(const Key &key_l, const Key &key_r, std::vector<std::pair<Key, Value>> &result) {
       result.clear();
       int index = lower_bound(key_l);
       bool flag = 0;
@@ -217,8 +212,8 @@ public:
          for (int i = 0; i < leaf.size; ++i) {
             if (flag || key_l <= leaf.key_list[i]) {
                flag = 1;
-               if (leaf.key_list < key_r)   {
-                  result.push_back(make_pair(leaf.key_list[i], leaf.value_list[i]));
+               if (leaf.key_list[i] < key_r)   {
+                  result.push_back(std::make_pair(leaf.key_list[i], leaf.value_list[i]));
                } else {
                   break;
                }
@@ -286,14 +281,13 @@ private:
       }
       return std::make_pair(x, y);
    }
-
    //find的辅助函数，如果找到返回叶节点的index，否则返回-1
-   int dfs_find(int pos, bool is_leaf, const Key &data, Value &result) {
+   int dfs_find(int pos, bool is_leaf, const Key &key, Value &result) {
       if (is_leaf) {
          Bptree_leaf_node node;
          leaf_node_manager.read(node, pos);
-         for (int i = 0; i < L && node.key_list[i] <= data; ++i) {
-            if (node.key_list[i] == data) {
+         for (int i = 0; i < node.size && node.key_list[i] <= key; ++i) {
+            if (node.key_list[i] == key) {
                result = node.value_list[i];
                return pos;
             }
@@ -304,13 +298,39 @@ private:
          normal_node_manager.read(node, pos);
          if (node.size == 0) return -1; // BpTree为空树
          for (int i = 0; i < node.size; ++i) {
-            if (i + 1 == node.size || data < node.key_list[i]) {
-               return dfs_find(node.children[i], node.is_lowest, data, result);
+            if (i + 1 == node.size || key < node.key_list[i]) {
+               return dfs_find(node.children[i], node.is_lowest, key, result);
             }
          }
          return 0;
       }
    }
+   //modify的辅助函数，如果找到返回叶节点的index，否则返回-1
+   int dfs_modify(int pos, bool is_leaf, const Key &key, const Value &value) {
+      if (is_leaf) {
+         Bptree_leaf_node node;
+         leaf_node_manager.read(node, pos);
+         for (int i = 0; i < node.size && node.key_list[i] <= key; ++i) {
+            if (node.key_list[i] == key) {
+               node.value_list[i] = value;
+               leaf_node_manager.update(node, pos);
+               return pos;
+            }
+         }
+         return -1;
+      } else {
+         Bptree_normal_node node;
+         normal_node_manager.read(node, pos);
+         if (node.size == 0) return -1; // BpTree为空树
+         for (int i = 0; i < node.size; ++i) {
+            if (i + 1 == node.size || key < node.key_list[i]) {
+               return dfs_modify(node.children[i], node.is_lowest, key, value);
+            }
+         }
+         return 0;
+      }
+   }
+
    //insert的辅助函数
    bool dfs_insert(int pos, bool is_leaf, int rank, Bptree_normal_node &parent, const Key &key, const Value &value) {
       if (is_leaf) {
@@ -574,6 +594,7 @@ private:
             break;
          }
       }
+      return -1;
    }
 };
 #endif
