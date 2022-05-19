@@ -53,7 +53,6 @@ struct Train {
 };
 
 class TrainManager {
-
  private:
   struct DayTrain {
     int seatRemain[JerryGJX::max_stationNum]{};
@@ -70,13 +69,32 @@ class TrainManager {
     JerryGJX::stationType station;
     int rank = 0, priceSum = 0;//rank表示从始发站向下的站次，priceSum表示始发站到该站的总价格
     JerryGJX::CalendarTime startSaleDate, endSaleDate;
-    int arrivingTime{}, leavingTime{};
+    int startTime{}, arrivingTime{}, leavingTime{};
 
     TrainStation(const std::string &trainID_, JerryGJX::CalendarTime &startSellDate_,
                  JerryGJX::CalendarTime &endSellDate_);
   };
+
   struct Ticket {
-    TrainStation startStation, endStation;
+    std::string trainID{};
+    std::string startStation{}, endStation{};
+    int start_date{}, end_date{};//以天为单位
+    int start_time{}, end_time{};//在对应天的第几分钟
+    int cost{};
+
+    [[nodiscard]] int lastTime() const {
+      return (end_date - start_date) * 24 * 60 + end_time - start_time;
+    }
+  };
+
+  struct Transfer {
+    Ticket tk1{}, tk2{};
+    [[nodiscard]] int totTime() const {
+      return (tk2.end_date - tk1.start_date) * 24 * 60 + tk2.end_time - tk1.start_time;
+    }
+    [[nodiscard]] int totCost() const {
+      return tk1.cost + tk2.cost;
+    }
   };
 
   std::map<ull, Train> trainDataBase;
@@ -85,6 +103,8 @@ class TrainManager {
   //UnorderedMap<JerryGJX::trainIDType, bool> releasedDatabase;
   std::map<std::pair<int, ull>, DayTrain> DayTrainToSeat;//(第几天，hash(trainID))
 
+
+  //int CalStartDate(TrainStation &train_station_,int wanted_date_toDay_);
 
 
   /**
