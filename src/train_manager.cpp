@@ -163,6 +163,7 @@ void TrainManager::addTrain(const std::string &trainID_,
     train_station.station = stations[i];
     train_station.rank = i;
     train_station.priceSum = sumPrice[i];
+    train_station.startTime = startTime;
     train_station.arrivingTime = arrivingTimes[i];
     train_station.leavingTime = leavingTimes[i];
     stationDataBase.insert(std::make_pair(std::make_pair(CalHash(stations[i]), CalHash(trainID_)), train_station));
@@ -217,7 +218,7 @@ void TrainManager::queryTrain(const std::string &trainID_, const std::string &da
 
   for (int i = 1; i < tr_ca.stationNum - 1; ++i) {
     st_ca.clear();
-    st_ca += std::string(tr_ca.stations[i]) +" "+ (transfer + tr_ca.arrivingTime[i] + add_min).ToStr() + " -> "
+    st_ca += std::string(tr_ca.stations[i]) + " " + (transfer + tr_ca.arrivingTime[i] + add_min).ToStr() + " -> "
         + (transfer + tr_ca.leavingTime[i] + add_min).ToStr() + " ";
     st_ca += std::to_string(tr_ca.sumPrice[i]) + " " + std::to_string(dt_ca.seatRemain[i]);
     result.push_back(st_ca);
@@ -233,7 +234,7 @@ void TrainManager::queryTrain(const std::string &trainID_, const std::string &da
 }
 
 void TrainManager::QueryTicket(std::unordered_map<std::string, std::string> &info, std::vector<std::string> &result) {
-  JerryGJX::CalendarTime wanted_time(info["-d"]);
+  JerryGJX::CalendarTime wanted_date(info["-d"]);
   JerryGJX::Time ans_time(info["-d"], 1);
   std::string start_station = info["-s"], terminal_station = info["-t"];
   ull start_hash = CalHash(start_station), terminal_hash = CalHash(terminal_station);
@@ -242,31 +243,23 @@ void TrainManager::QueryTicket(std::unordered_map<std::string, std::string> &inf
   StationDataBase_RangeFind(std::make_pair(terminal_hash, 0), std::make_pair(terminal_hash + 1, 0), result_terminal);
   std::unordered_map<ull, int> find_same;
   for (int i = 0; i < result_start.size(); ++i) {
-    if (result_start[i].startSaleDate + result_start[i].leavingTime / (60 * 24) <= wanted_time
-        && result_start[i].endSaleDate + result_start[i].leavingTime / (60 * 24) + 1 >= wanted_time) {
+    if (result_start[i].startSaleDate + result_start[i].leavingTime / (60 * 24) <= wanted_date
+        && result_start[i].endSaleDate + result_start[i].leavingTime / (60 * 24) + 1 >= wanted_date) {
       find_same.insert(std::make_pair(CalHash(result_start[i].trainID), i));
     }
   }
   std::map<std::pair<int, JerryGJX::trainIDType>, std::pair<int, int>> possible_ans;
 
-  if (info["-p"] == "time") {
-    for (int i = 0; i < result_terminal.size(); ++i) {
-      if (find_same.find(CalHash(result_terminal[i].trainID)) != find_same.end()) {
-        int cnt = find_same.find(CalHash(result_terminal[i].trainID))->second;
-        if (result_start[cnt].rank < result_terminal[i].rank) {
-          int _time = result_terminal[i].arrivingTime - result_start[cnt].leavingTime;
-          possible_ans.insert(std::make_pair(std::make_pair(_time, result_start[cnt].trainID), std::make_pair(cnt, i)));
-        }
-      }
-    }
-  } else {
-    for (int i = 0; i < result_terminal.size(); ++i) {
-      if (find_same.find(CalHash(result_terminal[i].trainID)) != find_same.end()) {
-        int cnt = find_same.find(CalHash(result_terminal[i].trainID))->second;
-        if (result_start[cnt].rank < result_terminal[i].rank) {
-          int _cost = result_terminal[i].priceSum - result_start[cnt].priceSum;
-          possible_ans.insert(std::make_pair(std::make_pair(_cost, result_start[cnt].trainID), std::make_pair(cnt, i)));
-        }
+  bool if_time = false;
+  if (info["-p"] == "time") if_time = true;
+  for (int i = 0; i < result_terminal.size(); ++i) {
+    if (find_same.find(CalHash(result_terminal[i].trainID)) != find_same.end()) {
+      int cnt = find_same.find(CalHash(result_terminal[i].trainID))->second;
+      if (result_start[cnt].rank < result_terminal[i].rank) {
+        int ranker;
+        if (if_time)ranker = result_terminal[i].arrivingTime - result_start[cnt].leavingTime;
+        else ranker = result_terminal[i].priceSum - result_start[cnt].priceSum;
+        possible_ans.insert(std::make_pair(std::make_pair(ranker, result_start[cnt].trainID), std::make_pair(cnt, i)));
       }
     }
   }
@@ -286,7 +279,7 @@ void TrainManager::QueryTicket(std::unordered_map<std::string, std::string> &inf
 
     //int day_one_tag,day_two_tag,day_three_tag
 
-    int start_date = wanted_time.ToDay() - levT_f / (24 * 60);
+    int start_date = wanted_date.ToDay() - levT_f / (24 * 60);
 
     //DayTrain test = DayTrainToSeat[std::make_pair(start_date, CalHash(_trainID))];
     int _seat = DayTrainToSeat[std::make_pair(start_date, CalHash(_trainID))].findMin(f_rank, t_rank - 1);
@@ -303,6 +296,58 @@ void TrainManager::QueryTicket(std::unordered_map<std::string, std::string> &inf
 }
 
 void TrainManager::QueryTransfer(std::unordered_map<std::string, std::string> &info, std::vector<std::string> &result) {
+  JerryGJX::CalendarTime wanted_date(info["-d"]);
+  int wanted_date_toDay = wanted_date.ToDay();
+  std::string start_station = info["-s"], terminal_station = info["-t"];
+  ull start_hash = CalHash(start_station), terminal_hash = CalHash(terminal_station);
+  std::vector<TrainStation> result_start, result_terminal;
+  StationDataBase_RangeFind(std::make_pair(start_hash, 0), std::make_pair(start_hash + 1, 0), result_start);
+  StationDataBase_RangeFind(std::make_pair(terminal_hash, 0), std::make_pair(terminal_hash + 1, 0), result_terminal);
+
+  std::unordered_map<ull, std::pair<int, int>> startTime_permit;//trainIDHash,pair(start_date,rank in result_start)
+  for (int i = 0; i < result_start.size(); ++i) {
+    if (result_start[i].startSaleDate + result_start[i].leavingTime / (60 * 24) <= wanted_date
+        && result_start[i].endSaleDate + result_start[i].leavingTime / (60 * 24) + 1 >= wanted_date) {
+      int levT_f = result_start[i].leavingTime;
+      int start_time = wanted_date_toDay - levT_f / (24 * 60);
+      startTime_permit.insert(std::make_pair(CalHash(result_start[i].trainID), std::make_pair(start_time, i)));
+    }
+  }
+
+  Transfer best_choice;
+  bool has_choice = false;
+  bool if_time = false;
+  if (info["-p"] == "time") if_time = true;
+
+  for (auto it_s = startTime_permit.begin(); it_s != startTime_permit.end(); it_s++) {
+    int arr_rank = it_s->second.second;//rank in result_start
+    int f_rank = result_start[arr_rank].rank;//出发站在该车的站中编号
+    ull f_tr_hash = it_s->first;
+    int start_date_1 = it_s->second.first;
+    Train f_tr = trainDataBase.find(f_tr_hash)->second;
+    std::unordered_map<ull, int> StaAndArvMin;//stationHash to which min in the year
+    for (int i = f_rank; i < f_tr.stationNum; ++i) {
+      StaAndArvMin.insert(std::make_pair(CalHash(f_tr.stations[i].str()),
+                                         24 * 60 * start_date_1 + f_tr.arrivingTime[i]));
+    }
+
+    for (auto &T: result_terminal) {
+      ull t_tr_hash = CalHash(T.trainID.str());
+      if (t_tr_hash == f_tr_hash)continue;
+      Train t_tr = trainDataBase.find(t_tr_hash)->second;
+      for (int i = 0; i < T.rank; ++i) {
+        std::string sta_name = t_tr.stations[i].str();
+        auto iter = StaAndArvMin.find(CalHash(sta_name));
+        if (iter == StaAndArvMin.end())continue;
+        int last_leaving_minute = 24 * 60 * t_tr.endSellDate.ToDay() + t_tr.leavingTime[i];
+        int minute_diff = last_leaving_minute - iter->second;
+        if (minute_diff < 0)continue;
+        int best_trans_day = std::min(t_tr.startSellDate.ToDay(), t_tr.endSellDate.ToDay() - (minute_diff) / (24 * 60));
+
+      }
+    }
+
+  }
 
 }
 
