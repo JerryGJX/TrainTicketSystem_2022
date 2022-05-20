@@ -13,6 +13,7 @@
 #include "tools/Time.hpp"
 #include "order_manager.hpp"
 
+#include <utility>
 #include <vector>
 #include <map>
 #include <unordered_map>
@@ -78,19 +79,51 @@ class TrainManager {
   struct Ticket {
     std::string trainID{};
     std::string startStation{}, endStation{};
-    int start_date{}, end_date{};//以天为单位
-    int start_time{}, end_time{};//在对应天的第几分钟
-    int cost{};
+    int start_time{}, end_time{};//在一年中的第几分钟
+    int cost{}, seat{};
+
+    Ticket() = default;
+    Ticket(std::string train_id,
+           std::string start_station,
+           std::string end_station,
+           int start_time,
+           int end_time,
+           int cost, int seat)
+        : trainID(std::move(train_id)),
+          startStation(std::move(start_station)),
+          endStation(std::move(end_station)),
+          start_time(start_time),
+          end_time(end_time),
+          cost(cost), seat(seat) {}
+
+    Ticket(Ticket &rhs) {
+      trainID = rhs.trainID;
+      startStation = rhs.startStation;
+      endStation = rhs.endStation;
+      start_time = rhs.start_time;
+      end_time = rhs.end_time;
+      cost = rhs.cost;
+      seat = rhs.seat;
+    }
 
     [[nodiscard]] int lastTime() const {
-      return (end_date - start_date) * 24 * 60 + end_time - start_time;
+      return end_time - start_time;
     }
+
+    std::string Print();
+
   };
 
   struct Transfer {
     Ticket tk1{}, tk2{};
+
+    Transfer() = default;
+    Transfer(Ticket &tk_1_, Ticket &tk_2_) {
+      tk1 = tk_1_, tk2 = tk_2_;
+    };
+
     [[nodiscard]] int totTime() const {
-      return (tk2.end_date - tk1.start_date) * 24 * 60 + tk2.end_time - tk1.start_time;
+      return tk2.end_time - tk1.start_time;
     }
     [[nodiscard]] int totCost() const {
       return tk1.cost + tk2.cost;
