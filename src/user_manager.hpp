@@ -92,6 +92,10 @@ class UserManager {
   bool modifyProfile(const std::string &username_,
                      std::unordered_map<std::string, std::string> &info,
                      std::vector<std::string> &result,int prv_c,const std::string &cur_user);
+
+
+  void exit();
+
 };
 
 #endif //COMMAND_PARSER_HPP__USER_MANAGER_HPP_
