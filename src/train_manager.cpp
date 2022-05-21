@@ -244,7 +244,7 @@ void TrainManager::QueryTicket(std::unordered_map<std::string, std::string> &inf
   std::unordered_map<ull, int> find_same;
   for (int i = 0; i < result_start.size(); ++i) {
     if (result_start[i].startSaleDate + result_start[i].leavingTime / (60 * 24) <= wanted_date
-        && result_start[i].endSaleDate + result_start[i].leavingTime / (60 * 24) + 1 >= wanted_date) {
+        && result_start[i].endSaleDate + result_start[i].leavingTime / (60 * 24) >= wanted_date) {
       if (isReleased(result_start[i].trainID))
         find_same.insert(std::make_pair(CalHash(result_start[i].trainID), i));
     }
@@ -266,8 +266,9 @@ void TrainManager::QueryTicket(std::unordered_map<std::string, std::string> &inf
     }
   }
 
-  result.push_back(std::to_string(possible_ans.size()));
+  result.emplace_back(std::to_string(possible_ans.size()));
 
+  int tot_num = 0;
   for (auto i = possible_ans.begin(); i != possible_ans.end(); i++) {
 
     int levT_f = result_start[i->second.first].leavingTime, arvT_t = result_terminal[i->second.second].arrivingTime,
@@ -285,6 +286,8 @@ void TrainManager::QueryTicket(std::unordered_map<std::string, std::string> &inf
 
     //DayTrain test = DayTrainToSeat[std::make_pair(start_date, CalHash(_trainID))];
     int _seat = DayTrainToSeat[std::make_pair(start_date, CalHash(_trainID))].findMin(f_rank, t_rank - 1);
+//    if (!_seat)continue;
+//    tot_num++;
     JerryGJX::Time _leaving_time = ans_time + result_start[i->second.first].leavingTime % (24 * 60);
     JerryGJX::Time _arrival_time =
         _leaving_time + (result_terminal[i->second.second].arrivingTime - result_start[i->second.first].leavingTime);
@@ -294,6 +297,7 @@ void TrainManager::QueryTicket(std::unordered_map<std::string, std::string> &inf
     _ans += terminal_station + " " + _arrival_time.ToStr() + " " + std::to_string(_price) + " " + std::to_string(_seat);
     result.push_back(_ans);
   }
+  //result[0] = std::to_string(tot_num);
 
 }
 
@@ -309,7 +313,7 @@ void TrainManager::QueryTransfer(std::unordered_map<std::string, std::string> &i
   std::unordered_map<ull, std::pair<int, int>> startTime_permit;//trainIDHash,pair(start_date,rank in result_start)
   for (int i = 0; i < result_start.size(); ++i) {
     if (result_start[i].startSaleDate + result_start[i].leavingTime / (60 * 24) <= wanted_date
-        && result_start[i].endSaleDate + result_start[i].leavingTime / (60 * 24) + 1 >= wanted_date) {
+        && result_start[i].endSaleDate + result_start[i].leavingTime / (60 * 24) >= wanted_date) {
       int levT_f = result_start[i].leavingTime;
       int start_time = wanted_date_toDay - levT_f / (24 * 60);
       startTime_permit.insert(std::make_pair(CalHash(result_start[i].trainID), std::make_pair(start_time, i)));
@@ -330,7 +334,7 @@ void TrainManager::QueryTransfer(std::unordered_map<std::string, std::string> &i
     DayTrain tr_1 = DayTrainToSeat.find(std::make_pair(start_date_1, f_tr_hash))->second;
     std::unordered_map<ull, std::pair<int, int>>
         StaAndArvMin;//stationHash to which min in the year/station rank of train
-    for (int i = f_rank; i < f_tr.stationNum; ++i) {
+    for (int i = f_rank + 1; i < f_tr.stationNum; ++i) {
       int which_min = 24 * 60 * start_date_1 + f_tr.arrivingTime[i];
       StaAndArvMin.insert(std::make_pair(CalHash(f_tr.stations[i].str()), std::make_pair(which_min, i)));
     }
