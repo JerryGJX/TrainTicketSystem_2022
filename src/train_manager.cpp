@@ -314,9 +314,11 @@ void TrainManager::QueryTransfer(std::unordered_map<std::string, std::string> &i
   for (int i = 0; i < result_start.size(); ++i) {
     if (result_start[i].startSaleDate + result_start[i].leavingTime / (60 * 24) <= wanted_date
         && result_start[i].endSaleDate + result_start[i].leavingTime / (60 * 24) >= wanted_date) {
-      int levT_f = result_start[i].leavingTime;
-      int start_time = wanted_date_toDay - levT_f / (24 * 60);
-      startTime_permit.insert(std::make_pair(CalHash(result_start[i].trainID), std::make_pair(start_time, i)));
+      if (isReleased(result_start[i].trainID)){
+        int levT_f = result_start[i].leavingTime;
+        int start_time = wanted_date_toDay - levT_f / (24 * 60);
+        startTime_permit.insert(std::make_pair(CalHash(result_start[i].trainID), std::make_pair(start_time, i)));
+      }
     }
   }
 
@@ -343,6 +345,7 @@ void TrainManager::QueryTransfer(std::unordered_map<std::string, std::string> &i
       ull t_tr_hash = CalHash(T.trainID.str());
       if (t_tr_hash == f_tr_hash)continue;
       Train t_tr = trainDataBase.find(t_tr_hash)->second;
+      if (!isReleased(t_tr.trainID.str()))continue;
       for (int i = 0; i < T.rank; ++i) {
         std::string trans_station = t_tr.stations[i].str();
         auto iter = StaAndArvMin.find(CalHash(trans_station));
