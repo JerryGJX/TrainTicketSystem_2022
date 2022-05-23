@@ -42,11 +42,16 @@ int main() {
           for (int i = 0; i < vec.size(); ++i) {
              cout << vec[i].first << ' ' << vec[i].second << endl;
           }
+       } else if (op == 5) {
+          cout << tr.size() << endl;
        }
     }
+    tr.clear();
+    /*
     system("rm Bptree_test_leaf_node");
     system("rm Bptree_test_leaf_node_recycle");
     system("rm Bptree_test_normal_node");
     system("rm Bptree_test_normal_node_recycle");
+    */
     return 0;
 }

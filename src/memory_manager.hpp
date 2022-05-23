@@ -128,6 +128,14 @@ public:
       file.write(reinterpret_cast<char *> (&recycle_num), sizeof(int));
       file.close();
    }
+
+   void clear() {
+      recycle_num = 0;
+      file.open(file_name, std::ios::out | std::ios::trunc);
+      file.close();
+      file.open(recycle_file_name, std::ios::out | std::ios::trunc);
+      file.close();
+   }
 };
 
 
