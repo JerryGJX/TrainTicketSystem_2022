@@ -5,15 +5,14 @@
 
 # include "tools/Char.hpp"
 # include "ACMstl/bpTree.hpp"
-//# include "ACMstl/UnorderedMap.hpp"
+# include "ACMstl/UnorderedMap.hpp"
 #include "ACMstl/Vector.hpp"
 #include "mydefs.hpp"
-//#include "order_manager.hpp"
 #include "tools/Algorithm.hpp"
 
 
 //#include <map>
-#include <unordered_map>
+//#include <unordered_map>
 //#include <vector>
 
 /**
@@ -50,7 +49,7 @@ class User {
 class UserManager {
  private:
   Bptree<ull, User> userDatabase;//username -> User(class)
-  std::unordered_map<ull, std::pair<int ,bool>> onlineUser;//维护在线用户
+  sjtu::linked_hashmap<ull, std::pair<int ,bool>> onlineUser;//维护在线用户
   bool isEmpty = true;
   std::hash<std::string> hash_str;
  public:
@@ -90,7 +89,7 @@ class UserManager {
    * @return 被修改用户的<username>，<name>，<mailAddr>和<privilege>
    */
   bool modifyProfile(const std::string &username_,
-                     std::unordered_map<std::string, std::string> &info,
+                     sjtu::linked_hashmap<std::string, std::string> &info,
                      sjtu::vector<std::string> &result,int prv_c,const std::string &cur_user);
 
 

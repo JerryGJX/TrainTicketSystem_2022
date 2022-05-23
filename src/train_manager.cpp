@@ -182,7 +182,7 @@ void TrainManager::deleteTrain(const std::string &trainID_) {
   for (int i = s_date_rank; i <= e_date_rank; ++i) {
     DayTrainToSeat.erase(std::make_pair(i, CalHash(trainID_)));
   }
-  releasedDatabase.erase(CalHash(trainID_));
+  releasedDatabase.erase(releasedDatabase.find(CalHash(trainID_)));
   trainDataBase.erase(CalHash(trainID_));
   for (int i = 0; i < tr_ca.stationNum; ++i) {
     stationDataBase.erase(std::make_pair(CalHash(tr_ca.stations[i]), CalHash(trainID_)));
@@ -236,7 +236,7 @@ void TrainManager::queryTrain(const std::string &trainID_,
 
 }
 
-void TrainManager::QueryTicket(std::unordered_map<std::string, std::string> &info, sjtu::vector<std::string> &result) {
+void TrainManager::QueryTicket(sjtu::linked_hashmap<std::string, std::string> &info, sjtu::vector<std::string> &result) {
   JerryGJX::CalendarTime wanted_date(info["-d"]);
   JerryGJX::Time ans_time(info["-d"], 1);
   std::string start_station = info["-s"], terminal_station = info["-t"];
@@ -244,7 +244,7 @@ void TrainManager::QueryTicket(std::unordered_map<std::string, std::string> &inf
   sjtu::vector<TrainStation> result_start, result_terminal;
   stationDataBase.range_search(std::make_pair(start_hash, 0), std::make_pair(start_hash + 1, 0), result_start);
   stationDataBase.range_search(std::make_pair(terminal_hash, 0), std::make_pair(terminal_hash + 1, 0), result_terminal);
-  std::unordered_map<ull, int> find_same;
+  sjtu::linked_hashmap<ull, int> find_same;
   for (int i = 0; i < result_start.size(); ++i) {
     if (result_start[i].startSaleDate + result_start[i].leavingTime / (60 * 24) <= wanted_date
         && result_start[i].endSaleDate + result_start[i].leavingTime / (60 * 24) >= wanted_date) {
@@ -252,7 +252,7 @@ void TrainManager::QueryTicket(std::unordered_map<std::string, std::string> &inf
         find_same.insert(std::make_pair(CalHash(result_start[i].trainID), i));
     }
   }
-  std::map<std::pair<int, JerryGJX::trainIDType>, std::pair<int, int>> possible_ans;
+  sjtu::map<std::pair<int, JerryGJX::trainIDType>, std::pair<int, int>> possible_ans;
 
   bool if_time = false;
   if (info.find("-p") != info.end() && info["-p"] == "time") if_time = true;
@@ -303,7 +303,7 @@ void TrainManager::QueryTicket(std::unordered_map<std::string, std::string> &inf
 
 }
 
-void TrainManager::QueryTransfer(std::unordered_map<std::string, std::string> &info,
+void TrainManager::QueryTransfer(sjtu::linked_hashmap<std::string, std::string> &info,
                                  sjtu::vector<std::string> &result) {
   JerryGJX::CalendarTime wanted_date(info["-d"]);
   int wanted_date_toDay = wanted_date.ToDay();
@@ -313,7 +313,7 @@ void TrainManager::QueryTransfer(std::unordered_map<std::string, std::string> &i
   stationDataBase.range_search(std::make_pair(start_hash, 0), std::make_pair(start_hash + 1, 0), result_start);
   stationDataBase.range_search(std::make_pair(terminal_hash, 0), std::make_pair(terminal_hash + 1, 0), result_terminal);
 
-  std::unordered_map<ull, std::pair<int, int>> startTime_permit;//trainIDHash,pair(start_date,rank in result_start)
+  sjtu::linked_hashmap<ull, std::pair<int, int>> startTime_permit;//trainIDHash,pair(start_date,rank in result_start)
   for (int i = 0; i < result_start.size(); ++i) {
     if (result_start[i].startSaleDate + result_start[i].leavingTime / (60 * 24) <= wanted_date
         && result_start[i].endSaleDate + result_start[i].leavingTime / (60 * 24) >= wanted_date) {
@@ -339,7 +339,7 @@ void TrainManager::QueryTransfer(std::unordered_map<std::string, std::string> &i
     trainDataBase.find(f_tr_hash, f_tr);
     DayTrain tr_1;
     DayTrainToSeat.find(std::make_pair(start_date_1, f_tr_hash), tr_1);
-    std::unordered_map<ull, std::pair<int, int>>
+    sjtu::linked_hashmap<ull, std::pair<int, int>>
         StaAndArvMin;//stationHash to which min in the year/station rank of train
     for (int i = f_rank + 1; i < f_tr.stationNum; ++i) {
       int which_min = 24 * 60 * start_date_1 + f_tr.arrivingTime[i];
@@ -404,7 +404,7 @@ void TrainManager::QueryTransfer(std::unordered_map<std::string, std::string> &i
   }
 }
 
-std::string TrainManager::BuyTicket(std::unordered_map<std::string, std::string> &info, OrderManager &order_manager_) {
+std::string TrainManager::BuyTicket(sjtu::linked_hashmap<std::string, std::string> &info, OrderManager &order_manager_) {
   int wanted_date = JerryGJX::CalendarTime(info["-d"]).ToDay();
   ull tidHash = CalHash(info["-i"]);
   //由于已检查过release，则一定存在

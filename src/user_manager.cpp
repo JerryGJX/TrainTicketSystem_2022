@@ -94,7 +94,7 @@ bool UserManager::queryProfile(const std::string &username_,
   return true;
 }
 bool UserManager::modifyProfile(const std::string &username_,
-                                std::unordered_map<std::string, std::string> &info,
+                                sjtu::linked_hashmap<std::string, std::string> &info,
                                 sjtu::vector<std::string> &result, int prv_c, const std::string &cur_user) {
   if (info.empty()) return queryProfile(username_, result, prv_c, cur_user);
 

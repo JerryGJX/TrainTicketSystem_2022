@@ -12,7 +12,7 @@
 #include "user_manager.hpp"
 
 //#include <vector>
-#include <unordered_map>
+//#include <unordered_map>
 
 /**
  * @brief 解析输入指令。
@@ -30,7 +30,7 @@ class CommandParser {
   /**
    * @brief 根据指令的第一个单词查找对应的函数，供 run 函数使用
    */
-  std::unordered_map<std::string, void (CommandParser::*)(std::unordered_map<std::string, std::string> &)> mapFunction;
+  sjtu::linked_hashmap<std::string, void (CommandParser::*)(sjtu::linked_hashmap<std::string, std::string> &)> mapFunction;
  public:
   CommandParser(UserManager &user_manager_, TrainManager &train_manager_, OrderManager &order_manager_);
 
@@ -44,26 +44,26 @@ class CommandParser {
    * @brief 解析 add_user -c -u -p -n -m -g -c（<cur_username>），创建一个账户名为 -u（<username>），密码为 -p（<password>），用户真实姓名为 -n（<name>），用户邮箱为 -m（<mailAddr>），权限为 -g（<privilege>）的用户
    * @param cmd 传入参数
    */
-  void ParseAddUser(std::unordered_map<std::string, std::string> &cmd);
-  void ParseLogin(std::unordered_map<std::string, std::string> &cmd);
-  void ParseLogout(std::unordered_map<std::string, std::string> &cmd);
-  void ParseQueryProfile(std::unordered_map<std::string, std::string> &cmd);
-  void ParseModifyProfile(std::unordered_map<std::string, std::string> &cmd);
+  void ParseAddUser(sjtu::linked_hashmap<std::string, std::string> &cmd);
+  void ParseLogin(sjtu::linked_hashmap<std::string, std::string> &cmd);
+  void ParseLogout(sjtu::linked_hashmap<std::string, std::string> &cmd);
+  void ParseQueryProfile(sjtu::linked_hashmap<std::string, std::string> &cmd);
+  void ParseModifyProfile(sjtu::linked_hashmap<std::string, std::string> &cmd);
 
-  void ParseAddTrain(std::unordered_map<std::string, std::string> &cmd);
-  void ParseDeleteTrain(std::unordered_map<std::string, std::string> &cmd);
-  void ParseReleaseTrain(std::unordered_map<std::string, std::string> &cmd);
-  void ParseQueryTrain(std::unordered_map<std::string, std::string> &cmd);
-  void ParseQueryTicket(std::unordered_map<std::string, std::string> &cmd);
-  void ParseQueryTransfer(std::unordered_map<std::string, std::string> &cmd);
-  void ParseBuyTicket(std::unordered_map<std::string, std::string> &cmd);
+  void ParseAddTrain(sjtu::linked_hashmap<std::string, std::string> &cmd);
+  void ParseDeleteTrain(sjtu::linked_hashmap<std::string, std::string> &cmd);
+  void ParseReleaseTrain(sjtu::linked_hashmap<std::string, std::string> &cmd);
+  void ParseQueryTrain(sjtu::linked_hashmap<std::string, std::string> &cmd);
+  void ParseQueryTicket(sjtu::linked_hashmap<std::string, std::string> &cmd);
+  void ParseQueryTransfer(sjtu::linked_hashmap<std::string, std::string> &cmd);
+  void ParseBuyTicket(sjtu::linked_hashmap<std::string, std::string> &cmd);
 
 
-  void ParseQueryOrder(std::unordered_map<std::string, std::string> &cmd);
-  void ParseRefundTicket(std::unordered_map<std::string, std::string> &cmd);
-//  void ParseRollback(std::unordered_map<std::string, std::string> &cmd);
-//  void ParseClean(std::unordered_map<std::string, std::string> &cmd);
-//  void ParseExit(std::unordered_map<std::string, std::string> &cmd);
+  void ParseQueryOrder(sjtu::linked_hashmap<std::string, std::string> &cmd);
+  void ParseRefundTicket(sjtu::linked_hashmap<std::string, std::string> &cmd);
+//  void ParseRollback(sjtu::linked_hashmap<std::string, std::string> &cmd);
+  void ParseClean(sjtu::linked_hashmap<std::string, std::string> &cmd);
+  void ParseExit(sjtu::linked_hashmap<std::string, std::string> &cmd);
 
 
   //---------------------tool----------------------

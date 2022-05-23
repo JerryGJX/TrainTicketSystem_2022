@@ -5,18 +5,18 @@
 
 # include "tools/Char.hpp"
 # include "ACMstl/bpTree.hpp"
-//# include "ACMstl/UnorderedMap.hpp"
-//#include "ACMstl/Vector.hpp"
+# include "ACMstl/UnorderedMap.hpp"
+#include "ACMstl/Map.hpp"
+#include "ACMstl/Vector.hpp"
 #include "mydefs.hpp"
-//#include "order_manager.hpp"
 //#include "ACMstl/Queue.hpp"
 #include "tools/Time.hpp"
 #include "order_manager.hpp"
 
-#include <utility>
+//#include <utility>
 //#include <vector>
-#include <map>
-#include <unordered_map>
+//#include <map>
+//#include <unordered_map>
 
 using JerryGJX::ull;
 
@@ -132,7 +132,7 @@ class TrainManager {
 
   Bptree<ull, Train> trainDataBase;
   //Bptree<JerryGJX::trainIDType, Train> trainDataBase;
-  std::unordered_map<ull, bool> releasedDatabase;
+  sjtu::linked_hashmap<ull, bool> releasedDatabase;
   //UnorderedMap<JerryGJX::trainIDType, bool> releasedDatabase;
   Bptree<std::pair<int, ull>, DayTrain> DayTrainToSeat;//(第几天，hash(trainID))
 
@@ -193,18 +193,18 @@ class TrainManager {
    * @brief 将不同火车到达同一站视为不同站
    */
 
-  void QueryTicket(std::unordered_map<std::string, std::string> &info, sjtu::vector<std::string> &result);
+  void QueryTicket(sjtu::linked_hashmap<std::string, std::string> &info, sjtu::vector<std::string> &result);
   /**
    * @param info 传入是price还是time
    * @brief 直接输出结果
    */
-  void QueryTransfer(std::unordered_map<std::string, std::string> &info, sjtu::vector<std::string> &result);
+  void QueryTransfer(sjtu::linked_hashmap<std::string, std::string> &info, sjtu::vector<std::string> &result);
 
   /**
    * @param order_manager_ 用于修改下单信息
    * @brief 判断用户是否登录在commandParser中完成
    */
-  std::string BuyTicket(std::unordered_map<std::string, std::string> &info, OrderManager &order_manager_);
+  std::string BuyTicket(sjtu::linked_hashmap<std::string, std::string> &info, OrderManager &order_manager_);
 
   bool RefundTicket(const std::string &username_, int rank_, OrderManager &order_manager_);//从新到旧第rank_个(1-base)
 
