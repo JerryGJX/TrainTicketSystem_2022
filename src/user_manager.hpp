@@ -93,7 +93,9 @@ class UserManager {
                      sjtu::vector<std::string> &result,int prv_c,const std::string &cur_user);
 
 
-  void exit();
+  void Clean();
+
+  void Exit();
 
 };
 

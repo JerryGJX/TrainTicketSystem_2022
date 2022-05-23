@@ -28,7 +28,7 @@ void CommandParser::Run() {
   std::string parser_carrier;
   if (std::getline(std::cin, parser_carrier)) {
 
-    if (std::cin.eof())exit(0);
+    //if (std::cin.eof())exit(0);
 
     bool all_blank_flag = true;
     for (char i: parser_carrier) {
@@ -49,26 +49,13 @@ void CommandParser::Run() {
       for (int i = 2; i < parser_list.size(); i += 2) {
         parser_list_to_use.insert(std::make_pair(parser_list[i], parser_list[i + 1]));
       }
-      if (cmd_type == "exit") {
 
-        user_manager.exit();
-
-        std::cout << "bye\n";
-
-
-        //exit(0);
-      } else {
-        if (mapFunction.find(cmd_type) != mapFunction.end()) {
-          // PrintAll();
-//          vector<string> split_parser;
-//          while (!iss.eof()) {
-//            string carrier;
-//            iss >> carrier;
-//            if (!carrier.empty()) split_parser.push_back(carrier);
-//          }
-          (this->*mapFunction[cmd_type])(parser_list_to_use);
-        }
-      }
+//      if (cmd_type == "exit") {
+//
+//        user_manager.exit();
+//
+//        std::cout << "bye\n";
+      if (mapFunction.find(cmd_type) != mapFunction.end()) (this->*mapFunction[cmd_type])(parser_list_to_use);
     }
   }
 }
@@ -171,7 +158,7 @@ void CommandParser::ParseReleaseTrain(sjtu::linked_hashmap<std::string, std::str
   Success();
 }
 void CommandParser::ParseQueryTrain(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-  if (!ifTAdd(cmd["-i"]) || !ifTRel(cmd["-i"])) {
+  if (!ifTAdd(cmd["-i"])) {
     Failure();
     return;
   }
@@ -227,12 +214,17 @@ void CommandParser::ParseQueryOrder(sjtu::linked_hashmap<std::string, std::strin
   for (int i = ans.size() - 1; i >= 1; --i)std::cout << ans[i] << "\n";
 }
 
-
 void CommandParser::ParseClean(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-
+  user_manager.Clean();
+  train_manager.Clean();
+  order_manager.Clean();
 }
 void CommandParser::ParseExit(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-
+  user_manager.Exit();
+  train_manager.Exit();
+  order_manager.Exit();
+  std::cout << "bye";
+  exit(0);
 }
 
 

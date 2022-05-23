@@ -81,7 +81,7 @@ class OrderManager {
 //                              std::vector<PendingOrder> &result);
   std::hash<std::string> hash_str;
  public:
-  OrderManager(const std::string &filenameO,const std::string &filenameP);
+  OrderManager(const std::string &filenameO, const std::string &filenameP);
 
   int QueryOid();
   ull CalHash(const std::string &str_);
@@ -91,17 +91,21 @@ class OrderManager {
 
   void QueryOrder(const std::string &username_, sjtu::vector<std::string> &result);
 
-  void QueryPendingOrderPrivate(int date_,ull tidHash_,sjtu::vector<PendingOrder> &result);
+  void QueryPendingOrderPrivate(int date_, ull tidHash_, sjtu::vector<PendingOrder> &result);
 
   void AddOrder(const std::string &username_, Order &order_);
 
-  void RemoveOrder(ull uidHash_,int Oid_);
+  void RemoveOrder(ull uidHash_, int Oid_);
 
-  void AddPendingOrder(int date_,ull tidHash_,int Oid_,PendingOrder &pending_order_);
+  void AddPendingOrder(int date_, ull tidHash_, int Oid_, PendingOrder &pending_order_);
 
-  void RemovePendingOrder(int date_,ull tidHash_,int Oid_);
+  void RemovePendingOrder(int date_, ull tidHash_, int Oid_);
 
-  void PendingToSuccess(ull uidHash_,int orderID_);//修改order情况
+  void PendingToSuccess(ull uidHash_, int orderID_);//修改order情况
+
+  void Clean();
+
+  void Exit();
 };
 
 #endif //TRAIN_MANAGER_HPP__ORDER_MANAGER_HPP_

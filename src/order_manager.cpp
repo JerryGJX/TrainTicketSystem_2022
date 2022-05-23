@@ -65,8 +65,8 @@ Order::Order(JerryGJX::orderStatusType order_status,
 //}
 
 //-------------orderManager------------------
-OrderManager::OrderManager(const std::string &filenameO,const std::string &filenameP): orderDataBase(filenameO),
-                                                                                       pendingQueue(filenameP) {}
+OrderManager::OrderManager(const std::string &filenameO, const std::string &filenameP) : orderDataBase(filenameO),
+                                                                                         pendingQueue(filenameP) {}
 
 int OrderManager::QueryOid() {
   return (int) orderDataBase.size();
@@ -86,8 +86,9 @@ std::string OrderManager::OrderStr(Order &order_) {
     case JerryGJX::REFUNDED:ans += "[refunded] ";
   }
   JerryGJX::Time transfer;
-  transfer += order_.startDay.ToHour() * 60 ;
-  ans +=order_.trainID.str() + " " + order_.startStation.str() + " " + (transfer + order_.leavingTime).ToStr() + " -> ";
+  transfer += order_.startDay.ToHour() * 60;
+  ans +=
+      order_.trainID.str() + " " + order_.startStation.str() + " " + (transfer + order_.leavingTime).ToStr() + " -> ";
 
   ans += order_.endStation.str() + " " + (transfer + order_.arrivingTime).ToStr() + " " + std::to_string(order_.price)
       + " " + std::to_string(order_.num);
@@ -108,7 +109,7 @@ void OrderManager::QueryOrder(const std::string &username_, sjtu::vector<std::st
 
 void OrderManager::QueryPendingOrderPrivate(int date_, ull tidHash_, sjtu::vector<PendingOrder> &result) {
   pendingQueue.range_search(std::make_pair(std::make_pair(date_, tidHash_), 0),
-                         std::make_pair(std::make_pair(date_, tidHash_ + 1), 0), result);
+                            std::make_pair(std::make_pair(date_, tidHash_ + 1), 0), result);
 }
 
 void OrderManager::AddOrder(const std::string &username_, Order &order_) {
@@ -127,11 +128,16 @@ void OrderManager::RemovePendingOrder(int date_, ull tidHash_, int Oid_) {
 }
 void OrderManager::PendingToSuccess(ull uidHash_, int orderID_) {
   Order or_ca;
-  orderDataBase.find(std::make_pair(uidHash_, orderID_),or_ca);
+  orderDataBase.find(std::make_pair(uidHash_, orderID_), or_ca);
   orderDataBase.erase(std::make_pair(uidHash_, orderID_));
   or_ca.orderStatus = JerryGJX::SUCCESS;
   orderDataBase.insert(std::make_pair(std::make_pair(uidHash_, orderID_), or_ca));
 }
+void OrderManager::Clean() {
+  orderDataBase.clear();
+  pendingQueue.clear();
+}
+void OrderManager::Exit() {}
 
 
 

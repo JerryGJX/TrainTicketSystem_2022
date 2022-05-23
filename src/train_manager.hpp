@@ -21,7 +21,7 @@
 using JerryGJX::ull;
 
 struct Train {
-  bool isReleased{};
+  //bool isReleased{};
   JerryGJX::trainIDType trainID;
   int stationNum{};
   JerryGJX::stationType stations[JerryGJX::max_stationNum];//0 base
@@ -131,15 +131,9 @@ class TrainManager {
   };
 
   Bptree<ull, Train> trainDataBase;
-  //Bptree<JerryGJX::trainIDType, Train> trainDataBase;
   sjtu::linked_hashmap<ull, bool> releasedDatabase;
-  //UnorderedMap<JerryGJX::trainIDType, bool> releasedDatabase;
   Bptree<std::pair<int, ull>, DayTrain> DayTrainToSeat;//(第几天，hash(trainID))
-
-
-  //int CalStartDate(TrainStation &train_station_,int wanted_date_toDay_);
-
-
+  Bptree<ull, bool> releasedBackUp;//每次开关文件与releasedDatabase交换信息
   /**
    * @brief 此处用pair为了防止bpt中发生key碰撞，pair中内容换为字符串哈希可能更优
    * @brief 此处要求bpt具有将一定区间内所有符合情况返回的能力
@@ -155,7 +149,7 @@ class TrainManager {
   std::hash<std::string> hash_str;
 
  public:
-  TrainManager(const std::string &filename_tdb, const std::string &filename_dtts, const std::string &filename_sdb);
+  TrainManager(const std::string &filename_tdb, const std::string &filename_dtts, const std::string &filename_sdb, const std::string &filename_rbu);
 
   ull CalHash(const std::string &str_);
 
@@ -208,7 +202,9 @@ class TrainManager {
 
   bool RefundTicket(const std::string &username_, int rank_, OrderManager &order_manager_);//从新到旧第rank_个(1-base)
 
+  void Clean();
 
+  void Exit();
 
 };
 

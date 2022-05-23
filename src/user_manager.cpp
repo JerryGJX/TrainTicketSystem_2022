@@ -119,11 +119,15 @@ bool UserManager::modifyProfile(const std::string &username_,
   result.push_back(std::to_string(ca.privilege));
   return true;
 }
-void UserManager::exit() {
-  for (auto &U: onlineUser) {
-    U.second.second = false;
-  }
+
+void UserManager::Clean() {
+  userDatabase.clear();
+  onlineUser.clear();
+  isEmpty = true;
 }
+
+void UserManager::Exit() {}
+
 
 
 
