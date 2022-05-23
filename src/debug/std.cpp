@@ -41,6 +41,8 @@ int main() {
           for (int i = 0; i < vec.size(); ++i) {
              cout << vec[i].first << ' ' << vec[i].second << endl;
           }
+       } else if (op == 5) {
+          cout << Map.size() << endl;
        }
     }
     return 0;
