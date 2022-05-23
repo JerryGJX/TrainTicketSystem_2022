@@ -44,7 +44,7 @@ private:
    void get_size() {
       normal_node_manager.get_info(_size, 3);
    }
-   //讲Bptree中元素个数写入文件
+   //将Bptree中元素个数写入文件
    void write_size() {
       normal_node_manager.write_info(_size, 3);
    }
