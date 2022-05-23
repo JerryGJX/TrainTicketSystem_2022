@@ -13,15 +13,15 @@ template <
    class Compare = std::less<Key>, 
    class Equal = std::equal_to<Key>,  
    int M = 70, int L = 70
-   >
+>
 class Bptree{
 private:
-   int root, normal_node_number;
+   int root, _size, normal_node_number;
    std::string prefix_name;
    class Bptree_leaf_node;
    class Bptree_normal_node;
    MemoryRiver<Bptree_leaf_node, 0> leaf_node_manager;     // info：leaf_node个数
-   MemoryRiver<Bptree_normal_node, 2> normal_node_manager; // info：root的编号，normal_node个数
+   MemoryRiver<Bptree_normal_node, 3> normal_node_manager; // info：root的编号，normal_node个数
    
    //记录Bptree信息的文件操作函数
    //从文件中读取根节点
@@ -39,6 +39,14 @@ private:
    //将normal_node个数写入文件
    void write_normal_node_number() {
       normal_node_manager.write_info(normal_node_number, 2);
+   }
+   //从文件中读取Bptree中元素个数
+   void get_size() {
+      normal_node_manager.get_info(_size, 3);
+   }
+   //讲Bptree中元素个数写入文件
+   void write_size() {
+      normal_node_manager.write_info(_size, 3);
    }
    
    // 一般节点类
@@ -125,6 +133,7 @@ public:
       normal_node_manager.initialise(prefix_name + "_normal_node");
       get_root();
       get_normal_node_number();
+      get_size();
       if (normal_node_number == 0) { //如果是空树创建根节点
          Bptree_normal_node tmp;
          root = normal_node_manager.write(tmp);
@@ -135,6 +144,17 @@ public:
    ~Bptree() {
       write_root();
       write_normal_node_number();
+      write_size();
+   }
+   //清空Bptree
+   void clear() {
+      root = normal_node_number = _size = 0;
+      leaf_node_manager.clear();
+      normal_node_manager.clear();
+   }
+   //查看bptree中元素个数
+   int size() const {
+      return _size;
    }
    //查看是否有插入指定key值的元素, 如果有将value返回到result中
    bool find(const Key &key, Value &result) {
@@ -148,7 +168,9 @@ public:
       virtual_root.is_lowest = 0;
       virtual_root.children[0] = root;
       //virtual_root.key_min在dfs_insert中维护
-      return dfs_insert(root, 0, 0, virtual_root, key, value);
+      bool flag = dfs_insert(root, 0, 0, virtual_root, key, value);
+      if (flag) ++_size;
+      return flag;
    }
    //另一个版本的insert
    bool insert(const std::pair<Key, Value> &data) {
@@ -157,7 +179,9 @@ public:
    //删除节点，失败返回0
    bool erase(const Key &key) {
       Bptree_normal_node virtual_root;
-      return dfs_erase(root, 0, 0, virtual_root, key);
+      bool flag = dfs_erase(root, 0, 0, virtual_root, key);
+      if (flag) --_size;
+      return flag;
    }
    //修改指定key值的元素，如果不存在返回0
    bool modify(const Key &key, const Value &value) {
@@ -331,7 +355,7 @@ private:
                return dfs_modify(node.children[i], node.is_lowest, key, value);
             }
          }
-         return 0;
+         return -1;
       }
    }
 
@@ -392,7 +416,7 @@ private:
          }
          for (int i = 0; i < self.size; ++i) {
             if (i + 1 == self.size || key < self.key_list[i]) {
-               dfs_insert(self.children[i], self.is_lowest, i, self, key, value);
+               if (!dfs_insert(self.children[i], self.is_lowest, i, self, key, value)) return 0;
                break;
             }
          }
