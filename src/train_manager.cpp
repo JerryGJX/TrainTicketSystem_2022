@@ -77,11 +77,8 @@ TrainManager::TrainStation::TrainStation(const std::string &trainID_,
 //------------------class TrainManager-----------------
 TrainManager::TrainManager(const std::string &filename,
                            const std::string &filename_dtts,
-                           const std::string &filename_sdb) {}
-//    :
-//  trainDataBase(filename),
-//    DayTrainToSeat(filename_dtts),
-//    stationDataBase(filename_sdb) {}
+                           const std::string &filename_sdb)
+    : trainDataBase(filename), DayTrainToSeat(filename_dtts), stationDataBase(filename_sdb) {}
 
 ull TrainManager::CalHash(const std::string &str_) {
   return hash_str(str_);
@@ -179,15 +176,16 @@ bool TrainManager::isReleased(const std::string &trainID_) {//要求先add
 }
 
 void TrainManager::deleteTrain(const std::string &trainID_) {
-  Train tr = trainDataBase[CalHash(trainID_)];
-  int s_date_rank = tr.startSellDate.ToDay(), e_date_rank = tr.endSellDate.ToDay();
+  Train tr_ca;
+  trainDataBase.find(CalHash(trainID_), tr_ca);
+  int s_date_rank = tr_ca.startSellDate.ToDay(), e_date_rank = tr_ca.endSellDate.ToDay();
   for (int i = s_date_rank; i <= e_date_rank; ++i) {
     DayTrainToSeat.erase(std::make_pair(i, CalHash(trainID_)));
   }
   releasedDatabase.erase(CalHash(trainID_));
   trainDataBase.erase(CalHash(trainID_));
-  for (int i = 0; i < tr.stationNum; ++i) {
-    stationDataBase.erase(std::make_pair(CalHash(tr.stations[i]), CalHash(trainID_)));
+  for (int i = 0; i < tr_ca.stationNum; ++i) {
+    stationDataBase.erase(std::make_pair(CalHash(tr_ca.stations[i]), CalHash(trainID_)));
   }
 }
 
@@ -195,15 +193,20 @@ void TrainManager::releaseTrain(const std::string &trainID_) {
   releasedDatabase[CalHash(trainID_)] = true;
 }
 
-void TrainManager::queryTrain(const std::string &trainID_, const std::string &date_, sjtu::vector<std::string> &result) {
+void TrainManager::queryTrain(const std::string &trainID_,
+                              const std::string &date_,
+                              sjtu::vector<std::string> &result) {
   JerryGJX::CalendarTime ca_t = date_;
+
+  Train tr_ca;
   ull TrHash = CalHash(trainID_);
-  Train tr_ca = trainDataBase[TrHash];
-  if (DayTrainToSeat.find(std::make_pair(ca_t.ToDay(), TrHash)) == DayTrainToSeat.end()) {
+  trainDataBase.find(TrHash, tr_ca);
+  DayTrain dt_ca;
+  if (!DayTrainToSeat.find(std::make_pair(ca_t.ToDay(), TrHash), dt_ca)) {
     result.push_back("-1");
     return;
   }
-  DayTrain dt_ca = DayTrainToSeat[std::make_pair(ca_t.ToDay(), TrHash)];
+
   result.push_back(trainID_);
   std::string st_ca;
   result.push_back(st_ca + tr_ca.type);
@@ -239,8 +242,8 @@ void TrainManager::QueryTicket(std::unordered_map<std::string, std::string> &inf
   std::string start_station = info["-s"], terminal_station = info["-t"];
   ull start_hash = CalHash(start_station), terminal_hash = CalHash(terminal_station);
   sjtu::vector<TrainStation> result_start, result_terminal;
-  StationDataBase_RangeFind(std::make_pair(start_hash, 0), std::make_pair(start_hash + 1, 0), result_start);
-  StationDataBase_RangeFind(std::make_pair(terminal_hash, 0), std::make_pair(terminal_hash + 1, 0), result_terminal);
+  stationDataBase.range_search(std::make_pair(start_hash, 0), std::make_pair(start_hash + 1, 0), result_start);
+  stationDataBase.range_search(std::make_pair(terminal_hash, 0), std::make_pair(terminal_hash + 1, 0), result_terminal);
   std::unordered_map<ull, int> find_same;
   for (int i = 0; i < result_start.size(); ++i) {
     if (result_start[i].startSaleDate + result_start[i].leavingTime / (60 * 24) <= wanted_date
@@ -278,14 +281,13 @@ void TrainManager::QueryTicket(std::unordered_map<std::string, std::string> &inf
 
     ull tidHash = CalHash(_trainID);
 
-    Train wanted_train = trainDataBase.find(tidHash)->second;
-
+    Train wanted_train;
+    trainDataBase.find(tidHash, wanted_train);
     //int day_one_tag,day_two_tag,day_three_tag
-
     int start_date = wanted_date.ToDay() - levT_f / (24 * 60);
-
-    //DayTrain test = DayTrainToSeat[std::make_pair(start_date, CalHash(_trainID))];
-    int _seat = DayTrainToSeat[std::make_pair(start_date, CalHash(_trainID))].findMin(f_rank, t_rank - 1);
+    DayTrain dt_ca;
+    DayTrainToSeat.find(std::make_pair(start_date, CalHash(_trainID)), dt_ca);
+    int _seat = dt_ca.findMin(f_rank, t_rank - 1);
 //    if (!_seat)continue;
 //    tot_num++;
     JerryGJX::Time _leaving_time = ans_time + result_start[i->second.first].leavingTime % (24 * 60);
@@ -301,20 +303,21 @@ void TrainManager::QueryTicket(std::unordered_map<std::string, std::string> &inf
 
 }
 
-void TrainManager::QueryTransfer(std::unordered_map<std::string, std::string> &info, sjtu::vector<std::string> &result) {
+void TrainManager::QueryTransfer(std::unordered_map<std::string, std::string> &info,
+                                 sjtu::vector<std::string> &result) {
   JerryGJX::CalendarTime wanted_date(info["-d"]);
   int wanted_date_toDay = wanted_date.ToDay();
   std::string start_station = info["-s"], terminal_station = info["-t"];
   ull start_hash = CalHash(start_station), terminal_hash = CalHash(terminal_station);
   sjtu::vector<TrainStation> result_start, result_terminal;
-  StationDataBase_RangeFind(std::make_pair(start_hash, 0), std::make_pair(start_hash + 1, 0), result_start);
-  StationDataBase_RangeFind(std::make_pair(terminal_hash, 0), std::make_pair(terminal_hash + 1, 0), result_terminal);
+  stationDataBase.range_search(std::make_pair(start_hash, 0), std::make_pair(start_hash + 1, 0), result_start);
+  stationDataBase.range_search(std::make_pair(terminal_hash, 0), std::make_pair(terminal_hash + 1, 0), result_terminal);
 
   std::unordered_map<ull, std::pair<int, int>> startTime_permit;//trainIDHash,pair(start_date,rank in result_start)
   for (int i = 0; i < result_start.size(); ++i) {
     if (result_start[i].startSaleDate + result_start[i].leavingTime / (60 * 24) <= wanted_date
         && result_start[i].endSaleDate + result_start[i].leavingTime / (60 * 24) >= wanted_date) {
-      if (isReleased(result_start[i].trainID)){
+      if (isReleased(result_start[i].trainID)) {
         int levT_f = result_start[i].leavingTime;
         int start_time = wanted_date_toDay - levT_f / (24 * 60);
         startTime_permit.insert(std::make_pair(CalHash(result_start[i].trainID), std::make_pair(start_time, i)));
@@ -332,8 +335,10 @@ void TrainManager::QueryTransfer(std::unordered_map<std::string, std::string> &i
     int f_rank = result_start[arr_rank].rank;//出发站在该车的站中编号
     ull f_tr_hash = it_s->first;
     int start_date_1 = it_s->second.first;
-    Train f_tr = trainDataBase.find(f_tr_hash)->second;
-    DayTrain tr_1 = DayTrainToSeat.find(std::make_pair(start_date_1, f_tr_hash))->second;
+    Train f_tr;
+    trainDataBase.find(f_tr_hash, f_tr);
+    DayTrain tr_1;
+    DayTrainToSeat.find(std::make_pair(start_date_1, f_tr_hash), tr_1);
     std::unordered_map<ull, std::pair<int, int>>
         StaAndArvMin;//stationHash to which min in the year/station rank of train
     for (int i = f_rank + 1; i < f_tr.stationNum; ++i) {
@@ -344,7 +349,8 @@ void TrainManager::QueryTransfer(std::unordered_map<std::string, std::string> &i
     for (auto &T: result_terminal) {
       ull t_tr_hash = CalHash(T.trainID.str());
       if (t_tr_hash == f_tr_hash)continue;
-      Train t_tr = trainDataBase.find(t_tr_hash)->second;
+      Train t_tr;
+      trainDataBase.find(t_tr_hash, t_tr);
       if (!isReleased(t_tr.trainID.str()))continue;
       for (int i = 0; i < T.rank; ++i) {
         std::string trans_station = t_tr.stations[i].str();
@@ -361,7 +367,8 @@ void TrainManager::QueryTransfer(std::unordered_map<std::string, std::string> &i
         int cost_1 = f_tr.sumPrice[iter->second.second] - f_tr.sumPrice[f_rank];
         int cost_2 = t_tr.sumPrice[T.rank] - t_tr.sumPrice[i];
         int trans_time = start_time_2 - end_time_1;
-        DayTrain tr_2 = DayTrainToSeat.find(std::make_pair(best_trans_day, t_tr_hash))->second;
+        DayTrain tr_2;
+        DayTrainToSeat.find(std::make_pair(best_trans_day, t_tr_hash), tr_2);
         int seat_1 = tr_1.findMin(f_rank, iter->second.second - 1);
         int seat_2 = tr_2.findMin(i, T.rank - 1);
         Ticket tk_1(f_tr.trainID.str(), start_station, trans_station, start_time_1, end_time_1, cost_1, seat_1);
@@ -401,7 +408,8 @@ std::string TrainManager::BuyTicket(std::unordered_map<std::string, std::string>
   int wanted_date = JerryGJX::CalendarTime(info["-d"]).ToDay();
   ull tidHash = CalHash(info["-i"]);
   //由于已检查过release，则一定存在
-  Train wanted_train = trainDataBase.find(tidHash)->second;
+  Train wanted_train;
+  trainDataBase.find(tidHash, wanted_train);
   int levT_f = 0, arvT_t = 0, f_rank = 0, t_rank = 0;
   for (int i = 0; i < wanted_train.stationNum; ++i) {
     if (wanted_train.stations[i].str() == info["-f"]) {
@@ -427,11 +435,9 @@ std::string TrainManager::BuyTicket(std::unordered_map<std::string, std::string>
   start_day += start_date;
 
   DayTrain dt_ca;
-  auto iter = DayTrainToSeat.find(std::make_pair(start_date, tidHash));
   int seat = wanted_train.totalSeatNum;
   int wanted_seat = std::stoi(info["-n"]);
-  if (iter == DayTrainToSeat.end()) return "-1";
-  else dt_ca = iter->second;
+  if (!DayTrainToSeat.find(std::make_pair(start_date, tidHash), dt_ca)) return "-1";
 
   seat = dt_ca.findMin(f_rank, t_rank - 1);
 
@@ -492,7 +498,8 @@ bool TrainManager::RefundTicket(const std::string &username_, int rank_, OrderMa
     order_manager_.QueryPendingOrderPrivate(start_date, trHash, pending_order_list);
 
     int f_rank = target_order.startRank, t_rank = target_order.endRank;
-    DayTrain dt_ca = DayTrainToSeat.find(std::make_pair(start_date, trHash))->second;
+    DayTrain dt_ca;
+    DayTrainToSeat.find(std::make_pair(start_date, trHash), dt_ca);
     dt_ca.rangeAdd(f_rank, t_rank - 1, target_order.num);
 
     for (int i = 0; i < pending_order_list.size(); ++i) {
@@ -511,17 +518,17 @@ bool TrainManager::RefundTicket(const std::string &username_, int rank_, OrderMa
 }
 
 //----------tools------------------
-void TrainManager::StationDataBase_RangeFind(const std::pair<ull, ull> &lp,
-                                             const std::pair<ull, ull> &rp,
-                                             sjtu::vector<TrainStation> &result) {
-  auto iter = stationDataBase.upper_bound(lp);
-  while (iter->first < rp) {
-    if (iter == stationDataBase.end())break;
-    result.push_back(iter->second);
-    iter++;
-
-  }
-}
+//void TrainManager::StationDataBase_RangeFind(const std::pair<ull, ull> &lp,
+//                                             const std::pair<ull, ull> &rp,
+//                                             sjtu::vector<TrainStation> &result) {
+//  auto iter = stationDataBase.upper_bound(lp);
+//  while (iter->first < rp) {
+//    if (iter == stationDataBase.end())break;
+//    result.push_back(iter->second);
+//    iter++;
+//
+//  }
+//}
 
 std::string TrainManager::Ticket::Print() {
   JerryGJX::Time ca;

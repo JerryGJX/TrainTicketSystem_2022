@@ -4,7 +4,7 @@
 #define COMMAND_PARSER_HPP__USER_MANAGER_HPP_
 
 # include "tools/Char.hpp"
-//# include "ACMstl/bpTree.hpp"
+# include "ACMstl/bpTree.hpp"
 //# include "ACMstl/UnorderedMap.hpp"
 #include "ACMstl/Vector.hpp"
 #include "mydefs.hpp"
@@ -12,7 +12,7 @@
 #include "tools/Algorithm.hpp"
 
 
-#include <map>
+//#include <map>
 #include <unordered_map>
 //#include <vector>
 
@@ -49,7 +49,7 @@ class User {
 
 class UserManager {
  private:
-  std::map<ull, User> userDatabase;//username -> User(class)
+  Bptree<ull, User> userDatabase;//username -> User(class)
   std::unordered_map<ull, std::pair<int ,bool>> onlineUser;//维护在线用户
   bool isEmpty = true;
   std::hash<std::string> hash_str;
