@@ -171,7 +171,7 @@ void CommandParser::ParseReleaseTrain(std::unordered_map<std::string, std::strin
   Success();
 }
 void CommandParser::ParseQueryTrain(std::unordered_map<std::string, std::string> &cmd) {
-  if (!ifTAdd(cmd["-i"])) {
+  if (!ifTAdd(cmd["-i"]) || !ifTRel(cmd["-i"])) {
     Failure();
     return;
   }

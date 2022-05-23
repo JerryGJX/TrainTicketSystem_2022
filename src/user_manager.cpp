@@ -35,10 +35,8 @@ bool User::operator>=(const User &rhs) const {
 }
 
 //-------------------------------class UserManager--------------------------------------
-UserManager::UserManager(const std::string &filename)
-//:userDatabase(filename)
-{
-  isEmpty = true;
+UserManager::UserManager(const std::string &filename) : userDatabase(filename) {
+  isEmpty = !userDatabase.size();
 }
 
 bool UserManager::Empty() const {
@@ -70,7 +68,9 @@ int UserManager::isLogin(const std::string &username_) {
 
 bool UserManager::checkPassword(const std::string &username_, const std::string &password_) {
   JerryGJX::passwordType rhs = password_;
-  JerryGJX::passwordType lhs = userDatabase.find(CalHash(username_))->second.password;
+  User ca;
+  userDatabase.find(CalHash(username_), ca);
+  JerryGJX::passwordType lhs = ca.password;
   return rhs == lhs;
 }
 
@@ -85,9 +85,7 @@ bool UserManager::queryProfile(const std::string &username_,
                                int prv_c,
                                const std::string &cur_user) {
   User ca;
-  ull Hash = UserManager::hash_str(username_);
-  if (userDatabase.find(Hash) == userDatabase.end())return false;
-  ca = userDatabase.find(Hash)->second;
+  if (!userDatabase.find(CalHash(username_), ca))return false;
   if (ca.privilege >= prv_c && username_ != cur_user)return false;
   result.push_back(ca.username);
   result.push_back(ca.name);
@@ -101,9 +99,8 @@ bool UserManager::modifyProfile(const std::string &username_,
   if (info.empty()) return queryProfile(username_, result, prv_c, cur_user);
 
   User ca;
-  ull Hash = UserManager::hash_str(username_);
-  if (userDatabase.find(Hash) == userDatabase.end())return false;
-  ca = userDatabase.find(Hash)->second;
+  ull Hash = CalHash(username_);
+  if (!userDatabase.find(Hash, ca))return false;
   if (ca.privilege >= prv_c && username_ != cur_user)return false;
 
   if (info.find("-p") != info.end())ca.password = info["-p"];
@@ -123,8 +120,8 @@ bool UserManager::modifyProfile(const std::string &username_,
   return true;
 }
 void UserManager::exit() {
-  for(auto &U:onlineUser){
-    U.second.second=false;
+  for (auto &U: onlineUser) {
+    U.second.second = false;
   }
 }
 

@@ -4,7 +4,7 @@
 #define COMMAND_PARSER_HPP__TRAIN_MANAGER_HPP_
 
 # include "tools/Char.hpp"
-//# include "ACMstl/bpTree.hpp"
+# include "ACMstl/bpTree.hpp"
 //# include "ACMstl/UnorderedMap.hpp"
 //#include "ACMstl/Vector.hpp"
 #include "mydefs.hpp"
@@ -66,12 +66,12 @@ class TrainManager {
   };
 
   struct TrainStation {
-    JerryGJX::trainIDType trainID;
-    JerryGJX::stationType station;
+    JerryGJX::trainIDType trainID{};
+    JerryGJX::stationType station{};
     int rank = 0, priceSum = 0;//rank表示从始发站向下的站次，priceSum表示始发站到该站的总价格
-    JerryGJX::CalendarTime startSaleDate, endSaleDate;
+    JerryGJX::CalendarTime startSaleDate{}, endSaleDate{};
     int startTime{}, arrivingTime{}, leavingTime{};
-
+    TrainStation() = default;
     TrainStation(const std::string &trainID_, JerryGJX::CalendarTime &startSellDate_,
                  JerryGJX::CalendarTime &endSellDate_);
   };
@@ -130,11 +130,11 @@ class TrainManager {
     }
   };
 
-  std::map<ull, Train> trainDataBase;
+  Bptree<ull, Train> trainDataBase;
   //Bptree<JerryGJX::trainIDType, Train> trainDataBase;
   std::unordered_map<ull, bool> releasedDatabase;
   //UnorderedMap<JerryGJX::trainIDType, bool> releasedDatabase;
-  std::map<std::pair<int, ull>, DayTrain> DayTrainToSeat;//(第几天，hash(trainID))
+  Bptree<std::pair<int, ull>, DayTrain> DayTrainToSeat;//(第几天，hash(trainID))
 
 
   //int CalStartDate(TrainStation &train_station_,int wanted_date_toDay_);
@@ -144,13 +144,13 @@ class TrainManager {
    * @brief 此处用pair为了防止bpt中发生key碰撞，pair中内容换为字符串哈希可能更优
    * @brief 此处要求bpt具有将一定区间内所有符合情况返回的能力
    */
-  std::map<std::pair<ull, ull>, TrainStation> stationDataBase;//(HashStation，HashTrain）
+  Bptree<std::pair<ull, ull>, TrainStation> stationDataBase;//(HashStation，HashTrain）
 
 
 
 
-  void StationDataBase_RangeFind(const std::pair<ull, ull> &lp,
-                                 const std::pair<ull, ull> &rp, sjtu::vector<TrainStation> &result);
+//  void StationDataBase_RangeFind(const std::pair<ull, ull> &lp,
+//                                 const std::pair<ull, ull> &rp, sjtu::vector<TrainStation> &result);
 
   std::hash<std::string> hash_str;
 
