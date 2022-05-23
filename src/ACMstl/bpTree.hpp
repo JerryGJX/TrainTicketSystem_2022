@@ -214,6 +214,29 @@ class Bptree{
       index = leaf.succssor;
     }
   }
+
+  void range_search(const Key &key_l, const Key &key_r, sjtu::vector<std::pair<Key, Value>> &result) {
+    result.clear();
+    int index = lower_bound(key_l);
+    bool flag = 0;
+    while (index != -1) {
+      Bptree_leaf_node leaf;
+      leaf_node_manager.read(leaf, index);
+      if (leaf.size == 0 || leaf.key_list[0] >= key_r) break;
+      for (int i = 0; i < leaf.size; ++i) {
+        if (flag || key_l <= leaf.key_list[i]) {
+          flag = 1;
+          if (leaf.key_list[i] < key_r)   {
+            result.push_back(std::make_pair(leaf.key_list[i], leaf.value_list[i]));
+          } else {
+            break;
+          }
+        }
+      }
+      index = leaf.succssor;
+    }
+  }
+
  private:
   //用于更新Bptree_normal_node的信息
   //用节点的儿子节点更新该点的key_min

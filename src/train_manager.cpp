@@ -12,7 +12,7 @@ Train::Train(const std::string &trainID_,
              JerryGJX::CalendarTime &startSellDate_,
              JerryGJX::CalendarTime &endSellDate_,
              char type_) {
-  isReleased = false;
+  //isReleased = false;
   trainID = trainID_;
   stationNum = stationNum_;
   for (int i = 0; i < stations_.size(); ++i) stations[i] = stations_[i];
@@ -27,7 +27,7 @@ Train::Train(const std::string &trainID_,
 }
 
 Train::Train(const Train &rhs) {
-  isReleased = rhs.isReleased;
+  //isReleased = rhs.isReleased;
   trainID = rhs.trainID;
   stationNum = rhs.stationNum;
   for (int i = 0; i < JerryGJX::max_stationNum; ++i) stations[i] = rhs.stations[i];
@@ -77,8 +77,17 @@ TrainManager::TrainStation::TrainStation(const std::string &trainID_,
 //------------------class TrainManager-----------------
 TrainManager::TrainManager(const std::string &filename,
                            const std::string &filename_dtts,
-                           const std::string &filename_sdb)
-    : trainDataBase(filename), DayTrainToSeat(filename_dtts), stationDataBase(filename_sdb) {}
+                           const std::string &filename_sdb, const std::string &filename_rbu)
+    : trainDataBase(filename),
+      DayTrainToSeat(filename_dtts),
+      stationDataBase(filename_sdb),
+      releasedBackUp(filename_rbu) {
+  if (releasedBackUp.size()) {
+    sjtu::vector<std::pair<ull, bool>> ca;
+    releasedBackUp.range_search(0, UINT64_MAX, ca);
+    for (auto &T: ca)releasedDatabase.insert(T);
+  }
+}
 
 ull TrainManager::CalHash(const std::string &str_) {
   return hash_str(str_);
@@ -236,7 +245,8 @@ void TrainManager::queryTrain(const std::string &trainID_,
 
 }
 
-void TrainManager::QueryTicket(sjtu::linked_hashmap<std::string, std::string> &info, sjtu::vector<std::string> &result) {
+void TrainManager::QueryTicket(sjtu::linked_hashmap<std::string, std::string> &info,
+                               sjtu::vector<std::string> &result) {
   JerryGJX::CalendarTime wanted_date(info["-d"]);
   JerryGJX::Time ans_time(info["-d"], 1);
   std::string start_station = info["-s"], terminal_station = info["-t"];
@@ -404,7 +414,8 @@ void TrainManager::QueryTransfer(sjtu::linked_hashmap<std::string, std::string> 
   }
 }
 
-std::string TrainManager::BuyTicket(sjtu::linked_hashmap<std::string, std::string> &info, OrderManager &order_manager_) {
+std::string TrainManager::BuyTicket(sjtu::linked_hashmap<std::string, std::string> &info,
+                                    OrderManager &order_manager_) {
   int wanted_date = JerryGJX::CalendarTime(info["-d"]).ToDay();
   ull tidHash = CalHash(info["-i"]);
   //由于已检查过release，则一定存在
@@ -515,6 +526,18 @@ bool TrainManager::RefundTicket(const std::string &username_, int rank_, OrderMa
     DayTrainToSeat.insert(std::make_pair(std::make_pair(start_date, trHash), dt_ca));
   }
   return true;
+}
+void TrainManager::Clean() {
+  trainDataBase.clear();
+  releasedDatabase.clear();
+  DayTrainToSeat.clear();
+  stationDataBase.clear();
+  releasedBackUp.clear();
+}
+void TrainManager::Exit() {
+  for (auto &T: releasedDatabase) {
+    releasedBackUp.modify(T.first, T.second);
+  }
 }
 
 //----------tools------------------
