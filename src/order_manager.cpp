@@ -40,34 +40,33 @@ Order::Order(JerryGJX::orderStatusType order_status,
 
 
 //----------------tools---------------
-void OrderManager::OrderDataBase_RangeFind(const std::pair<ull, int> &lp,
-                                           const std::pair<ull, int> &rp,
-                                           std::vector<Order> &result) {
-  auto iter = orderDataBase.upper_bound(lp);
-  while (iter->first < rp) {
-    if (iter == orderDataBase.end())break;
-    result.push_back(iter->second);
-    iter++;
-
-  }
-}
-void OrderManager::PendingQueue_RangeFind(const std::pair<std::pair<int, ull>, int> &lp,
-                                          const std::pair<std::pair<int, ull>, int> &rp,
-                                          std::vector<PendingOrder> &result) {
-  auto iter = pendingQueue.upper_bound(lp);
-//  auto iter2 = pendingQueue.end();
-//  int a = pendingQueue.size();
-  while (iter->first < rp) {
-    if (iter == pendingQueue.end())break;
-    result.push_back(iter->second);
-    iter++;
-  }
-}
+//void OrderManager::OrderDataBase_RangeFind(const std::pair<ull, int> &lp,
+//                                           const std::pair<ull, int> &rp,
+//                                           std::vector<Order> &result) {
+//  auto iter = orderDataBase.upper_bound(lp);
+//  while (iter->first < rp) {
+//    if (iter == orderDataBase.end())break;
+//    result.push_back(iter->second);
+//    iter++;
+//
+//  }
+//}
+//void OrderManager::PendingQueue_RangeFind(const std::pair<std::pair<int, ull>, int> &lp,
+//                                          const std::pair<std::pair<int, ull>, int> &rp,
+//                                          std::vector<PendingOrder> &result) {
+//  auto iter = pendingQueue.upper_bound(lp);
+////  auto iter2 = pendingQueue.end();
+////  int a = pendingQueue.size();
+//  while (iter->first < rp) {
+//    if (iter == pendingQueue.end())break;
+//    result.push_back(iter->second);
+//    iter++;
+//  }
+//}
 
 //-------------orderManager------------------
-OrderManager::OrderManager(const std::string &filename) {
-
-}
+OrderManager::OrderManager(const std::string &filenameO,const std::string &filenameP): orderDataBase(filenameO),
+                                                                                       pendingQueue(filenameP) {}
 
 int OrderManager::QueryOid() {
   return (int) orderDataBase.size();
@@ -95,20 +94,20 @@ std::string OrderManager::OrderStr(Order &order_) {
   return ans;
 }
 
-void OrderManager::QueryOrderPrivate(const std::string &username_, std::vector<Order> &result) {
+void OrderManager::QueryOrderPrivate(const std::string &username_, sjtu::vector<Order> &result) {
   ull Hash = CalHash(username_);
-  OrderDataBase_RangeFind(std::make_pair(Hash, 0), std::make_pair(Hash + 1, 0), result);
+  orderDataBase.range_search(std::make_pair(Hash, 0), std::make_pair(Hash + 1, 0), result);
 }
 
-void OrderManager::QueryOrder(const std::string &username_, std::vector<std::string> &result) {//从旧到新
-  std::vector<Order> orderList;
+void OrderManager::QueryOrder(const std::string &username_, sjtu::vector<std::string> &result) {//从旧到新
+  sjtu::vector<Order> orderList;
   QueryOrderPrivate(username_, orderList);
   result.push_back(std::to_string(orderList.size()));
   for (auto &i: orderList) result.push_back(OrderStr(i));
 }
 
-void OrderManager::QueryPendingOrderPrivate(int date_, ull tidHash_, std::vector<PendingOrder> &result) {
-  PendingQueue_RangeFind(std::make_pair(std::make_pair(date_, tidHash_), 0),
+void OrderManager::QueryPendingOrderPrivate(int date_, ull tidHash_, sjtu::vector<PendingOrder> &result) {
+  pendingQueue.range_search(std::make_pair(std::make_pair(date_, tidHash_), 0),
                          std::make_pair(std::make_pair(date_, tidHash_ + 1), 0), result);
 }
 
@@ -127,7 +126,8 @@ void OrderManager::RemovePendingOrder(int date_, ull tidHash_, int Oid_) {
   pendingQueue.erase(std::make_pair(std::make_pair(date_, tidHash_), Oid_));
 }
 void OrderManager::PendingToSuccess(ull uidHash_, int orderID_) {
-  Order or_ca = orderDataBase.find(std::make_pair(uidHash_, orderID_))->second;
+  Order or_ca;
+  orderDataBase.find(std::make_pair(uidHash_, orderID_),or_ca);
   orderDataBase.erase(std::make_pair(uidHash_, orderID_));
   or_ca.orderStatus = JerryGJX::SUCCESS;
   orderDataBase.insert(std::make_pair(std::make_pair(uidHash_, orderID_), or_ca));

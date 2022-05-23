@@ -8,7 +8,7 @@ int main() {
 
   UserManager user_manager("userData");
   TrainManager train_manager("trainData", "dtts", "sdb");
-  OrderManager order_manager("orderData");
+  OrderManager order_manager("orderData","pendingData");
   CommandParser command_parser(user_manager,train_manager,order_manager);
   while (true) {
       command_parser.Run();
