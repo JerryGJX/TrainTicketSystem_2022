@@ -14,7 +14,7 @@
 #include "order_manager.hpp"
 
 #include <utility>
-#include <vector>
+//#include <vector>
 #include <map>
 #include <unordered_map>
 
@@ -37,11 +37,11 @@ struct Train {
   Train(const std::string &trainID_,
         int stationNum_,
         int totalSeatNum_,
-        std::vector<std::string> &stations_,
-        std::vector<int> &sumPrice_,
+        sjtu::vector<std::string> &stations_,
+        sjtu::vector<int> &sumPrice_,
         int startTime_,
-        std::vector<int> &arrivingTimes_,//arrivingTime[0]无意义
-        std::vector<int> &leavingTimes_,
+        sjtu::vector<int> &arrivingTimes_,//arrivingTime[0]无意义
+        sjtu::vector<int> &leavingTimes_,
         JerryGJX::CalendarTime &startSellDate_,
         JerryGJX::CalendarTime &endSellDate_,
         char type_);
@@ -150,7 +150,7 @@ class TrainManager {
 
 
   void StationDataBase_RangeFind(const std::pair<ull, ull> &lp,
-                                 const std::pair<ull, ull> &rp, std::vector<TrainStation> &result);
+                                 const std::pair<ull, ull> &rp, sjtu::vector<TrainStation> &result);
 
   std::hash<std::string> hash_str;
 
@@ -162,12 +162,12 @@ class TrainManager {
   void addTrain(const std::string &trainID_,
                 int stationNum_,
                 int totalSeatNum_,
-                std::vector<std::string> &stations,
-                std::vector<int> &Price_,
+                sjtu::vector<std::string> &stations,
+                sjtu::vector<int> &Price_,
                 const std::string &startTime_,
-                std::vector<int> &travelTimes_,
-                std::vector<int> &stopoverTimes_,
-                std::vector<std::string> &saleDate_,
+                sjtu::vector<int> &travelTimes_,
+                sjtu::vector<int> &stopoverTimes_,
+                sjtu::vector<std::string> &saleDate_,
                 char type_);
 
   bool isAdded(const std::string &trainID_);
@@ -182,7 +182,7 @@ class TrainManager {
   /**
    * @brief 考虑到query_train,buy_ticket都需要知道release情况，可能此处可以用unordered map优化
    */
-  void queryTrain(const std::string &trainID_, const std::string &date_, std::vector<std::string> &result);
+  void queryTrain(const std::string &trainID_, const std::string &date_, sjtu::vector<std::string> &result);
 
   bool isReleased(const std::string &trainID_);//如果可以返回一个代表存储位置的量，此处可优化
   /**
@@ -193,12 +193,12 @@ class TrainManager {
    * @brief 将不同火车到达同一站视为不同站
    */
 
-  void QueryTicket(std::unordered_map<std::string, std::string> &info, std::vector<std::string> &result);
+  void QueryTicket(std::unordered_map<std::string, std::string> &info, sjtu::vector<std::string> &result);
   /**
    * @param info 传入是price还是time
    * @brief 直接输出结果
    */
-  void QueryTransfer(std::unordered_map<std::string, std::string> &info, std::vector<std::string> &result);
+  void QueryTransfer(std::unordered_map<std::string, std::string> &info, sjtu::vector<std::string> &result);
 
   /**
    * @param order_manager_ 用于修改下单信息

@@ -11,7 +11,7 @@
 #include "train_manager.hpp"
 #include "user_manager.hpp"
 
-#include <vector>
+//#include <vector>
 #include <unordered_map>
 
 /**
@@ -68,7 +68,7 @@ class CommandParser {
 
   //---------------------tool----------------------
 
-  void SplitString(const std::string &cmd, std::vector<std::string> &x, const char &flag);
+  void SplitString(const std::string &cmd, sjtu::vector<std::string> &x, const char &flag);
 
   static void Success();
   static void Failure();

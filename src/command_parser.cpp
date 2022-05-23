@@ -38,7 +38,7 @@ void CommandParser::Run() {
       }
     }
     if (!all_blank_flag) {
-      std::vector<std::string> parser_list;
+      sjtu::vector<std::string> parser_list;
       std::unordered_map<std::string, std::string> parser_list_to_use;
 
       SplitString(parser_carrier, parser_list, ' ');
@@ -106,7 +106,7 @@ void CommandParser::ParseLogout(std::unordered_map<std::string, std::string> &cm
 }
 void CommandParser::ParseQueryProfile(std::unordered_map<std::string, std::string> &cmd) {
   int prv_c = ifULog(cmd["-c"]);
-  std::vector<std::string> result;
+  sjtu::vector<std::string> result;
   if (prv_c == -1 || !user_manager.queryProfile(cmd["-u"], result, prv_c, cmd["-c"]))Failure();
   else {
     for (auto &i: result)std::cout << i << " ";
@@ -116,7 +116,7 @@ void CommandParser::ParseQueryProfile(std::unordered_map<std::string, std::strin
 }
 void CommandParser::ParseModifyProfile(std::unordered_map<std::string, std::string> &cmd) {
   int prv_c = ifULog(cmd["-c"]);
-  std::vector<std::string> result;
+  sjtu::vector<std::string> result;
   if (prv_c == -1 || !user_manager.modifyProfile(cmd["-u"], cmd, result, prv_c, cmd["-c"]))Failure();
   else {
     for (auto &i: result)std::cout << i << " ";
@@ -131,8 +131,8 @@ void CommandParser::ParseAddTrain(std::unordered_map<std::string, std::string> &
     return;
   }
 
-  std::vector<std::string> stations, _prices, _travelTimes, _stopoverTimes, saleDate;
-  std::vector<int> prices, travelTimes, stopoverTimes;
+  sjtu::vector<std::string> stations, _prices, _travelTimes, _stopoverTimes, saleDate;
+  sjtu::vector<int> prices, travelTimes, stopoverTimes;
   SplitString(cmd["-s"], stations, '|');
   SplitString(cmd["-p"], _prices, '|');
   SplitString(cmd["-t"], _travelTimes, '|');
@@ -175,7 +175,7 @@ void CommandParser::ParseQueryTrain(std::unordered_map<std::string, std::string>
     Failure();
     return;
   }
-  std::vector<std::string> result;
+  sjtu::vector<std::string> result;
   train_manager.queryTrain(cmd["-i"], cmd["-d"], result);
   if (result[0] == "-1") {
     std::cout << result[0] << "\n";
@@ -186,12 +186,12 @@ void CommandParser::ParseQueryTrain(std::unordered_map<std::string, std::string>
   //Success();
 }
 void CommandParser::ParseQueryTicket(std::unordered_map<std::string, std::string> &cmd) {
-  std::vector<std::string> result;
+  sjtu::vector<std::string> result;
   train_manager.QueryTicket(cmd, result);
   for (auto &i: result)std::cout << i << "\n";
 }
 void CommandParser::ParseQueryTransfer(std::unordered_map<std::string, std::string> &cmd) {
-  std::vector<std::string> result;
+  sjtu::vector<std::string> result;
   train_manager.QueryTransfer(cmd, result);
   for (auto &i: result)std::cout << i << "\n";
 }
@@ -221,7 +221,7 @@ void CommandParser::ParseQueryOrder(std::unordered_map<std::string, std::string>
     Failure();
     return;
   }
-  std::vector<std::string> ans;
+  sjtu::vector<std::string> ans;
   order_manager.QueryOrder(cmd["-u"], ans);
   std::cout << ans[0] << "\n";
   for (int i = ans.size() - 1; i >= 1; --i)std::cout << ans[i] << "\n";
@@ -230,7 +230,7 @@ void CommandParser::ParseQueryOrder(std::unordered_map<std::string, std::string>
 
 //---------------------tool----------------------
 
-void CommandParser::SplitString(const std::string &cmd, std::vector<std::string> &x, const char &flag) {
+void CommandParser::SplitString(const std::string &cmd, sjtu::vector<std::string> &x, const char &flag) {
   int l = cmd.find_first_not_of(flag), r = cmd.find_last_not_of(flag);
   int l_pointer = l, r_pointer = l;
   std::string carrier;

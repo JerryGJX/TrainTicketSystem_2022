@@ -6,7 +6,7 @@
 # include "tools/Char.hpp"
 //# include "ACMstl/bpTree.hpp"
 //# include "ACMstl/UnorderedMap.hpp"
-//#include "ACMstl/Vector.hpp"
+#include "ACMstl/Vector.hpp"
 #include "mydefs.hpp"
 //#include "order_manager.hpp"
 #include "tools/Algorithm.hpp"
@@ -14,7 +14,7 @@
 
 #include <map>
 #include <unordered_map>
-#include <vector>
+//#include <vector>
 
 /**
  * @brief 用户相关
@@ -80,7 +80,7 @@ class UserManager {
    * @brief 该函数只负责返回信息，能否查询由ParserCommander判断
    * @return 被查询用户的<username>，<name>，<mailAddr>和<privilege>
    */
-  bool queryProfile(const std::string &username_, std::vector<std::string> &result, int prv_c,const std::string &cur_user);
+  bool queryProfile(const std::string &username_, sjtu::vector<std::string> &result, int prv_c,const std::string &cur_user);
 
   /**
    * @brief 以读出，删除再插入的方式实现
@@ -91,7 +91,7 @@ class UserManager {
    */
   bool modifyProfile(const std::string &username_,
                      std::unordered_map<std::string, std::string> &info,
-                     std::vector<std::string> &result,int prv_c,const std::string &cur_user);
+                     sjtu::vector<std::string> &result,int prv_c,const std::string &cur_user);
 
 
   void exit();

@@ -81,7 +81,7 @@ void UserManager::Logout(const std::string &username_) {
   onlineUser[CalHash(username_)].second = false;
 }
 bool UserManager::queryProfile(const std::string &username_,
-                               std::vector<std::string> &result,
+                               sjtu::vector<std::string> &result,
                                int prv_c,
                                const std::string &cur_user) {
   User ca;
@@ -97,7 +97,7 @@ bool UserManager::queryProfile(const std::string &username_,
 }
 bool UserManager::modifyProfile(const std::string &username_,
                                 std::unordered_map<std::string, std::string> &info,
-                                std::vector<std::string> &result, int prv_c, const std::string &cur_user) {
+                                sjtu::vector<std::string> &result, int prv_c, const std::string &cur_user) {
   if (info.empty()) return queryProfile(username_, result, prv_c, cur_user);
 
   User ca;

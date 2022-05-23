@@ -7,11 +7,12 @@
 
 #include "mydefs.hpp"
 #include "tools/Time.hpp"
-//#include "ACMstl/bpTree.hpp"
-#include <iostream>
+#include "ACMstl/bpTree.hpp"
+#include "ACMstl/Vector.hpp"
 
-#include <map>
-#include <vector>
+#include <iostream>
+//#include <map>
+//#include <vector>
 
 using JerryGJX::ull;
 
@@ -69,28 +70,28 @@ class OrderManager {
   /**
     * @brief 为了由uid查订单，pair.second为订单号，用于防碰撞，bpt需要支持范围查询
     */
-  std::map<std::pair<ull, int>, Order> orderDataBase;//hashUid,oid
-  std::map<std::pair<std::pair<int, ull>, int>, PendingOrder> pendingQueue;//(第几天(指始发天数)，hash(trainID)),oid
+  Bptree<std::pair<ull, int>, Order> orderDataBase;//hashUid,oid
+  Bptree<std::pair<std::pair<int, ull>, int>, PendingOrder> pendingQueue;//(第几天(指始发天数)，hash(trainID)),oid
 
-  void OrderDataBase_RangeFind(const std::pair<ull, int> &lp,
-                               const std::pair<ull, int> &rp, std::vector<Order> &result);
-
-  void PendingQueue_RangeFind(const std::pair<std::pair<int, ull>, int> &lp,
-                              const std::pair<std::pair<int, ull>, int> &rp,
-                              std::vector<PendingOrder> &result);
+//  void OrderDataBase_RangeFind(const std::pair<ull, int> &lp,
+//                               const std::pair<ull, int> &rp, std::vector<Order> &result);
+//
+//  void PendingQueue_RangeFind(const std::pair<std::pair<int, ull>, int> &lp,
+//                              const std::pair<std::pair<int, ull>, int> &rp,
+//                              std::vector<PendingOrder> &result);
   std::hash<std::string> hash_str;
  public:
-  OrderManager(const std::string &filename);
+  OrderManager(const std::string &filenameO,const std::string &filenameP);
 
   int QueryOid();
   ull CalHash(const std::string &str_);
   std::string OrderStr(Order &order_);
 
-  void QueryOrderPrivate(const std::string &username_, std::vector<Order> &result);
+  void QueryOrderPrivate(const std::string &username_, sjtu::vector<Order> &result);
 
-  void QueryOrder(const std::string &username_, std::vector<std::string> &result);
+  void QueryOrder(const std::string &username_, sjtu::vector<std::string> &result);
 
-  void QueryPendingOrderPrivate(int date_,ull tidHash_,std::vector<PendingOrder> &result);
+  void QueryPendingOrderPrivate(int date_,ull tidHash_,sjtu::vector<PendingOrder> &result);
 
   void AddOrder(const std::string &username_, Order &order_);
 
