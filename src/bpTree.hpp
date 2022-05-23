@@ -21,7 +21,7 @@ private:
    class Bptree_leaf_node;
    class Bptree_normal_node;
    MemoryRiver<Bptree_leaf_node, 0> leaf_node_manager;     // info：leaf_node个数
-   MemoryRiver<Bptree_normal_node, 3> normal_node_manager; // info：root的编号，normal_node个数
+   MemoryRiver<Bptree_normal_node, 3> normal_node_manager; // info：root的编号，normal_node个数，bptree中元素个数
    
    //记录Bptree信息的文件操作函数
    //从文件中读取根节点
