@@ -389,20 +389,47 @@ void TrainManager::QueryTransfer(sjtu::linked_hashmap<std::string, std::string> 
           best_choice = {tk_1, tk_2};
           has_choice = true;
         } else {
+//          if (if_time) {
+//            int tot_time_now = tk_1.lastTime() + tk_2.lastTime() + trans_time;
+//            if (tot_time_now > best_choice.totTime())continue;
+//            else if (tot_time_now < best_choice.totTime() ||
+//                tk_1.lastTime() < best_choice.tk1.lastTime())
+//              best_choice = {tk_1, tk_2};
+//          } else {
+//            int tot_cost_now = cost_1 + cost_2;
+//            if (tot_cost_now > best_choice.totCost())continue;
+//            else if (tot_cost_now < best_choice.totCost())best_choice = {tk_1, tk_2};
+//            else {
+//              if (tk_1.lastTime() < best_choice.tk1.lastTime())best_choice = {tk_1, tk_2};
+//            }
+//          }
+
+          int tot_time_now = tk_1.lastTime() + tk_2.lastTime() + trans_time;
+          int tot_cost_now = cost_1 + cost_2;
           if (if_time) {
-            int tot_time_now = tk_1.lastTime() + tk_2.lastTime() + trans_time;
             if (tot_time_now > best_choice.totTime())continue;
-            else if (tot_time_now < best_choice.totTime() ||
-                tk_1.lastTime() < best_choice.tk1.lastTime())
-              best_choice = {tk_1, tk_2};
+            else if (tot_time_now < best_choice.totTime())best_choice = {tk_1, tk_2};
+            else {
+              if (tot_cost_now < best_choice.totCost())best_choice = {tk_1, tk_2};
+              else {
+                if (tk_1.trainID < best_choice.tk1.trainID ||
+                    tk_1.trainID == best_choice.tk1.trainID && tk_2.trainID < best_choice.tk2.trainID)
+                  best_choice = {tk_1, tk_2};
+              }
+            }
           } else {
-            int tot_cost_now = cost_1 + cost_2;
             if (tot_cost_now > best_choice.totCost())continue;
             else if (tot_cost_now < best_choice.totCost())best_choice = {tk_1, tk_2};
             else {
-              if (tk_1.lastTime() < best_choice.tk1.lastTime())best_choice = {tk_1, tk_2};
+              if (tot_cost_now < best_choice.totCost())best_choice = {tk_1, tk_2};
+              else {
+                if (tk_1.trainID < best_choice.tk1.trainID ||
+                    tk_1.trainID == best_choice.tk1.trainID && tk_2.trainID < best_choice.tk2.trainID)
+                  best_choice = {tk_1, tk_2};
+              }
             }
           }
+
         }
       }
     }
