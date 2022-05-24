@@ -35,8 +35,15 @@ bool User::operator>=(const User &rhs) const {
 }
 
 //-------------------------------class UserManager--------------------------------------
-UserManager::UserManager(const std::string &filename) : userDatabase(filename) {
+UserManager::UserManager(const std::string &filenameUD, const std::string &filenameOB) : userDatabase(filenameUD),
+                                                                                         onlineUserBackUp(filenameOB) {
   isEmpty = !userDatabase.size();
+  //std::cout << "###Usermanager.size = " << userDatabase.size() << std::endl;
+  if (onlineUserBackUp.size()) {
+    sjtu::vector<std::pair<ull, std::pair<int, bool>>> ca;
+    onlineUserBackUp.range_search(0, UINT64_MAX, ca);
+    for (auto &T: ca)onlineUser.insert(T);
+  }
 }
 
 bool UserManager::Empty() const {
@@ -56,6 +63,7 @@ void UserManager::AddUser(const std::string &username_,
   User freshman(username_, password_, name_, mailAddr_, privilege_);
   userDatabase.insert(std::make_pair(CalHash(username_), freshman));
   onlineUser.insert(std::make_pair(CalHash(username_), std::make_pair(privilege_, false)));
+  onlineUserBackUp.insert(std::make_pair(CalHash(username_), std::make_pair(privilege_, false)));
 }
 bool UserManager::isRegistered(const std::string &username_) {
   return onlineUser.find(CalHash(username_)) != onlineUser.end();
@@ -124,9 +132,14 @@ void UserManager::Clean() {
   userDatabase.clear();
   onlineUser.clear();
   isEmpty = true;
+  onlineUserBackUp.clear();
 }
 
-void UserManager::Exit() {}
+void UserManager::Exit() {
+  for (auto &T: onlineUser) {
+    onlineUserBackUp.modify(T.first, std::make_pair(T.second.first, false));
+  }
+}
 
 
 

@@ -66,7 +66,8 @@ Order::Order(JerryGJX::orderStatusType order_status,
 
 //-------------orderManager------------------
 OrderManager::OrderManager(const std::string &filenameO, const std::string &filenameP) : orderDataBase(filenameO),
-                                                                                         pendingQueue(filenameP) {}
+                                                                                         pendingQueue(filenameP) {
+}
 
 int OrderManager::QueryOid() {
   return (int) orderDataBase.size();

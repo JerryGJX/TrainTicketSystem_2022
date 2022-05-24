@@ -77,9 +77,6 @@ void CommandParser::ParseAddUser(sjtu::linked_hashmap<std::string, std::string> 
   }
 }
 void CommandParser::ParseLogin(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-
-
-
   if (!ifUReg(cmd["-u"]) || ifULog(cmd["-u"]) != -1 || !ifUPass(cmd["-u"], cmd["-p"])) {
     Failure();
   } else {

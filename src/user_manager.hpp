@@ -50,10 +50,11 @@ class UserManager {
  private:
   Bptree<ull, User> userDatabase;//username -> User(class)
   sjtu::linked_hashmap<ull, std::pair<int ,bool>> onlineUser;//维护在线用户
+  Bptree<ull, std::pair<int ,bool>> onlineUserBackUp;
   bool isEmpty = true;
   std::hash<std::string> hash_str;
  public:
-  explicit UserManager(const std::string &filename);
+  explicit UserManager(const std::string &filenameUD,const std::string &filenameOB);
 
   ull CalHash(const std::string &username_);
 
