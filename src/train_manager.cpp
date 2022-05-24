@@ -193,6 +193,7 @@ void TrainManager::deleteTrain(const std::string &trainID_) {
     DayTrainToSeat.erase(std::make_pair(i, CalHash(trainID_)));
   }
   releasedDatabase.erase(releasedDatabase.find(CalHash(trainID_)));
+  releasedBackUp.erase(CalHash(trainID_));
   trainDataBase.erase(CalHash(trainID_));
   for (int i = 0; i < tr_ca.stationNum; ++i) {
     stationDataBase.erase(std::make_pair(CalHash(tr_ca.stations[i]), CalHash(trainID_)));
@@ -237,8 +238,10 @@ void TrainManager::queryTrain(const std::string &trainID_,
     result.push_back(st_ca);
   }
   st_ca.clear();
-  st_ca += std::string(tr_ca.stations[tr_ca.stationNum - 1]) + " "
-      + (transfer + tr_ca.arrivingTime[tr_ca.stationNum - 1] + add_min).ToStr() + " -> " + "xx-xx xx:xx" + " ";
+  st_ca +=
+      std::string(tr_ca.stations[tr_ca.stationNum - 1]) + " "
+          + (transfer + tr_ca.arrivingTime[tr_ca.stationNum - 1] + add_min).ToStr()
+          + " -> " + "xx-xx xx:xx" + " ";
   st_ca += std::to_string(tr_ca.sumPrice[tr_ca.stationNum - 1]) + " " + "x";
   result.push_back(st_ca);
 
@@ -474,7 +477,9 @@ std::string TrainManager::BuyTicket(sjtu::linked_hashmap<std::string, std::strin
   DayTrain dt_ca;
   int seat = wanted_train.totalSeatNum;
   int wanted_seat = std::stoi(info["-n"]);
+
   if (seat < wanted_seat)return "-1";
+
   if (!DayTrainToSeat.find(std::make_pair(start_date, tidHash), dt_ca)) return "-1";
 
   seat = dt_ca.findMin(f_rank, t_rank - 1);
