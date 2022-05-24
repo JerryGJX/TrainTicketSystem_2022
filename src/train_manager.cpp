@@ -157,6 +157,7 @@ void TrainManager::addTrain(const std::string &trainID_,
   ull tidHash = CalHash(trainID_);
   trainDataBase.insert(std::make_pair(tidHash, ca));
   releasedDatabase.insert(std::make_pair(tidHash, false));
+  releasedBackUp.insert(std::make_pair(tidHash, false));
 
   int s_date_rank = startSellDate.ToDay(), e_date_rank = endSellDate.ToDay();
   for (int i = s_date_rank; i <= e_date_rank; ++i) {

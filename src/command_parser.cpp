@@ -223,7 +223,7 @@ void CommandParser::ParseExit(sjtu::linked_hashmap<std::string, std::string> &cm
   user_manager.Exit();
   train_manager.Exit();
   order_manager.Exit();
-  std::cout << "bye";
+  std::cout << "bye\n";
   exit(0);
 }
 
