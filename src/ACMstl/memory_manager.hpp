@@ -15,7 +15,7 @@ class MemoryRiver {
   fstream file;
   string file_name;
   string recycle_file_name;
-  int sizeofT = sizeof(T);
+  constexpr static int sizeofT = sizeof(T);
   int recycle_num;
  public:
   MemoryRiver() = default;
