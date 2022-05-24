@@ -474,6 +474,7 @@ std::string TrainManager::BuyTicket(sjtu::linked_hashmap<std::string, std::strin
   DayTrain dt_ca;
   int seat = wanted_train.totalSeatNum;
   int wanted_seat = std::stoi(info["-n"]);
+  if (seat < wanted_seat)return "-1";
   if (!DayTrainToSeat.find(std::make_pair(start_date, tidHash), dt_ca)) return "-1";
 
   seat = dt_ca.findMin(f_rank, t_rank - 1);
