@@ -237,10 +237,8 @@ void TrainManager::queryTrain(const std::string &trainID_,
     result.push_back(st_ca);
   }
   st_ca.clear();
-  st_ca +=
-      std::string(tr_ca.stations[tr_ca.stationNum - 1])
-          + (transfer + tr_ca.arrivingTime[tr_ca.stationNum - 1] + add_min).ToStr()
-          + " -> " + "xx-xx xx:xx" + " ";
+  st_ca += std::string(tr_ca.stations[tr_ca.stationNum - 1]) + " "
+      + (transfer + tr_ca.arrivingTime[tr_ca.stationNum - 1] + add_min).ToStr() + " -> " + "xx-xx xx:xx" + " ";
   st_ca += std::to_string(tr_ca.sumPrice[tr_ca.stationNum - 1]) + " " + "x";
   result.push_back(st_ca);
 
