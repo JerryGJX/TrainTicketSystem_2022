@@ -77,6 +77,9 @@ void CommandParser::ParseAddUser(sjtu::linked_hashmap<std::string, std::string> 
   }
 }
 void CommandParser::ParseLogin(sjtu::linked_hashmap<std::string, std::string> &cmd) {
+
+
+
   if (!ifUReg(cmd["-u"]) || ifULog(cmd["-u"]) != -1 || !ifUPass(cmd["-u"], cmd["-p"])) {
     Failure();
   } else {
@@ -223,7 +226,7 @@ void CommandParser::ParseExit(sjtu::linked_hashmap<std::string, std::string> &cm
   user_manager.Exit();
   train_manager.Exit();
   order_manager.Exit();
-  std::cout << "bye";
+  std::cout << "bye\n";
   exit(0);
 }
 
