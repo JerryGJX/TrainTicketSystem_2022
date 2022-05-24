@@ -42,7 +42,7 @@ void CommandParser::Run() {
       sjtu::linked_hashmap<std::string, std::string> parser_list_to_use;
 
       SplitString(parser_carrier, parser_list, ' ');
-        std::cout<<parser_list[0]<<" ";
+      std::cout << parser_list[0] << " ";
       std::string timestamp = parser_list[0].substr(1, parser_list[0].length() - 2);
       //std::cout << "!!DEBUG!! " << timestamp << std::endl;
       int time_tag = std::stoi(timestamp);
@@ -219,6 +219,7 @@ void CommandParser::ParseClean(sjtu::linked_hashmap<std::string, std::string> &c
   user_manager.Clean();
   train_manager.Clean();
   order_manager.Clean();
+  Success();
 }
 void CommandParser::ParseExit(sjtu::linked_hashmap<std::string, std::string> &cmd) {
   user_manager.Exit();
