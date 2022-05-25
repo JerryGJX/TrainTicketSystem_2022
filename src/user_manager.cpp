@@ -70,7 +70,8 @@ bool UserManager::isRegistered(const std::string &username_) {
 }
 
 int UserManager::isLogin(const std::string &username_) {
-  if (onlineUser[CalHash(username_)].second)return onlineUser[CalHash(username_)].first;
+  ull U_Hash = CalHash(username_);
+  if (onlineUser.find(U_Hash) != onlineUser.end() && onlineUser[U_Hash].second)return onlineUser[CalHash(username_)].first;
   return -1;
 }
 

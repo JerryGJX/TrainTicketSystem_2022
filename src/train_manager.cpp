@@ -182,6 +182,7 @@ bool TrainManager::isAdded(const std::string &trainID_) {
 }
 
 bool TrainManager::isReleased(const std::string &trainID_) {//要求先add
+  if (!isAdded(trainID_))return false;
   return releasedDatabase[CalHash(trainID_)];
 }
 
