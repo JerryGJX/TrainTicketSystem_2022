@@ -412,7 +412,7 @@ void TrainManager::QueryTransfer(sjtu::linked_hashmap<std::string, std::string> 
             if (tot_time_now > best_choice.totTime())continue;
             else if (tot_time_now < best_choice.totTime())best_choice = {tk_1, tk_2};
             else {
-              if(tot_cost_now > best_choice.totCost())continue;
+              if (tot_cost_now > best_choice.totCost())continue;
               else if (tot_cost_now < best_choice.totCost())best_choice = {tk_1, tk_2};
               else {
                 if (tk_1.trainID < best_choice.tk1.trainID ||
@@ -424,7 +424,7 @@ void TrainManager::QueryTransfer(sjtu::linked_hashmap<std::string, std::string> 
             if (tot_cost_now > best_choice.totCost())continue;
             else if (tot_cost_now < best_choice.totCost())best_choice = {tk_1, tk_2};
             else {
-              if(tot_time_now > best_choice.totTime())continue;
+              if (tot_time_now > best_choice.totTime())continue;
               else if (tot_time_now < best_choice.totTime())best_choice = {tk_1, tk_2};
               else {
                 if (tk_1.trainID < best_choice.tk1.trainID ||
@@ -487,7 +487,10 @@ std::string TrainManager::BuyTicket(sjtu::linked_hashmap<std::string, std::strin
 
   seat = dt_ca.findMin(f_rank, t_rank - 1);
 
-  if (seat < wanted_seat && info["-q"] == "false")return "-1";
+  bool ifQueue = false;
+  if (info.find("-q") != info.end() && info.find("-q")->second == "true")ifQueue = true;
+
+  if (seat < wanted_seat && !ifQueue)return "-1";
 
   int price = wanted_train.sumPrice[t_rank] - wanted_train.sumPrice[f_rank];
 
@@ -504,7 +507,7 @@ std::string TrainManager::BuyTicket(sjtu::linked_hashmap<std::string, std::strin
     order_manager_.AddOrder(info["-u"], or_ca);
     return std::to_string(price * wanted_seat);
   } else {
-    if (info.find("-q") != info.end() && info["-q"] == "true") {
+    if (ifQueue) {
       or_ca.orderStatus = JerryGJX::PENDING;
       order_manager_.AddOrder(info["-u"], or_ca);
       PendingOrder por_ca(CalHash(info["-i"]),
