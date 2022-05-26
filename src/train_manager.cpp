@@ -284,7 +284,7 @@ void TrainManager::QueryTicket(sjtu::linked_hashmap<std::string, std::string> &i
 
   result.push_back(std::to_string(possible_ans.size()));
 
-  int tot_num = 0;
+  //int tot_num = 0;
   for (auto i = possible_ans.begin(); i != possible_ans.end(); i++) {
 
     int levT_f = result_start[i->second.first].leavingTime, arvT_t = result_terminal[i->second.second].arrivingTime,
@@ -412,7 +412,8 @@ void TrainManager::QueryTransfer(sjtu::linked_hashmap<std::string, std::string> 
             if (tot_time_now > best_choice.totTime())continue;
             else if (tot_time_now < best_choice.totTime())best_choice = {tk_1, tk_2};
             else {
-              if (tot_cost_now < best_choice.totCost())best_choice = {tk_1, tk_2};
+              if(tot_cost_now > best_choice.totCost())continue;
+              else if (tot_cost_now < best_choice.totCost())best_choice = {tk_1, tk_2};
               else {
                 if (tk_1.trainID < best_choice.tk1.trainID ||
                     tk_1.trainID == best_choice.tk1.trainID && tk_2.trainID < best_choice.tk2.trainID)
@@ -423,7 +424,8 @@ void TrainManager::QueryTransfer(sjtu::linked_hashmap<std::string, std::string> 
             if (tot_cost_now > best_choice.totCost())continue;
             else if (tot_cost_now < best_choice.totCost())best_choice = {tk_1, tk_2};
             else {
-              if (tot_cost_now < best_choice.totCost())best_choice = {tk_1, tk_2};
+              if(tot_time_now > best_choice.totTime())continue;
+              else if (tot_time_now < best_choice.totTime())best_choice = {tk_1, tk_2};
               else {
                 if (tk_1.trainID < best_choice.tk1.trainID ||
                     tk_1.trainID == best_choice.tk1.trainID && tk_2.trainID < best_choice.tk2.trainID)

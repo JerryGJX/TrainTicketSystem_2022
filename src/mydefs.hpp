@@ -9,7 +9,7 @@
 
 namespace JerryGJX {
 using ull = unsigned long long;
-constexpr unsigned long long ULL_Max = 18446744073709551615ull;
+constexpr unsigned long long ULL_Max = UINT64_MAX;
 
 /**
  * @brief user_manager中使用
