@@ -94,6 +94,7 @@ void CommandParser::ParseLogout(sjtu::linked_hashmap<std::string, std::string> &
 }
 void CommandParser::ParseQueryProfile(sjtu::linked_hashmap<std::string, std::string> &cmd) {
   if (!ifUReg(cmd["-c"]) || ifULog(cmd["-c"]) == -1)Failure();
+
   else{
     int prv_c = ifULog(cmd["-c"]);
     sjtu::vector<std::string> result;
@@ -102,10 +103,12 @@ void CommandParser::ParseQueryProfile(sjtu::linked_hashmap<std::string, std::str
       for (auto &i: result)std::cout << i << " ";
       std::cout << "\n";
     }
+
   }
 }
 void CommandParser::ParseModifyProfile(sjtu::linked_hashmap<std::string, std::string> &cmd) {
   if (!ifUReg(cmd["-c"]) || ifULog(cmd["-c"]) == -1)Failure();
+
   else{
     int prv_c = ifULog(cmd["-c"]);
     sjtu::vector<std::string> result;
@@ -114,6 +117,7 @@ void CommandParser::ParseModifyProfile(sjtu::linked_hashmap<std::string, std::st
       for (auto &i: result)std::cout << i << " ";
       std::cout << "\n";
     }
+
   }
 }
 
