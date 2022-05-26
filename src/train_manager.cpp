@@ -183,21 +183,22 @@ bool TrainManager::isAdded(const std::string &trainID_) {
 
 bool TrainManager::isReleased(const std::string &trainID_) {//要求先add
   if (!isAdded(trainID_))return false;
-  return releasedDatabase[CalHash(trainID_)];
+  return releasedDatabase.find(CalHash(trainID_))->second;
 }
 
 void TrainManager::deleteTrain(const std::string &trainID_) {
   Train tr_ca;
-  trainDataBase.find(CalHash(trainID_), tr_ca);
+  ull tr_hash = CalHash(trainID_);
+  trainDataBase.find(tr_hash, tr_ca);
   int s_date_rank = tr_ca.startSellDate.ToDay(), e_date_rank = tr_ca.endSellDate.ToDay();
   for (int i = s_date_rank; i <= e_date_rank; ++i) {
-    DayTrainToSeat.erase(std::make_pair(i, CalHash(trainID_)));
+    DayTrainToSeat.erase(std::make_pair(i, tr_hash));
   }
-  releasedDatabase.erase(releasedDatabase.find(CalHash(trainID_)));
-  releasedBackUp.erase(CalHash(trainID_));
-  trainDataBase.erase(CalHash(trainID_));
+  releasedDatabase.erase(releasedDatabase.find(tr_hash));
+  releasedBackUp.erase(tr_hash);
+  trainDataBase.erase(tr_hash);
   for (int i = 0; i < tr_ca.stationNum; ++i) {
-    stationDataBase.erase(std::make_pair(CalHash(tr_ca.stations[i]), CalHash(trainID_)));
+    stationDataBase.erase(std::make_pair(CalHash(tr_ca.stations[i]), tr_hash));
   }
 }
 
@@ -245,7 +246,6 @@ void TrainManager::queryTrain(const std::string &trainID_,
           + " -> " + "xx-xx xx:xx" + " ";
   st_ca += std::to_string(tr_ca.sumPrice[tr_ca.stationNum - 1]) + " " + "x";
   result.push_back(st_ca);
-
 }
 
 void TrainManager::QueryTicket(sjtu::linked_hashmap<std::string, std::string> &info,

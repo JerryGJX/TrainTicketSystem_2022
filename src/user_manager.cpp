@@ -71,7 +71,8 @@ bool UserManager::isRegistered(const std::string &username_) {
 
 int UserManager::isLogin(const std::string &username_) {
   ull U_Hash = CalHash(username_);
-  if (onlineUser.find(U_Hash) != onlineUser.end() && onlineUser[U_Hash].second)return onlineUser[CalHash(username_)].first;
+  if (onlineUser.find(U_Hash) != onlineUser.end() && onlineUser.find(U_Hash)->second.second)
+    return onlineUser.find(U_Hash)->second.first;
   return -1;
 }
 
@@ -105,7 +106,7 @@ bool UserManager::queryProfile(const std::string &username_,
 bool UserManager::modifyProfile(const std::string &username_,
                                 sjtu::linked_hashmap<std::string, std::string> &info,
                                 sjtu::vector<std::string> &result, int prv_c, const std::string &cur_user) {
-  if (info.empty()) return queryProfile(username_, result, prv_c, cur_user);
+  if (info.size() == 2) return queryProfile(username_, result, prv_c, cur_user);
 
   User ca;
   ull Hash = CalHash(username_);
