@@ -86,13 +86,14 @@ void CommandParser::ParseLogin(sjtu::linked_hashmap<std::string, std::string> &c
   }
 }
 void CommandParser::ParseLogout(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-  if (ifULog(cmd["-u"]) == -1)Failure();
+  if (!ifUReg(cmd["-u"]) || ifULog(cmd["-u"]) == -1)Failure();
   else {
     user_manager.Logout(cmd["-u"]);
     Success();
   }
 }
 void CommandParser::ParseQueryProfile(sjtu::linked_hashmap<std::string, std::string> &cmd) {
+  if (!ifUReg(cmd["-c"]) || ifULog(cmd["-c"]) == -1)Failure();
   int prv_c = ifULog(cmd["-c"]);
   sjtu::vector<std::string> result;
   if (prv_c == -1 || !user_manager.queryProfile(cmd["-u"], result, prv_c, cmd["-c"]))Failure();
@@ -103,6 +104,7 @@ void CommandParser::ParseQueryProfile(sjtu::linked_hashmap<std::string, std::str
 
 }
 void CommandParser::ParseModifyProfile(sjtu::linked_hashmap<std::string, std::string> &cmd) {
+  if (!ifUReg(cmd["-c"]) || ifULog(cmd["-c"]) == -1)Failure();
   int prv_c = ifULog(cmd["-c"]);
   sjtu::vector<std::string> result;
   if (prv_c == -1 || !user_manager.modifyProfile(cmd["-u"], cmd, result, prv_c, cmd["-c"]))Failure();
@@ -128,7 +130,9 @@ void CommandParser::ParseAddTrain(sjtu::linked_hashmap<std::string, std::string>
   SplitString(cmd["-d"], saleDate, '|');
   for (auto &_price: _prices)prices.push_back(std::stoi(_price));
   for (auto &_travelTime: _travelTimes)travelTimes.push_back(std::stoi(_travelTime));
-  for (auto &_stopoverTime: _stopoverTimes)stopoverTimes.push_back(std::stoi(_stopoverTime));
+  if (std::stoi(cmd["-n"]) > 2)
+    for (auto &_stopoverTime: _stopoverTimes)
+      stopoverTimes.push_back(std::stoi(_stopoverTime));
   char type = cmd["-y"][0];
 
   train_manager.addTrain(cmd["-i"],
@@ -173,11 +177,13 @@ void CommandParser::ParseQueryTrain(sjtu::linked_hashmap<std::string, std::strin
   for (int i = 1; i < result.size(); ++i)std::cout << result[i] << "\n";
   //Success();
 }
+
 void CommandParser::ParseQueryTicket(sjtu::linked_hashmap<std::string, std::string> &cmd) {
   sjtu::vector<std::string> result;
   train_manager.QueryTicket(cmd, result);
   for (auto &i: result)std::cout << i << "\n";
 }
+
 void CommandParser::ParseQueryTransfer(sjtu::linked_hashmap<std::string, std::string> &cmd) {
   sjtu::vector<std::string> result;
   train_manager.QueryTransfer(cmd, result);
