@@ -94,23 +94,30 @@ void CommandParser::ParseLogout(sjtu::linked_hashmap<std::string, std::string> &
 }
 void CommandParser::ParseQueryProfile(sjtu::linked_hashmap<std::string, std::string> &cmd) {
   if (!ifUReg(cmd["-c"]) || ifULog(cmd["-c"]) == -1)Failure();
-  int prv_c = ifULog(cmd["-c"]);
-  sjtu::vector<std::string> result;
-  if (prv_c == -1 || !user_manager.queryProfile(cmd["-u"], result, prv_c, cmd["-c"]))Failure();
-  else {
-    for (auto &i: result)std::cout << i << " ";
-    std::cout << "\n";
-  }
 
+  else{
+    int prv_c = ifULog(cmd["-c"]);
+    sjtu::vector<std::string> result;
+    if (prv_c == -1 || !user_manager.queryProfile(cmd["-u"], result, prv_c, cmd["-c"]))Failure();
+    else {
+      for (auto &i: result)std::cout << i << " ";
+      std::cout << "\n";
+    }
+
+  }
 }
 void CommandParser::ParseModifyProfile(sjtu::linked_hashmap<std::string, std::string> &cmd) {
   if (!ifUReg(cmd["-c"]) || ifULog(cmd["-c"]) == -1)Failure();
-  int prv_c = ifULog(cmd["-c"]);
-  sjtu::vector<std::string> result;
-  if (prv_c == -1 || !user_manager.modifyProfile(cmd["-u"], cmd, result, prv_c, cmd["-c"]))Failure();
-  else {
-    for (auto &i: result)std::cout << i << " ";
-    std::cout << "\n";
+
+  else{
+    int prv_c = ifULog(cmd["-c"]);
+    sjtu::vector<std::string> result;
+    if (prv_c == -1 || !user_manager.modifyProfile(cmd["-u"], cmd, result, prv_c, cmd["-c"]))Failure();
+    else {
+      for (auto &i: result)std::cout << i << " ";
+      std::cout << "\n";
+    }
+
   }
 }
 
