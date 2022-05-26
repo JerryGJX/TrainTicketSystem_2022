@@ -94,7 +94,7 @@ void CommandParser::ParseLogout(sjtu::linked_hashmap<std::string, std::string> &
 }
 void CommandParser::ParseQueryProfile(sjtu::linked_hashmap<std::string, std::string> &cmd) {
   if (!ifUReg(cmd["-c"]) || ifULog(cmd["-c"]) == -1)Failure();
-  else{
+  else {
     int prv_c = ifULog(cmd["-c"]);
     sjtu::vector<std::string> result;
     if (prv_c == -1 || !user_manager.queryProfile(cmd["-u"], result, prv_c, cmd["-c"]))Failure();
@@ -106,7 +106,7 @@ void CommandParser::ParseQueryProfile(sjtu::linked_hashmap<std::string, std::str
 }
 void CommandParser::ParseModifyProfile(sjtu::linked_hashmap<std::string, std::string> &cmd) {
   if (!ifUReg(cmd["-c"]) || ifULog(cmd["-c"]) == -1)Failure();
-  else{
+  else {
     int prv_c = ifULog(cmd["-c"]);
     sjtu::vector<std::string> result;
     if (prv_c == -1 || !user_manager.modifyProfile(cmd["-u"], cmd, result, prv_c, cmd["-c"]))Failure();
@@ -207,14 +207,16 @@ void CommandParser::ParseRefundTicket(sjtu::linked_hashmap<std::string, std::str
     Failure();
     return;
   }
-  if (train_manager.RefundTicket(cmd["-u"], std::stoi(cmd["-n"]), order_manager))Success();
+  int rank = 1;
+  if(cmd.find("-n")!=cmd.end())rank=std::stoi(cmd["-n"]);
+  if (train_manager.RefundTicket(cmd["-u"], rank, order_manager))Success();
   else Failure();
 
 }
 
 //------------------order manager-----------------
 void CommandParser::ParseQueryOrder(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-  if (ifULog(cmd["-u"]) == -1) {
+  if (!ifUReg(cmd["-u"]) || ifULog(cmd["-u"]) == -1) {
     Failure();
     return;
   }

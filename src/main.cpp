@@ -8,7 +8,7 @@ OrderManager order_manager("orderData","pendingData");
 CommandParser command_parser(user_manager,train_manager,order_manager);
 int main() {
   //freopen("test1.ans", "w", stdout);
-//  freopen("../test/data/basic_2/1.in", "r", stdin);
+  //freopen("../test/data/basic_2/1.in", "r", stdin);
 
   while (true) {
       command_parser.Run();

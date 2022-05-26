@@ -552,7 +552,7 @@ bool TrainManager::RefundTicket(const std::string &username_, int rank_, OrderMa
     dt_ca.rangeAdd(f_rank, t_rank - 1, target_order.num);
 
     for (int i = 0; i < pending_order_list.size(); ++i) {
-      PendingOrder pod_ca = pending_order_list[i];
+      PendingOrder &pod_ca = pending_order_list[i];
       if (pod_ca.startRank >= t_rank || pod_ca.endRank <= f_rank
           || dt_ca.findMin(pod_ca.startRank, pod_ca.endRank - 1) < pod_ca.num)
         continue;
