@@ -1,5 +1,10 @@
+
 {
     "files.associations": {
-        "tuple": "cpp"
+        "tuple": "cpp",
+        "ostream": "cpp",
+        "iostream": "cpp",
+        "cstdlib": "cpp",
+        "future": "cpp"
     }
 }
