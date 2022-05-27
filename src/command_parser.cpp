@@ -135,6 +135,10 @@ void CommandParser::ParseReleaseTrain(sjtu::linked_hashmap<std::string, std::str
   Success();
 }
 void CommandParser::ParseQueryTrain(sjtu::linked_hashmap<std::string, std::string> &cmd) {
+  if (!ifTAdd(cmd["-i"])) {
+    Failure();
+    return;
+  }
   sjtu::vector<std::string> result;
   if (!train_manager.queryTrain(cmd["-i"], cmd["-d"], result)) {
     Failure();

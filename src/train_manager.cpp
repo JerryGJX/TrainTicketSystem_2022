@@ -143,9 +143,19 @@ bool TrainManager::isReleased(const std::string &trainID_) {//要求先add
 
 void TrainManager::deleteTrain(const std::string &trainID_) {
   ull tr_hash = CalHash(trainID_);
+  Train tr_ca;
+  trainDataBase.find(tr_hash, tr_ca);
+  BasicTrain b_tr_ca = basicTrainDatabase[tr_hash];
+  int s_date_rank = b_tr_ca.startSellDate, e_date_rank = b_tr_ca.endSellDate;
+  for (int i = s_date_rank; i <= e_date_rank; ++i) {
+    DayTrainToSeat.erase(std::make_pair(i, tr_hash));
+  }
   basicTrainDatabase.erase(basicTrainDatabase.find(tr_hash));
   basicTrainBackUp.erase(tr_hash);
   trainDataBase.erase(tr_hash);
+  for (int i = 0; i < b_tr_ca.stationNum; ++i) {
+    stationDataBase.erase(std::make_pair(CalHash(tr_ca.stations[i]), tr_hash));
+  }
 }
 
 void TrainManager::releaseTrain(const std::string &trainID_) {
