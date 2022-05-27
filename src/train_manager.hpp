@@ -21,36 +21,54 @@
 using JerryGJX::ull;
 
 struct Train {
-  //bool isReleased{};
   JerryGJX::trainIDType trainID;
-  int stationNum{};
   JerryGJX::stationType stations[JerryGJX::max_stationNum];//0 base
-  int totalSeatNum{};
   int sumPrice[JerryGJX::max_stationNum]{};//存价格前缀和，且sumPrice[0]=0
-  int startTime{};
   int arrivingTime[JerryGJX::max_stationNum]{};//存到达时间，且arrivingTime[0]=0
   int leavingTime[JerryGJX::max_stationNum]{};//存离站时间，且leavingTime[0]=startTime
-  JerryGJX::CalendarTime startSellDate;
-  JerryGJX::CalendarTime endSellDate;
-  char type{};
   Train() = default;
-  Train(const std::string &trainID_,
-        int stationNum_,
-        int totalSeatNum_,
-        sjtu::vector<std::string> &stations_,
-        sjtu::vector<int> &sumPrice_,
-        int startTime_,
-        sjtu::vector<int> &arrivingTimes_,//arrivingTime[0]无意义
-        sjtu::vector<int> &leavingTimes_,
-        JerryGJX::CalendarTime &startSellDate_,
-        JerryGJX::CalendarTime &endSellDate_,
-        char type_);
+  Train(const std::string &TrainID_, sjtu::vector<std::string> &stations_, sjtu::vector<int> &sumPrice_,
+        sjtu::vector<int> &arrivingTimes_, sjtu::vector<int> &leavingTimes_);
   Train(const Train &rhs);
+};
 
-  bool operator<(const Train &rhs) const;
-  bool operator>(const Train &rhs) const;
-  bool operator<=(const Train &rhs) const;
-  bool operator>=(const Train &rhs) const;
+struct BasicTrain {
+  JerryGJX::trainIDType trainID{};
+  int stationNum{}, totalSeatNum{};
+  bool isReleased = false;
+  JerryGJX::Minute startTime{};
+  JerryGJX::Day startSellDate = 0;
+  JerryGJX::Day endSellDate = 0;
+  char type{};
+  BasicTrain() = default;
+
+  BasicTrain(const std::string &train_id,
+             int station_num,
+             int total_seat_num,
+             bool is_released,
+             int start_time,
+             int start_sell_date,
+             int end_sell_date,
+             char type)
+      : trainID(train_id),
+        stationNum(station_num),
+        totalSeatNum(total_seat_num),
+        isReleased(is_released),
+        startTime(start_time),
+        startSellDate(start_sell_date),
+        endSellDate(end_sell_date),
+        type(type) {}
+
+  BasicTrain(const BasicTrain &rhs) {
+    trainID = rhs.trainID;
+    stationNum = rhs.stationNum;
+    totalSeatNum = rhs.totalSeatNum;
+    isReleased = rhs.isReleased;
+    startTime = rhs.startTime;
+    startSellDate = rhs.startSellDate;
+    endSellDate = rhs.endSellDate;
+    type = rhs.type;
+  }
 };
 
 class TrainManager {
@@ -59,9 +77,7 @@ class TrainManager {
     int seatRemain[JerryGJX::max_stationNum]{};
     DayTrain() = default;
     DayTrain(const DayTrain &rhs);
-
     int findMin(int lp, int rp);
-
     void rangeAdd(int lp, int rp, int d);
   };
 
@@ -69,11 +85,10 @@ class TrainManager {
     JerryGJX::trainIDType trainID{};
     JerryGJX::stationType station{};
     int rank = 0, priceSum = 0;//rank表示从始发站向下的站次，priceSum表示始发站到该站的总价格
-    JerryGJX::CalendarTime startSaleDate{}, endSaleDate{};
+    JerryGJX::Day startSaleDate{}, endSaleDate{};
     int startTime{}, arrivingTime{}, leavingTime{};
     TrainStation() = default;
-    TrainStation(const std::string &trainID_, JerryGJX::CalendarTime &startSellDate_,
-                 JerryGJX::CalendarTime &endSellDate_);
+    TrainStation(const std::string &trainID_, int startSellDate_, int endSellDate_);
   };
 
   struct Ticket {
@@ -86,7 +101,7 @@ class TrainManager {
     Ticket(std::string train_id,
            std::string start_station,
            std::string end_station,
-           int start_time,
+           int start_time,//分钟
            int end_time,
            int cost, int seat)
         : trainID(std::move(train_id)),
@@ -131,13 +146,9 @@ class TrainManager {
   };
 
   Bptree<ull, Train> trainDataBase;
-  sjtu::linked_hashmap<ull, bool> releasedDatabase;
-  Bptree<std::pair<int, ull>, DayTrain> DayTrainToSeat;//(第几天，hash(trainID))
-  Bptree<ull, bool> releasedBackUp;//每次开关文件与releasedDatabase交换信息
-  /**
-   * @brief 此处用pair为了防止bpt中发生key碰撞，pair中内容换为字符串哈希可能更优
-   * @brief 此处要求bpt具有将一定区间内所有符合情况返回的能力
-   */
+  sjtu::linked_hashmap<ull, BasicTrain> basicTrainDatabase;
+  Bptree<ull, BasicTrain> basicTrainBackUp;//
+  Bptree<std::pair<JerryGJX::Day, ull>, DayTrain> DayTrainToSeat;//(第几天，hash(trainID))
   Bptree<std::pair<ull, ull>, TrainStation> stationDataBase;//(HashStation，HashTrain）
 
 
@@ -149,7 +160,10 @@ class TrainManager {
   std::hash<std::string> hash_str;
 
  public:
-  TrainManager(const std::string &filename_tdb, const std::string &filename_dtts, const std::string &filename_sdb, const std::string &filename_rbu);
+  TrainManager(const std::string &filename_tdb,
+               const std::string &filename_dtts,
+               const std::string &filename_sdb,
+               const std::string &filename_btb);
 
   ull CalHash(const std::string &str_);
 
@@ -176,7 +190,7 @@ class TrainManager {
   /**
    * @brief 考虑到query_train,buy_ticket都需要知道release情况，可能此处可以用unordered map优化
    */
-  void queryTrain(const std::string &trainID_, const std::string &date_, sjtu::vector<std::string> &result);
+  bool queryTrain(const std::string &trainID_, const std::string &date_, sjtu::vector<std::string> &result);
 
   bool isReleased(const std::string &trainID_);//如果可以返回一个代表存储位置的量，此处可优化
   /**

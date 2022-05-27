@@ -76,8 +76,6 @@ class CommandParser {
   //-------userManager easy form-----------------
   bool ifUReg(const std::string &username_);
   int ifULog(const std::string &username_);
-  bool ifUPass(const std::string &username_, const std::string &password_);
-
   //--------trainManager easy form---------
   bool ifTAdd(const std::string &trainID_);
   bool ifTRel(const std::string &trainID_);

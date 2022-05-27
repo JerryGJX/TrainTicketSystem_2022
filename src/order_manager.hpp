@@ -34,7 +34,7 @@ struct Order {
         int end_rank,
         const JerryGJX::stationType &start_station,
         const JerryGJX::stationType &end_station,
-        const JerryGJX::CalendarTime &start_day,
+        int start_day,
         int start_time,
         int leaving_time,
         int arriving_time,
@@ -47,8 +47,8 @@ struct PendingOrder {
   ull tidHash{}, uidHash{};
   int startRank{}, endRank{};
   int orderID{}, num{};
-
   JerryGJX::CalendarTime startDay{};
+
   PendingOrder() = default;
   PendingOrder(ull tid_hash,
                ull uid_hash,
@@ -56,14 +56,13 @@ struct PendingOrder {
                int end_rank,
                int order_id,
                int num,
-               const JerryGJX::CalendarTime &start_day)
+               int start_day)
       : tidHash(tid_hash),
         uidHash(uid_hash),
         startRank(start_rank),
         endRank(end_rank),
         orderID(order_id),
-        num(num),
-        startDay(start_day) {}
+        num(num) { startDay += start_day; }
 };
 
 class OrderManager {

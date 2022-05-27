@@ -63,58 +63,27 @@ void CommandParser::Run() {
 
 //------------------user manager-----------------
 void CommandParser::ParseAddUser(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-  if (user_manager.Empty()) {
-    user_manager.AddUser(cmd["-u"], cmd["-p"], cmd["-n"], cmd["-m"], 10);
-    Success();
-  } else {
-    int prv_c = ifULog(cmd["-c"]);
-    int prv_u = std::stoi(cmd["-g"]);
-    bool exist = ifUReg(cmd["-u"]);
-    if (exist || prv_c <= prv_u)Failure();
-    else {
-      user_manager.AddUser(cmd["-u"], cmd["-p"], cmd["-n"], cmd["-m"], prv_u);
-      Success();
-    }
-  }
+  if (user_manager.AddUser(cmd))Success();
+  else Failure();
 }
 void CommandParser::ParseLogin(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-  if (!ifUReg(cmd["-u"]) || ifULog(cmd["-u"]) != -1 || !ifUPass(cmd["-u"], cmd["-p"])) {
-    Failure();
-  } else {
-    user_manager.Login(cmd["-u"]);
-    Success();
-  }
+  if (user_manager.Login(cmd))Success();
+  else Failure();
 }
 void CommandParser::ParseLogout(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-  if (!ifUReg(cmd["-u"]) || ifULog(cmd["-u"]) == -1)Failure();
-  else {
-    user_manager.Logout(cmd["-u"]);
-    Success();
-  }
+  if (user_manager.Logout(cmd))Success();
+  else Failure();
 }
 void CommandParser::ParseQueryProfile(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-  if (!ifUReg(cmd["-c"]) || ifULog(cmd["-c"]) == -1)Failure();
-  else {
-    int prv_c = ifULog(cmd["-c"]);
-    sjtu::vector<std::string> result;
-    if (prv_c == -1 || !user_manager.queryProfile(cmd["-u"], result, prv_c, cmd["-c"]))Failure();
-    else {
-      for (auto &i: result)std::cout << i << " ";
-      std::cout << "\n";
-    }
-  }
+  std::string result;
+  if (!user_manager.queryProfile(cmd, result))Failure();
+  else std::cout << result << "\n";
+
 }
 void CommandParser::ParseModifyProfile(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-  if (!ifUReg(cmd["-c"]) || ifULog(cmd["-c"]) == -1)Failure();
-  else {
-    int prv_c = ifULog(cmd["-c"]);
-    sjtu::vector<std::string> result;
-    if (prv_c == -1 || !user_manager.modifyProfile(cmd["-u"], cmd, result, prv_c, cmd["-c"]))Failure();
-    else {
-      for (auto &i: result)std::cout << i << " ";
-      std::cout << "\n";
-    }
-  }
+  std::string result;
+  if (!user_manager.modifyProfile(cmd, result))Failure();
+  else std::cout << result << "\n";
 }
 
 //------------------train manager-----------------
@@ -166,14 +135,9 @@ void CommandParser::ParseReleaseTrain(sjtu::linked_hashmap<std::string, std::str
   Success();
 }
 void CommandParser::ParseQueryTrain(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-  if (!ifTAdd(cmd["-i"])) {
-    Failure();
-    return;
-  }
   sjtu::vector<std::string> result;
-  train_manager.queryTrain(cmd["-i"], cmd["-d"], result);
-  if (result[0] == "-1") {
-    std::cout << result[0] << "\n";
+  if (!train_manager.queryTrain(cmd["-i"], cmd["-d"], result)) {
+    Failure();
     return;
   }
   std::cout << result[0] << " ";
@@ -194,7 +158,7 @@ void CommandParser::ParseQueryTransfer(sjtu::linked_hashmap<std::string, std::st
 }
 
 void CommandParser::ParseBuyTicket(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-  if (!ifUReg(cmd["-u"]) || ifULog(cmd["-u"]) == -1 || !ifTAdd(cmd["-i"]) || !ifTRel(cmd["-i"])) {
+  if (!ifUReg(cmd["-u"]) || !ifULog(cmd["-u"]) || !ifTAdd(cmd["-i"]) || !ifTRel(cmd["-i"])) {
     Failure();
     return;
   }
@@ -203,12 +167,12 @@ void CommandParser::ParseBuyTicket(sjtu::linked_hashmap<std::string, std::string
 }
 
 void CommandParser::ParseRefundTicket(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-  if (ifULog(cmd["-u"]) == -1) {
+  if (!ifULog(cmd["-u"])) {
     Failure();
     return;
   }
   int rank = 1;
-  if(cmd.find("-n")!=cmd.end())rank=std::stoi(cmd["-n"]);
+  if (cmd.find("-n") != cmd.end())rank = std::stoi(cmd["-n"]);
   if (train_manager.RefundTicket(cmd["-u"], rank, order_manager))Success();
   else Failure();
 
@@ -216,7 +180,7 @@ void CommandParser::ParseRefundTicket(sjtu::linked_hashmap<std::string, std::str
 
 //------------------order manager-----------------
 void CommandParser::ParseQueryOrder(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-  if (!ifUReg(cmd["-u"]) || ifULog(cmd["-u"]) == -1) {
+  if (!ifUReg(cmd["-u"]) || !ifULog(cmd["-u"])) {
     Failure();
     return;
   }
@@ -272,16 +236,12 @@ void CommandParser::Failure() {
 }
 
 //-------userManager easy form-----------------
-bool CommandParser::ifUReg(const std::string &username_) {
-  return user_manager.isRegistered(username_);
-}
 int CommandParser::ifULog(const std::string &username_) {
   return user_manager.isLogin(username_);
 }
-bool CommandParser::ifUPass(const std::string &username_, const std::string &password_) {
-  return user_manager.checkPassword(username_, password_);
+bool CommandParser::ifUReg(const string &username_) {
+  return user_manager.isReg(username_);
 }
-
 //--------trainManager easy form---------
 bool CommandParser::ifTAdd(const std::string &trainID_) {
   return train_manager.isAdded(trainID_);
@@ -289,6 +249,7 @@ bool CommandParser::ifTAdd(const std::string &trainID_) {
 bool CommandParser::ifTRel(const std::string &trainID_) {
   return train_manager.isReleased(trainID_);
 }
+
 
 
 

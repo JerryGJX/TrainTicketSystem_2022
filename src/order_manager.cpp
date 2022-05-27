@@ -12,7 +12,7 @@ Order::Order(JerryGJX::orderStatusType order_status,
              int end_rank,
              const JerryGJX::stationType &start_station,
              const JerryGJX::stationType &end_station,
-             const JerryGJX::CalendarTime &start_day,
+             int start_day,
              int start_time,
              int leaving_time,
              int arriving_time,
@@ -26,13 +26,14 @@ Order::Order(JerryGJX::orderStatusType order_status,
       endRank(end_rank),
       startStation(start_station),
       endStation(end_station),
-      startDay(start_day),
       startTime(start_time),
       leavingTime(leaving_time),
       arrivingTime(arriving_time),
       orderID(order_id),
       price(price),
-      num(num) {}
+      num(num) {
+  startDay += start_day;
+}
 
 //------------pending order--------------
 
