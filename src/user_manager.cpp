@@ -118,6 +118,7 @@ bool UserManager::modifyProfile(const std::string &username_,
   if (info.find("-m") != info.end())ca.mailAddr = info["-m"];
   if (info.find("-g") != info.end()) {
     ca.privilege = std::stoi(info["-g"]);
+    if (ca.privilege >= prv_c)return false;
     onlineUser[Hash].first = ca.privilege;
   }
   userDatabase.erase(Hash);
