@@ -11,8 +11,6 @@ using namespace std;
 template <
     class Key,
     class Value,
-    class Compare = std::less<Key>,
-    class Equal = std::equal_to<Key>,
     int M = 70, int L = 70
 >
 class Bptree{
