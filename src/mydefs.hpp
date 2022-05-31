@@ -35,12 +35,12 @@ constexpr int max_stationNum = 105;
 using trainIDType = Char<max_trainID_length_>;
 using stationType = Char<max_stationName_length_>;
 //using timeType = Char<max_time_length_>;//完整时间
-
+using Day = int;
+using Minute = int;
 /**
  * @brief order_manager中使用
  */
 enum orderStatusType { SUCCESS, PENDING, REFUNDED };
-
 
 }
 

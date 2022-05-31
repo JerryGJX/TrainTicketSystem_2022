@@ -111,19 +111,19 @@ class Bptree{
     //析构函数
     ~Bptree_leaf_node() {}
     //查找前驱
-    Bptree_leaf_node find_predecessor(const Bptree_leaf_node &obj) const {
-      //assert(obj.predecessor != -1);
-      Bptree_leaf_node pre;
-      leaf_node_manager.read(pre, obj.successor);
-      return pre;
-    };
-    //查找后继
-    Bptree_leaf_node find_successor(const Bptree_leaf_node &obj) const {
-      //assert(obj.succssor != -1);
-      Bptree_leaf_node suc;
-      leaf_node_manager.read(suc, obj.succssor);
-      return suc;
-    };
+//    Bptree_leaf_node find_predecessor(const Bptree_leaf_node &obj) const {
+//      //assert(obj.predecessor != -1);
+//      Bptree_leaf_node pre;
+//      leaf_node_manager.read(pre, obj.successor);
+//      return pre;
+//    };
+//    //查找后继
+//    Bptree_leaf_node find_successor(const Bptree_leaf_node &obj) const {
+//      //assert(obj.succssor != -1);
+//      Bptree_leaf_node suc;
+//      leaf_node_manager.read(suc, obj.succssor);
+//      return suc;
+//    };
   };
 
 //BpTree正文
