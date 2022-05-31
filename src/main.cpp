@@ -1,3 +1,4 @@
+#pragma GCC optimize(2)
 #include <iostream>
 #include "tools/Char.hpp"
 #include "command_parser.hpp"
