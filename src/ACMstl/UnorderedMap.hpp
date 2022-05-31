@@ -294,7 +294,7 @@ class linked_hashmap {
 
   std::pair<iterator, bool> insert(const value_type &value) {
     iterator it = find(value.first);
-    if (it != end())return std::pair(it, false);
+    if (it != end())return make_pair(it, false);
 
     NodeNum++;
     if (NodeNum > Capacity * LoadFactor)reSize();
@@ -316,7 +316,7 @@ class linked_hashmap {
     node->son->fa = node;
     start->son = node;
 
-    return std::pair(iterator(node, this), true);
+    return make_pair(iterator(node, this), true);
   }
 
   void erase(iterator pos) {
