@@ -69,8 +69,8 @@ class OrderManager {
   /**
     * @brief 为了由uid查订单，pair.second为订单号，用于防碰撞，bpt需要支持范围查询
     */
-  Bptree<std::pair<ull, int>, Order, 408, 39> orderDataBase;//hashUid,oid
-  Bptree<std::pair<std::pair<int, ull>, int>, PendingOrder, 291, 126> pendingQueue;//(第几天(指始发天数)，hash(trainID)),oid
+  Bptree<std::pair<ull, int>, Order, 204, 19> orderDataBase;//hashUid,oid
+  Bptree<std::pair<std::pair<int, ull>, int>, PendingOrder, 145, 63> pendingQueue;//(第几天(指始发天数)，hash(trainID)),oid
 
 //  void OrderDataBase_RangeFind(const std::pair<ull, int> &lp,
 //                               const std::pair<ull, int> &rp, std::vector<Order> &result);

@@ -145,11 +145,11 @@ class TrainManager {
     }
   };
 
-  Bptree<ull, Train, 681, 4> trainDataBase;
+  Bptree<ull, Train, 340, 8> trainDataBase;
   sjtu::linked_hashmap<ull, BasicTrain> basicTrainDatabase;
-  Bptree<ull, BasicTrain, 681, 126> basicTrainBackUp;//
-  Bptree<std::pair<JerryGJX::Day, ull>, DayTrain, 408, 17> DayTrainToSeat;//(第几天，hash(trainID))
-  Bptree<std::pair<ull, ull>, TrainStation, 408, 254> stationDataBase;//(HashStation，HashTrain）
+  Bptree<ull, BasicTrain, 340, 63> basicTrainBackUp;//
+  Bptree<std::pair<JerryGJX::Day, ull>, DayTrain, 204, 8> DayTrainToSeat;//(第几天，hash(trainID))
+  Bptree<std::pair<ull, ull>, TrainStation, 204, 127> stationDataBase;//(HashStation，HashTrain）
 
 
 
