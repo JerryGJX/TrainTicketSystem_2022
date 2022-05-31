@@ -9,6 +9,7 @@ CommandParser command_parser(user_manager,train_manager,order_manager);
 int main() {
   //freopen("test1.ans", "w", stdout);
   //freopen("../test/data/basic/1.in", "r", stdin);
+  std::ios::sync_with_stdio(false);
   while (true) {
       command_parser.Run();
   }
