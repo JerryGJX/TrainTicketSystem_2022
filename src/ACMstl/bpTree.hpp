@@ -2,18 +2,21 @@
 #define BPTREE_HPP
 #define debug(x) cout << #x << ':' << (x) << endl;
 #include "memory_manager.hpp"
+#include "UnorderedMap.hpp"
 #include "Vector.hpp"
 //#include <vector>
 //#include <assert.h>
 #include <iostream>
 using namespace std;
 
-template <
+template<
     class Key,
     class Value,
-    int M = 70, int L = 70
+    int M = 70, int L = 70,
+    class Hash = std::hash<Key>,
+    class Equal = std::equal_to<Key>
 >
-class Bptree{
+class Bptree {
  private:
   int root, _size, normal_node_number;
   std::string prefix_name;
@@ -21,6 +24,38 @@ class Bptree{
   class Bptree_normal_node;
   MemoryRiver<Bptree_leaf_node, 0> leaf_node_manager;     // info：leaf_node个数
   MemoryRiver<Bptree_normal_node, 3> normal_node_manager; // info：root的编号，normal_node个数，bptree中元素个数
+
+  //Cache
+  int CacheLimit;
+  sjtu::linked_hashmap<Key, Value, Hash, Equal> Cache;
+  void CalLimit() {
+    CacheLimit = (1 << 16) / sizeof(std::pair<Key, Value>);
+    CacheLimit = std::min(CacheLimit, 25000);
+  }
+  bool CacheInsert(const Key &key_, Value &value_) {
+    if (Cache.find(key_) != Cache.end())return false;
+    if (Cache.size() >= CacheLimit)Cache.erase(Cache.begin());
+    Cache.insert(std::make_pair(key_, value_));
+    return true;
+  }
+
+  bool CacheRemove(const Key &key_) {
+    if (Cache.find(key_) == Cache.end())return false;
+    Cache.erase(Cache.find(key_));
+    return true;
+  }
+
+  bool CacheFind(const Key &key_, Value &result) {
+    if (Cache.find(key_) == Cache.end())return false;
+    result = Cache.find(key_)->second;
+    return true;
+  }
+
+  bool CacheModify(const Key &key_, const Value &rhs) {
+    if (Cache.find(key_) == Cache.end())return false;
+    Cache[key_] = rhs;
+    return true;
+  }
 
   //记录Bptree信息的文件操作函数
   //从文件中读取根节点
@@ -66,7 +101,7 @@ class Bptree{
       for (int i = 0; i <= M; ++i) children[i] = -1;
     }
     //拷贝构造
-    Bptree_normal_node(const Bptree_normal_node &obj)  {
+    Bptree_normal_node(const Bptree_normal_node &obj) {
       size = obj.size;
       key_min = obj.key_min;
       is_lowest = obj.is_lowest;
@@ -138,6 +173,10 @@ class Bptree{
       root = normal_node_manager.write(tmp);
       ++normal_node_number;
     }
+
+    //Cache
+    CalLimit();
+
   }
   //析构函数
   ~Bptree() {
@@ -150,6 +189,9 @@ class Bptree{
     root = normal_node_number = _size = 0;
     leaf_node_manager.clear();
     normal_node_manager.clear();
+
+    //Cache
+    Cache.clear();
   }
   //查看bptree中元素个数
   int size() const {
@@ -157,7 +199,14 @@ class Bptree{
   }
   //查看是否有插入指定key值的元素, 如果有将value返回到result中
   bool find(const Key &key, Value &result) {
-    return dfs_find(root, 0, key, result) != -1;
+    //Cache
+    if (CacheFind(key, result))return true;
+    if (dfs_find(root, 0, key, result) != -1) {
+      CacheInsert(key, result);
+      return true;
+    } else return false;
+
+    //return dfs_find(root, 0, key, result) != -1;
   }
   //插入节点，失败返回0（如果给定key值已有节点，也会返回0）
   bool insert(const Key &key, const Value &value) {
@@ -180,10 +229,17 @@ class Bptree{
     Bptree_normal_node virtual_root;
     bool flag = dfs_erase(root, 0, 0, virtual_root, key);
     if (flag) --_size;
+
+    //Cache
+    if (flag)CacheRemove(key);
+
     return flag;
   }
   //修改指定key值的元素，如果不存在返回0
   bool modify(const Key &key, const Value &value) {
+    //Cache
+    CacheModify(key,value);
+
     return dfs_modify(root, 0, key, value) != -1;
   }
   //另一个版本的modify
@@ -202,7 +258,7 @@ class Bptree{
       for (int i = 0; i < leaf.size; ++i) {
         if (flag || key_l <= leaf.key_list[i]) {
           flag = 1;
-          if (leaf.key_list[i] < key_r)   {
+          if (leaf.key_list[i] < key_r) {
             result.push_back(leaf.value_list[i]);
           } else {
             break;
@@ -224,7 +280,7 @@ class Bptree{
       for (int i = 0; i < leaf.size; ++i) {
         if (flag || key_l <= leaf.key_list[i]) {
           flag = 1;
-          if (leaf.key_list[i] < key_r)   {
+          if (leaf.key_list[i] < key_r) {
             result.push_back(std::make_pair(leaf.key_list[i], leaf.value_list[i]));
           } else {
             break;
@@ -288,7 +344,9 @@ class Bptree{
   }
   //超过数量限制时拆分普通节点
   //index为obj在文件中的位置，拆分后的节点应被写入index和new_index
-  std::pair<Bptree_normal_node, Bptree_normal_node> split(const Bptree_normal_node &obj, const int &index, int &new_index) {
+  std::pair<Bptree_normal_node, Bptree_normal_node> split(const Bptree_normal_node &obj,
+                                                          const int &index,
+                                                          int &new_index) {
     Bptree_normal_node x, y;
     new_index = normal_node_manager.write(y);
     x.size = (obj.size + 1) / 2;
@@ -543,7 +601,10 @@ class Bptree{
     }
   }
   //在叶节点删除某个值后，在node1和node2之间调整使他们满足Bptree对size的要求，返回是否进行了merge操作
-  bool maintain_size_decrease_leaf(int rank, Bptree_leaf_node &node1, Bptree_leaf_node &node2, Bptree_normal_node &parent) {
+  bool maintain_size_decrease_leaf(int rank,
+                                   Bptree_leaf_node &node1,
+                                   Bptree_leaf_node &node2,
+                                   Bptree_normal_node &parent) {
     int id1 = parent.children[rank], id2 = parent.children[rank + 1];
     if (node1.size == (L + 1) / 2 || node2.size == (L + 1) / 2) {
       node1 = merge(node1, node2);
@@ -561,7 +622,8 @@ class Bptree{
     } else if (node1.size < (L + 1) / 2) {
       node1.key_list[node1.size] = node2.key_list[0];
       node1.value_list[node1.size] = node2.value_list[0];
-      ++node1.size; --node2.size;
+      ++node1.size;
+      --node2.size;
       for (int i = 0; i < node2.size; ++i) {
         node2.key_list[i] = node2.key_list[i + 1];
         node2.value_list[i] = node2.value_list[i + 1];
@@ -576,7 +638,8 @@ class Bptree{
         node2.key_list[i] = node2.key_list[i - 1];
         node2.value_list[i] = node2.value_list[i - 1];
       }
-      --node1.size; ++node2.size;
+      --node1.size;
+      ++node2.size;
       node2.key_list[0] = node1.key_list[node1.size];
       node2.value_list[0] = node1.value_list[node1.size];
       parent.key_list[rank] = node2.key_list[0];
@@ -587,7 +650,10 @@ class Bptree{
     }
   }
   //在普通节点删除某个值后，在node1和node2之间调整使他们满足Bptree对size的要求，返回是否进行了merge操作
-  bool maintain_size_decrease_normal(int rank, Bptree_normal_node &node1, Bptree_normal_node &node2, Bptree_normal_node &parent) {
+  bool maintain_size_decrease_normal(int rank,
+                                     Bptree_normal_node &node1,
+                                     Bptree_normal_node &node2,
+                                     Bptree_normal_node &parent) {
     int id1 = parent.children[rank], id2 = parent.children[rank + 1];
     if (node1.size == (M + 1) / 2 || node2.size == (M + 1) / 2) {
       node1 = merge(node1, node2);
@@ -605,7 +671,8 @@ class Bptree{
       node1.children[node1.size] = node2.children[0];
       node1.key_list[node1.size - 1] = node2.key_min;
       node2.key_min = node2.key_list[0];
-      ++node1.size; --node2.size;
+      ++node1.size;
+      --node2.size;
       for (int i = 0; i < node2.size; ++i) {
         node2.children[i] = node2.children[i + 1];
         if (i + 1 != node2.size) {
@@ -623,7 +690,8 @@ class Bptree{
           node2.key_list[i] = node2.key_list[i - 1];
         }
       }
-      --node1.size; ++node2.size;
+      --node1.size;
+      ++node2.size;
       node2.children[0] = node1.children[node1.size];
       node2.key_list[0] = node2.key_min;
       node2.key_min = node1.key_list[node1.size - 1];
