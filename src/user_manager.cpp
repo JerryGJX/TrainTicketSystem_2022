@@ -52,13 +52,13 @@ bool UserManager::isReg(const std::string &username_) {
 }
 
 bool UserManager::isLogin(const string &username_) {
-  return onlineUser.find(username_) != onlineUser.end();
+  return onlineUser.find(CalHash(username_)) != onlineUser.end();
 }
 
 bool UserManager::AddUser(sjtu::linked_hashmap<std::string, std::string> &info) {
   if (userDatabase.size()) {
     if (!isLogin(info["-c"]))return false;
-    if (onlineUser[info["-c"]] <= std::stoi(info["-g"]))return false;
+    if (onlineUser[CalHash(info["-c"])] <= std::stoi(info["-g"]))return false;
     User u_ca;
     if (userDatabase.find(CalHash(info["-u"]), u_ca))return false;
   } else info["-g"] = std::to_string(10);
@@ -81,12 +81,12 @@ bool UserManager::Login(sjtu::linked_hashmap<std::string, std::string> &info) {
   if (!userDatabase.find(CalHash(info["-u"]), u_ca))return false;
   if (isLogin(info["-u"]))return false;
   if (!checkPassword(info["-u"], info["-p"]))return false;
-  onlineUser.insert(std::make_pair(info["-u"], u_ca.privilege));
+  onlineUser.insert(std::make_pair(CalHash(info["-u"]), u_ca.privilege));
   return true;
 }
 bool UserManager::Logout(sjtu::linked_hashmap<std::string, std::string> &info) {
   if (!isLogin(info["-u"]))return false;
-  onlineUser.erase(onlineUser.find(info["-u"]));
+  onlineUser.erase(onlineUser.find(CalHash(info["-u"])));
   return true;
 }
 
@@ -94,7 +94,7 @@ bool UserManager::queryProfile(const sjtu::linked_hashmap<std::string, std::stri
                                std::string &result) {
   User ta_ca;
   if (!userDatabase.find(CalHash(info["-u"]), ta_ca) || !isLogin(info["-c"]))return false;
-  if (onlineUser[info["-c"]] <= ta_ca.privilege && info["-c"] != ta_ca.username.str())return false;
+  if (onlineUser[CalHash(info["-c"])] <= ta_ca.privilege && info["-c"] != ta_ca.username.str())return false;
   result = ta_ca.to_string();
   return true;
 }
@@ -102,15 +102,15 @@ bool UserManager::modifyProfile(sjtu::linked_hashmap<std::string, std::string> &
                                 std::string &result) {
   User ta_ca;
   if (!userDatabase.find(CalHash(info["-u"]), ta_ca) || !isLogin(info["-c"]))return false;
-  if (onlineUser[info["-c"]] <= ta_ca.privilege && info["-c"] != ta_ca.username.str())return false;
+  if (onlineUser[CalHash(info["-c"])] <= ta_ca.privilege && info["-c"] != ta_ca.username.str())return false;
 
   if (info.find("-p") != info.end())ta_ca.password = info["-p"];
   if (info.find("-n") != info.end())ta_ca.name = info["-n"];
   if (info.find("-m") != info.end())ta_ca.mailAddr = info["-m"];
   if (info.find("-g") != info.end()) {
     ta_ca.privilege = std::stoi(info["-g"]);
-    if (ta_ca.privilege >= onlineUser[info["-c"]])return false;
-    if (isLogin(info["-u"]))onlineUser[info["-u"]] = ta_ca.privilege;
+    if (ta_ca.privilege >= onlineUser[CalHash(info["-c"])])return false;
+    if (isLogin(info["-u"]))onlineUser[CalHash(info["-u"])] = ta_ca.privilege;
   }
   userDatabase.erase(CalHash(info["-u"]));
   userDatabase.insert(std::make_pair(CalHash(info["-u"]), ta_ca));

@@ -56,7 +56,7 @@ class User {
 class UserManager {
  private:
   Bptree<ull, User, 203, 27> userDatabase;//username -> User(class)
-  sjtu::linked_hashmap<std::string, int> onlineUser;//维护在线用户 username->privilege
+  sjtu::linked_hashmap<ull, int> onlineUser;//维护在线用户 username->privilege
   //Bptree<ull, std::pair<int, bool>> onlineUserBackUp;
   std::hash<std::string> hash_str;
  public:
@@ -81,7 +81,7 @@ class UserManager {
    * @brief 该函数只负责返回信息，能否查询由ParserCommander判断
    * @return 被查询用户的<username>，<name>，<mailAddr>和<privilege>
    */
-  bool queryProfile(const sjtu::linked_hashmap<std::string, std::string> &info,std::string &result);
+  bool queryProfile(const sjtu::linked_hashmap<std::string, std::string> &info, std::string &result);
 
   /**
    * @brief 以读出，删除再插入的方式实现
@@ -90,7 +90,7 @@ class UserManager {
    * @param order_manager_ 用于应对修改uid的情况
    * @return 被修改用户的<username>，<name>，<mailAddr>和<privilege>
    */
-  bool modifyProfile(sjtu::linked_hashmap<std::string, std::string> &info,std::string &result);
+  bool modifyProfile(sjtu::linked_hashmap<std::string, std::string> &info, std::string &result);
 
   void Clean();
 

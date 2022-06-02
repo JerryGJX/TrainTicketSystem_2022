@@ -153,6 +153,10 @@ class TrainManager {
 
 
 
+  //------------缓存区-----------
+  //对于queryticket和querytrain的vector的缓存
+
+
 
 //  void StationDataBase_RangeFind(const std::pair<ull, ull> &lp,
 //                                 const std::pair<ull, ull> &rp, sjtu::vector<TrainStation> &result);
