@@ -229,10 +229,10 @@ void TrainManager::QueryTicket(sjtu::linked_hashmap<std::string, std::string> &i
   for (int i = 0, j = 0; i < result_start.size() && j < result_terminal.size(); ++i) {
     while (j < result_terminal.size() && result_start[i].first.second > result_terminal[j].first.second)j++;
     if (j >= result_terminal.size())break;
-    if (result_start[i].second.trainID == result_terminal[j].second.trainID&&isReleased(result_start[i].second.trainID)) {
-        if (result_start[i].second.rank < result_terminal[j].second.rank) {
-          if (result_start[i].second.startSaleDate + result_start[i].second.leavingTime / (60 * 24) <= wanted_date
-              && result_start[i].second.endSaleDate + result_start[i].second.leavingTime / (60 * 24) >= wanted_date) {
+    if (result_start[i].second.trainID == result_terminal[j].second.trainID) {
+      if (result_start[i].second.startSaleDate + result_start[i].second.leavingTime / (60 * 24) <= wanted_date
+          && result_start[i].second.endSaleDate + result_start[i].second.leavingTime / (60 * 24) >= wanted_date) {
+        if (result_start[i].second.rank < result_terminal[j].second.rank && isReleased(result_start[i].second.trainID)) {
           int ranker;
           if (if_time)ranker = result_terminal[j].second.arrivingTime - result_start[i].second.leavingTime;
           else ranker = result_terminal[j].second.priceSum - result_start[i].second.priceSum;
