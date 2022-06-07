@@ -2,35 +2,72 @@
 #define BPTREE_HPP
 #define debug(x) cout << #x << ':' << (x) << endl;
 #include "memory_manager.hpp"
-#include <vector>
-#include <assert.h>
+#include "UnorderedMap.hpp"
+#include "Vector.hpp"
+//#include <vector>
+//#include <assert.h>
 #include <iostream>
 using namespace std;
 
-template <
+template<
    class Key,
    class Value,
-   class Compare = std::less<Key>, 
-   class Equal = std::equal_to<Key>,  
-   int M = 70, int L = 70
->
-class Bptree{
+   int M = 70, int L = 70,
+   class Hash = std::hash<Key>,
+   class Equal = std::equal_to<Key>
+   >
+class Bptree {
 private:
    int root, _size, normal_node_number;
    std::string prefix_name;
    class Bptree_leaf_node;
    class Bptree_normal_node;
+   Bptree_normal_node root_node;
    MemoryRiver<Bptree_leaf_node, 0> leaf_node_manager;     // info：leaf_node个数
    MemoryRiver<Bptree_normal_node, 3> normal_node_manager; // info：root的编号，normal_node个数，bptree中元素个数
-   
+
+   //Cache
+   int CacheLimit;
+   sjtu::linked_hashmap<Key, Value, Hash, Equal> Cache;
+   void CalLimit() {
+      CacheLimit = (1 << 16) / sizeof(std::pair<Key, Value>);
+      CacheLimit = std::min(CacheLimit, 25000);
+   }
+   bool CacheInsert(const Key &key_, Value &value_) {
+      if (Cache.find(key_) != Cache.end())return false;
+      if (Cache.size() >= CacheLimit)Cache.erase(Cache.begin());
+      Cache.insert(std::make_pair(key_, value_));
+      return true;
+   }
+
+   bool CacheRemove(const Key &key_) {
+      if (Cache.find(key_) == Cache.end())return false;
+      Cache.erase(Cache.find(key_));
+      return true;
+   }
+
+   bool CacheFind(const Key &key_, Value &result) {
+      if (Cache.find(key_) == Cache.end())return false;
+      result = Cache.find(key_)->second;
+      return true;
+   }
+
+   bool CacheModify(const Key &key_, const Value &rhs) {
+      if (Cache.find(key_) == Cache.end())return false;
+      Cache[key_] = rhs;
+      return true;
+   }
+
    //记录Bptree信息的文件操作函数
    //从文件中读取根节点
    void get_root() {
       normal_node_manager.get_info(root, 1);
+      normal_node_manager.read(root_node, root);
    }
    //将根节点写入文件
    void write_root() {
-      normal_node_manager.write_info(root, 1); 
+      normal_node_manager.write_info(root, 1);
+      normal_node_manager.update(root_node, root);
    }
    //从文件中读取normal_node个数
    void get_normal_node_number() {
@@ -48,7 +85,17 @@ private:
    void write_size() {
       normal_node_manager.write_info(_size, 3);
    }
-   
+   //从硬盘中读取normal_node，根节点从内存中读
+   void read_normal_node(Bptree_normal_node &node, int pos) {
+      if (pos == root) node = root_node;
+      else normal_node_manager.read(node, pos);
+   }
+   //将normal_node写入硬盘，如果是根节点只写入内存
+   void modify_normal_node(Bptree_normal_node &node, int pos) {
+      if (pos == root) root_node = node;
+      else normal_node_manager.update(node, pos);
+   }
+
    // 一般节点类
    class Bptree_normal_node {
    public:
@@ -58,7 +105,7 @@ private:
       bool is_lowest;
       int children[M + 1]; //0-base，多出一个用做拆分时的临时节点
       Key key_min, key_list[M];
-    
+
    public:
       //构造函数
       Bptree_normal_node() {
@@ -67,7 +114,7 @@ private:
          for (int i = 0; i <= M; ++i) children[i] = -1;
       }
       //拷贝构造
-      Bptree_normal_node(const Bptree_normal_node &obj)  {
+      Bptree_normal_node(const Bptree_normal_node &obj) {
          size = obj.size;
          key_min = obj.key_min;
          is_lowest = obj.is_lowest;
@@ -81,7 +128,7 @@ private:
       //析构函数
       ~Bptree_normal_node() {}
    };
-         
+
    //叶子节点类
    class Bptree_leaf_node {
    public:
@@ -91,8 +138,8 @@ private:
       int predecessor, succssor;
       Key key_list[L + 1];
       Value value_list[L + 1];
-  
-   public:  
+
+   public:
       //构造函数
       Bptree_leaf_node() {
          size = 0;
@@ -109,20 +156,20 @@ private:
       }
       //析构函数
       ~Bptree_leaf_node() {}
-      //查找前驱 
-      Bptree_leaf_node find_predecessor(const Bptree_leaf_node &obj) const {
-         assert(obj.predecessor != -1);
-         Bptree_leaf_node pre;
-         leaf_node_manager.read(pre, obj.successor);
-         return pre;
-      };
-      //查找后继
-      Bptree_leaf_node find_successor(const Bptree_leaf_node &obj) const {
-         assert(obj.succssor != -1);
-         Bptree_leaf_node suc;
-         leaf_node_manager.read(suc, obj.succssor);
-         return suc;
-      };
+      //查找前驱
+//    Bptree_leaf_node find_predecessor(const Bptree_leaf_node &obj) const {
+//      //assert(obj.predecessor != -1);
+//      Bptree_leaf_node pre;
+//      leaf_node_manager.read(pre, obj.successor);
+//      return pre;
+//    };
+//    //查找后继
+//    Bptree_leaf_node find_successor(const Bptree_leaf_node &obj) const {
+//      //assert(obj.succssor != -1);
+//      Bptree_leaf_node suc;
+//      leaf_node_manager.read(suc, obj.succssor);
+//      return suc;
+//    };
    };
 
 //BpTree正文
@@ -135,10 +182,13 @@ public:
       get_normal_node_number();
       get_size();
       if (normal_node_number == 0) { //如果是空树创建根节点
-         Bptree_normal_node tmp;
-         root = normal_node_manager.write(tmp);
+         root = normal_node_manager.write(root_node);
          ++normal_node_number;
       }
+
+      //Cache
+      CalLimit();
+
    }
    //析构函数
    ~Bptree() {
@@ -149,8 +199,12 @@ public:
    //清空Bptree
    void clear() {
       root = normal_node_number = _size = 0;
+      root_node = Bptree_normal_node();
       leaf_node_manager.clear();
       normal_node_manager.clear();
+
+      //Cache
+      Cache.clear();
    }
    //查看bptree中元素个数
    int size() const {
@@ -158,12 +212,18 @@ public:
    }
    //查看是否有插入指定key值的元素, 如果有将value返回到result中
    bool find(const Key &key, Value &result) {
-      return dfs_find(root, 0, key, result) != -1;
+      //Cache
+      if (CacheFind(key, result))return true;
+      if (dfs_find(root, 0, key, result) != -1) {
+         CacheInsert(key, result);
+         return true;
+      } else return false;
+
+      //return dfs_find(root, 0, key, result) != -1;
    }
    //插入节点，失败返回0（如果给定key值已有节点，也会返回0）
    bool insert(const Key &key, const Value &value) {
-      Bptree_normal_node real_root, virtual_root;
-      normal_node_manager.read(real_root, root);
+      Bptree_normal_node virtual_root;
       virtual_root.size = 1;
       virtual_root.is_lowest = 0;
       virtual_root.children[0] = root;
@@ -181,10 +241,17 @@ public:
       Bptree_normal_node virtual_root;
       bool flag = dfs_erase(root, 0, 0, virtual_root, key);
       if (flag) --_size;
+
+      //Cache
+      if (flag)CacheRemove(key);
+
       return flag;
    }
    //修改指定key值的元素，如果不存在返回0
    bool modify(const Key &key, const Value &value) {
+      //Cache
+      CacheModify(key,value);
+
       return dfs_modify(root, 0, key, value) != -1;
    }
    //另一个版本的modify
@@ -192,7 +259,7 @@ public:
       return modify(data.first, data.second);
    }
    //查找Key值在[key_l, key_r)中间的值,按key升序放入rusult
-   void range_search(const Key &key_l, const Key &key_r, std::vector<std::pair<Key, Value>> &result) {
+   void range_search(const Key &key_l, const Key &key_r, sjtu::vector<Value> &result) {
       result.clear();
       int index = lower_bound(key_l);
       bool flag = 0;
@@ -203,7 +270,29 @@ public:
          for (int i = 0; i < leaf.size; ++i) {
             if (flag || key_l <= leaf.key_list[i]) {
                flag = 1;
-               if (leaf.key_list[i] < key_r)   {
+               if (leaf.key_list[i] < key_r) {
+                  result.push_back(leaf.value_list[i]);
+               } else {
+                  break;
+               }
+            }
+         }
+         index = leaf.succssor;
+      }
+   }
+
+   void range_search(const Key &key_l, const Key &key_r, sjtu::vector<std::pair<Key, Value>> &result) {
+      result.clear();
+      int index = lower_bound(key_l);
+      bool flag = 0;
+      while (index != -1) {
+         Bptree_leaf_node leaf;
+         leaf_node_manager.read(leaf, index);
+         if (leaf.size == 0 || leaf.key_list[0] >= key_r) break;
+         for (int i = 0; i < leaf.size; ++i) {
+            if (flag || key_l <= leaf.key_list[i]) {
+               flag = 1;
+               if (leaf.key_list[i] < key_r) {
                   result.push_back(std::make_pair(leaf.key_list[i], leaf.value_list[i]));
                } else {
                   break;
@@ -213,7 +302,8 @@ public:
          index = leaf.succssor;
       }
    }
-private:   
+
+private:
    //用于更新Bptree_normal_node的信息
    //用节点的儿子节点更新该点的key_min
    void pushup(Bptree_normal_node &obj) {
@@ -266,7 +356,9 @@ private:
    }
    //超过数量限制时拆分普通节点
    //index为obj在文件中的位置，拆分后的节点应被写入index和new_index
-   std::pair<Bptree_normal_node, Bptree_normal_node> split(const Bptree_normal_node &obj, const int &index, int &new_index) {
+   std::pair<Bptree_normal_node, Bptree_normal_node> split(const Bptree_normal_node &obj,
+                                                           const int &index,
+                                                           int &new_index) {
       Bptree_normal_node x, y;
       new_index = normal_node_manager.write(y);
       x.size = (obj.size + 1) / 2;
@@ -323,7 +415,7 @@ private:
          return -1;
       } else {
          Bptree_normal_node node;
-         normal_node_manager.read(node, pos);
+         read_normal_node(node, pos);
          if (node.size == 0) return -1; // BpTree为空树
          for (int i = 0; i < node.size; ++i) {
             if (i + 1 == node.size || key < node.key_list[i]) {
@@ -348,7 +440,7 @@ private:
          return -1;
       } else {
          Bptree_normal_node node;
-         normal_node_manager.read(node, pos);
+         read_normal_node(node, pos);
          if (node.size == 0) return -1; // BpTree为空树
          for (int i = 0; i < node.size; ++i) {
             if (i + 1 == node.size || key < node.key_list[i]) {
@@ -401,7 +493,7 @@ private:
          return 1;
       } else {
          Bptree_normal_node self;
-         normal_node_manager.read(self, pos);
+         read_normal_node(self, pos);
          if (pos == root) parent.key_min = self.key_min;
          if (self.size == 0) { //如果是空树
             Bptree_leaf_node tmp;
@@ -411,7 +503,7 @@ private:
             self.children[0] = leaf_node_manager.write(tmp);
             self.size = 1;
             self.key_min = key;
-            normal_node_manager.update(self, pos);
+            modify_normal_node(self, pos);
             return 1;
          }
          for (int i = 0; i < self.size; ++i) {
@@ -424,12 +516,12 @@ private:
             parent.key_min = self.key_min;
          }
          if (self.size <= M) {
-            normal_node_manager.update(self, pos);
+            modify_normal_node(self, pos);
          } else {
             int new_index;
             std::pair<Bptree_normal_node, Bptree_normal_node> tmp = split(self, pos, new_index);
-            normal_node_manager.update(tmp.first, pos);
-            normal_node_manager.update(tmp.second, new_index);
+            modify_normal_node(tmp.first, pos);
+            modify_normal_node(tmp.second, new_index);
             for (int i = parent.size; i >= rank + 1; --i) {
                if (i != rank + 1) {
                   parent.children[i] = parent.children[i - 1];
@@ -442,7 +534,9 @@ private:
             parent.key_list[rank] = tmp.second.key_min;
             ++parent.size;
             if (pos == root) { //换根
+               normal_node_manager.update(root_node, root);
                root = normal_node_manager.write(parent);
+               root_node = parent;
             }
          }
          return 1;
@@ -490,22 +584,23 @@ private:
          return flag;
       } else {
          Bptree_normal_node self;
-         normal_node_manager.read(self, pos);
+         read_normal_node(self, pos);
          if (self.size == 0) return 0;
          bool found = 0;
          for (int i = 0; i < self.size; ++i) {
             if (i + 1 == self.size || key < self.key_list[i]) {
                found = dfs_erase(self.children[i], self.is_lowest, i, self, key);
-               break;	
+               break;
             }
          }
          if (found) {
             if (pos == root && !self.is_lowest && self.size == 1) { //删根
                root = self.children[0];
                normal_node_manager.Delete(pos);
+               normal_node_manager.read(root_node, root);
                --normal_node_number;
             } else if (self.size >= (M + 1) / 2 || pos == root) {
-               normal_node_manager.update(self, pos);
+               modify_normal_node(self, pos);
             } else {
                Bptree_normal_node brother;
                if (rank + 1 != parent.size) {
@@ -521,7 +616,10 @@ private:
       }
    }
    //在叶节点删除某个值后，在node1和node2之间调整使他们满足Bptree对size的要求，返回是否进行了merge操作
-   bool maintain_size_decrease_leaf(int rank, Bptree_leaf_node &node1, Bptree_leaf_node &node2, Bptree_normal_node &parent) {
+   bool maintain_size_decrease_leaf(int rank,
+                                    Bptree_leaf_node &node1,
+                                    Bptree_leaf_node &node2,
+                                    Bptree_normal_node &parent) {
       int id1 = parent.children[rank], id2 = parent.children[rank + 1];
       if (node1.size == (L + 1) / 2 || node2.size == (L + 1) / 2) {
          node1 = merge(node1, node2);
@@ -532,14 +630,15 @@ private:
             parent.children[i] = parent.children[i + 1];
          }
          for (int i = rank; i + 1 < parent.size; ++i) {
-         	parent.key_list[i] = parent.key_list[i + 1];
-		   }
+            parent.key_list[i] = parent.key_list[i + 1];
+         }
          if (rank == 0) parent.key_min = node1.key_list[0];
          return 1;
       } else if (node1.size < (L + 1) / 2) {
          node1.key_list[node1.size] = node2.key_list[0];
          node1.value_list[node1.size] = node2.value_list[0];
-         ++node1.size; --node2.size;
+         ++node1.size;
+         --node2.size;
          for (int i = 0; i < node2.size; ++i) {
             node2.key_list[i] = node2.key_list[i + 1];
             node2.value_list[i] = node2.value_list[i + 1];
@@ -554,7 +653,8 @@ private:
             node2.key_list[i] = node2.key_list[i - 1];
             node2.value_list[i] = node2.value_list[i - 1];
          }
-         --node1.size; ++node2.size;
+         --node1.size;
+         ++node2.size;
          node2.key_list[0] = node1.key_list[node1.size];
          node2.value_list[0] = node1.value_list[node1.size];
          parent.key_list[rank] = node2.key_list[0];
@@ -565,25 +665,29 @@ private:
       }
    }
    //在普通节点删除某个值后，在node1和node2之间调整使他们满足Bptree对size的要求，返回是否进行了merge操作
-   bool maintain_size_decrease_normal(int rank, Bptree_normal_node &node1, Bptree_normal_node &node2, Bptree_normal_node &parent) {
+   bool maintain_size_decrease_normal(int rank,
+                                      Bptree_normal_node &node1,
+                                      Bptree_normal_node &node2,
+                                      Bptree_normal_node &parent) {
       int id1 = parent.children[rank], id2 = parent.children[rank + 1];
       if (node1.size == (M + 1) / 2 || node2.size == (M + 1) / 2) {
          node1 = merge(node1, node2);
-         normal_node_manager.update(node1, id1);
+         modify_normal_node(node1, id1);
          normal_node_manager.Delete(id2);
          --parent.size;
          for (int i = rank + 1; i < parent.size; ++i) {
             parent.children[i] = parent.children[i + 1];
          }
          for (int i = rank; i + 1 < parent.size; ++i) {
-         	parent.key_list[i] = parent.key_list[i + 1];
-		   }
+            parent.key_list[i] = parent.key_list[i + 1];
+         }
          return 1;
       } else if (node1.size < (M + 1) / 2) {
          node1.children[node1.size] = node2.children[0];
          node1.key_list[node1.size - 1] = node2.key_min;
-         node2.key_min = node2.key_list[0]; 
-         ++node1.size; --node2.size;
+         node2.key_min = node2.key_list[0];
+         ++node1.size;
+         --node2.size;
          for (int i = 0; i < node2.size; ++i) {
             node2.children[i] = node2.children[i + 1];
             if (i + 1 != node2.size) {
@@ -591,8 +695,8 @@ private:
             }
          }
          parent.key_list[rank] = node2.key_min;
-         normal_node_manager.update(node1, id1);
-         normal_node_manager.update(node2, id2);
+         modify_normal_node(node1, id1);
+         modify_normal_node(node2, id2);
          return 0;
       } else {
          for (int i = node2.size; i > 0; --i) {
@@ -601,13 +705,14 @@ private:
                node2.key_list[i] = node2.key_list[i - 1];
             }
          }
-         --node1.size; ++node2.size; 
+         --node1.size;
+         ++node2.size;
          node2.children[0] = node1.children[node1.size];
          node2.key_list[0] = node2.key_min;
          node2.key_min = node1.key_list[node1.size - 1];
          parent.key_list[rank] = node2.key_min;
-         normal_node_manager.update(node1, id1);
-         normal_node_manager.update(node2, id2);
+         modify_normal_node(node1, id1);
+         modify_normal_node(node2, id2);
          return 0;
       }
    }
@@ -618,7 +723,7 @@ private:
    //lower_bound的辅助函数
    int dfs_lower_bound(int pos, const Key &key) {
       Bptree_normal_node self;
-      normal_node_manager.read(self, pos);
+      read_normal_node(self, pos);
       if (self.size == 0) return -1;
       for (int i = self.size - 1; i >= 0; --i) {
          if (i == 0 || key >= self.key_list[i - 1]) {

@@ -5,7 +5,7 @@ using namespace std;
 struct point {
     int x, y;
 };
-Bptree<int, int, std::less<int>, std::equal_to<int>, 100, 100> tr("Bptree_test");
+Bptree<int, int, 100, 100, std::hash<int>, std::equal_to<int> > tr("Bptree_test");
 int T;
 
 
@@ -35,7 +35,7 @@ int main() {
           scanf("%d%d", &x, &y);
           cout << (f = tr.modify(x, y)) << endl;
        } else if (op == 4) {
-          vector<pair<int, int>> vec;
+          sjtu::vector<pair<int, int>> vec;
           int x, y;
           scanf("%d%d", &x, &y);
           tr.range_search(x, y, vec);
