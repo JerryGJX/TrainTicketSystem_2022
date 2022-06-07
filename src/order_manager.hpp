@@ -84,7 +84,7 @@ class OrderManager {
     }
   };
 
-  Bptree<std::pair<ull, int>, Order, 204, 19,PairHash<ull,int>> orderDataBase;//hashUid,oid
+  Bptree<std::pair<ull, int>, Order, 204, 36,PairHash<ull,int>> orderDataBase;//hashUid,oid
   Bptree<std::pair<std::pair<int, ull>, int>, PendingOrder, 145, 63,PairPairHash> pendingQueue;//(第几天(指始发天数)，hash(trainID)),oid
 
   //  void OrderDataBase_RangeFind(const std::pair<ull, int> &lp,
