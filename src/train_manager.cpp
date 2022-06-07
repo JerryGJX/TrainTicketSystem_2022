@@ -210,7 +210,6 @@ bool TrainManager::queryTrain(const std::string &trainID_,
 
 void TrainManager::QueryTicket(sjtu::linked_hashmap<std::string, std::string> &info,
                                sjtu::vector<std::string> &result) {
-  return;
   JerryGJX::Day wanted_date = JerryGJX::CalendarTime(info["-d"]).ToDay();
 
   std::string startStation = info["-s"], endStation = info["-t"];
