@@ -218,30 +218,45 @@ void TrainManager::QueryTicket(sjtu::linked_hashmap<std::string, std::string> &i
   sjtu::vector<TrainStation> result_start, result_terminal;
   stationDataBase.range_search(std::make_pair(start_hash, 0), std::make_pair(start_hash + 1, 0), result_start);
   stationDataBase.range_search(std::make_pair(terminal_hash, 0), std::make_pair(terminal_hash + 1, 0), result_terminal);
-  sjtu::linked_hashmap<ull, int> find_same;
-  for (int i = 0; i < result_start.size(); ++i) {
-    if (result_start[i].startSaleDate + result_start[i].leavingTime / (60 * 24) <= wanted_date
-        && result_start[i].endSaleDate + result_start[i].leavingTime / (60 * 24) >= wanted_date) {
-      if (isReleased(result_start[i].trainID))
-        find_same.insert(std::make_pair(CalHash(result_start[i].trainID), i));
-    }
-  }
-  sjtu::map<std::pair<int, JerryGJX::trainIDType>, std::pair<int, int>> possible_ans;
+  //sjtu::linked_hashmap<ull, int> find_same;
 
   bool if_time = true;
   if (info.find("-p") != info.end() && info["-p"] == "cost") if_time = false;
 
-  for (int i = 0; i < result_terminal.size(); ++i) {
-    if (find_same.find(CalHash(result_terminal[i].trainID)) != find_same.end()) {
-      int cnt = find_same.find(CalHash(result_terminal[i].trainID))->second;
-      if (result_start[cnt].rank < result_terminal[i].rank) {
-        int ranker;
-        if (if_time)ranker = result_terminal[i].arrivingTime - result_start[cnt].leavingTime;
-        else ranker = result_terminal[i].priceSum - result_start[cnt].priceSum;
-        possible_ans.insert(std::make_pair(std::make_pair(ranker, result_start[cnt].trainID), std::make_pair(cnt, i)));
+  sjtu::map<std::pair<int, JerryGJX::trainIDType>, std::pair<int, int>> possible_ans;
+
+  //sjtu::vector<int> find_same;
+  for (int i = 0, j = 0; i < result_start.size() && j < result_terminal.size(); ++i) {
+    while (result_start[i].trainID > result_terminal[j].trainID)j++;
+    if (result_start[i].trainID == result_terminal[j].trainID) {
+      if (result_start[i].startSaleDate + result_start[i].leavingTime / (60 * 24) <= wanted_date
+          && result_start[i].endSaleDate + result_start[i].leavingTime / (60 * 24) >= wanted_date) {
+        if (isReleased(result_start[i].trainID)&&result_start[i].rank < result_terminal[j].rank){
+          int ranker;
+          if (if_time)ranker = result_terminal[j].arrivingTime - result_start[i].leavingTime;
+          else ranker = result_terminal[j].priceSum - result_start[i].priceSum;
+          possible_ans.insert(std::make_pair(std::make_pair(ranker, result_start[i].trainID), std::make_pair(i, j)));
+        }
       }
     }
   }
+
+//  sjtu::map<std::pair<int, JerryGJX::trainIDType>, std::pair<int, int>> possible_ans;
+//
+//  bool if_time = true;
+//  if (info.find("-p") != info.end() && info["-p"] == "cost") if_time = false;
+//
+//  for (int i = 0; i < result_terminal.size(); ++i) {
+//    if (find_same.find(CalHash(result_terminal[i].trainID)) != find_same.end()) {
+//      int cnt = find_same.find(CalHash(result_terminal[i].trainID))->second;
+//      if (result_start[cnt].rank < result_terminal[i].rank) {
+//        int ranker;
+//        if (if_time)ranker = result_terminal[i].arrivingTime - result_start[cnt].leavingTime;
+//        else ranker = result_terminal[i].priceSum - result_start[cnt].priceSum;
+//        possible_ans.insert(std::make_pair(std::make_pair(ranker, result_start[cnt].trainID), std::make_pair(cnt, i)));
+//      }
+//    }
+//  }
 
   result.push_back(std::to_string(possible_ans.size()));
 
