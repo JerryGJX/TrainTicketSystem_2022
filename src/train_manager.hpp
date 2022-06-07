@@ -158,7 +158,7 @@ class TrainManager {
   Bptree<ull, BasicTrain, 338, 65> basicTrainBackUp;//
   Bptree<std::pair<JerryGJX::Day, ull>, DayTrain, 253, 8, PairHash<JerryGJX::Day, ull>>
       DayTrainToSeat;//(第几天，hash(trainID))
-  Bptree<std::pair<ull, ull>, TrainStation, 201, 65, PairHash<ull, ull>> stationDataBase;//(HashStation，HashTrain）
+  Bptree<std::pair<ull, ull>, TrainStation, 201, 33, PairHash<ull, ull>> stationDataBase;//(HashStation，HashTrain）
 
 
 
