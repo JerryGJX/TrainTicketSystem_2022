@@ -178,7 +178,7 @@ class TrainManager {
                const std::string &filename_sdb,
                const std::string &filename_btb);
 
-  ull CalHash(const std::string &str_);
+
 
   void addTrain(const std::string &trainID_,
                 int stationNum_,
@@ -209,7 +209,7 @@ class TrainManager {
   /**
   * @brief 用于query_train函数
   */
-
+  ull CalHash(const std::string &str_);
   /**
    * @brief 将不同火车到达同一站视为不同站
    */

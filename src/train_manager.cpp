@@ -215,7 +215,7 @@ void TrainManager::QueryTicket(sjtu::linked_hashmap<std::string, std::string> &i
   std::string startStation = info["-s"], endStation = info["-t"];
 
   ull start_hash = CalHash(startStation), terminal_hash = CalHash(endStation);
-  sjtu::vector<TrainStation> result_start, result_terminal;
+  sjtu::vector<std::pair<std::pair<ull,ull>,TrainStation>> result_start, result_terminal;
   stationDataBase.range_search(std::make_pair(start_hash, 0), std::make_pair(start_hash + 1, 0), result_start);
   stationDataBase.range_search(std::make_pair(terminal_hash, 0), std::make_pair(terminal_hash + 1, 0), result_terminal);
   //sjtu::linked_hashmap<ull, int> find_same;
@@ -227,15 +227,16 @@ void TrainManager::QueryTicket(sjtu::linked_hashmap<std::string, std::string> &i
 
   //sjtu::vector<int> find_same;
   for (int i = 0, j = 0; i < result_start.size() && j < result_terminal.size(); ++i) {
-    while (result_start[i].trainID > result_terminal[j].trainID)j++;
-    if (result_start[i].trainID == result_terminal[j].trainID) {
-      if (result_start[i].startSaleDate + result_start[i].leavingTime / (60 * 24) <= wanted_date
-          && result_start[i].endSaleDate + result_start[i].leavingTime / (60 * 24) >= wanted_date) {
-        if (isReleased(result_start[i].trainID)&&result_start[i].rank < result_terminal[j].rank){
+    while (j < result_terminal.size() && result_start[i].first.second > result_terminal[j].first.second)j++;
+    if (j >= result_terminal.size())break;
+    if (result_start[i].second.trainID == result_terminal[j].second.trainID) {
+      if (result_start[i].second.startSaleDate + result_start[i].second.leavingTime / (60 * 24) <= wanted_date
+          && result_start[i].second.endSaleDate + result_start[i].second.leavingTime / (60 * 24) >= wanted_date) {
+        if (result_start[i].second.rank < result_terminal[j].second.rank && isReleased(result_start[i].second.trainID)) {
           int ranker;
-          if (if_time)ranker = result_terminal[j].arrivingTime - result_start[i].leavingTime;
-          else ranker = result_terminal[j].priceSum - result_start[i].priceSum;
-          possible_ans.insert(std::make_pair(std::make_pair(ranker, result_start[i].trainID), std::make_pair(i, j)));
+          if (if_time)ranker = result_terminal[j].second.arrivingTime - result_start[i].second.leavingTime;
+          else ranker = result_terminal[j].second.priceSum - result_start[i].second.priceSum;
+          possible_ans.insert(std::make_pair(std::make_pair(ranker, result_start[i].second.trainID), std::make_pair(i, j)));
         }
       }
     }
@@ -263,10 +264,10 @@ void TrainManager::QueryTicket(sjtu::linked_hashmap<std::string, std::string> &i
   //int tot_num = 0;
   for (auto i = possible_ans.begin(); i != possible_ans.end(); i++) {
 
-    int levT_f = result_start[i->second.first].leavingTime, arvT_t = result_terminal[i->second.second].arrivingTime,
-        f_rank = result_start[i->second.first].rank, t_rank = result_terminal[i->second.second].rank;
+    int levT_f = result_start[i->second.first].second.leavingTime, arvT_t = result_terminal[i->second.second].second.arrivingTime,
+        f_rank = result_start[i->second.first].second.rank, t_rank = result_terminal[i->second.second].second.rank;
 
-    std::string _trainID = result_start[i->second.first].trainID;
+    std::string _trainID = result_start[i->second.first].second.trainID;
 
     ull tr_hash = CalHash(_trainID);
     int start_date = wanted_date - levT_f / (24 * 60);
@@ -281,7 +282,7 @@ void TrainManager::QueryTicket(sjtu::linked_hashmap<std::string, std::string> &i
 //    JerryGJX::Time _leaving_time = start_day + result_start[i->second.first].leavingTime % (24 * 60);
 //    JerryGJX::Time _arrival_time =
 //        _leaving_time + (result_terminal[i->second.second].arrivingTime - result_start[i->second.first].leavingTime);
-    int _price = result_terminal[i->second.second].priceSum - result_start[i->second.first].priceSum;
+    int _price = result_terminal[i->second.second].second.priceSum - result_start[i->second.first].second.priceSum;
 
     Ticket tk_ca(_trainID, startStation, endStation, start_time, end_time, _price, _seat);
 

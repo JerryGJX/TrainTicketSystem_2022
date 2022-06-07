@@ -8,8 +8,8 @@ TrainManager train_manager("trainData", "dtts", "sdb","btb");
 OrderManager order_manager("orderData","pendingData");
 CommandParser command_parser(user_manager,train_manager,order_manager);
 int main() {
-  //freopen("test1.ans", "w", stdout);
-  //freopen("../test/data/basic/1.in", "r", stdin);
+//  freopen("test1.ans", "w", stdout);
+//  freopen("../test/data/basic_2/1.in", "r", stdin);
   std::ios::sync_with_stdio(false);
 
   while (true) {
