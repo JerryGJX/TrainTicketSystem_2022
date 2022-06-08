@@ -7,7 +7,7 @@
 
 namespace JerryGJX {
 template<class T, class Compare=std::less<T>>
-void Sort(T *a, int l, int r) {
+void Sort(sjtu::vector<T> &a, int l, int r) {
   if (l >= r)return;
   T ca = a[l];
   int lp = l, rp = r;
@@ -25,8 +25,8 @@ void Sort(T *a, int l, int r) {
   } while (lp != rp);
   a[lp] = ca;
   int mid = lp;
-  sort(a, l, mid);
-  sort(a, mid + 1, r);
+  Sort(a, l, mid - 1);
+  Sort(a, mid + 1, r);
 }
 
 //int ToHour(std::string &str) {

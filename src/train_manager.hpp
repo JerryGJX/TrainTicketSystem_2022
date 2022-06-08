@@ -9,7 +9,7 @@
 #include "ACMstl/Map.hpp"
 #include "ACMstl/Vector.hpp"
 #include "mydefs.hpp"
-//#include "ACMstl/Queue.hpp"
+#include "tools/Algorithm.hpp"
 #include "tools/Time.hpp"
 #include "order_manager.hpp"
 
