@@ -337,8 +337,8 @@ void TrainManager::QueryTransfer(sjtu::linked_hashmap<std::string, std::string> 
 
   sjtu::linked_hashmap<ull, std::pair<int, int>> startTime_permit;//trainIDHash,pair(start_date,rank in result_start)
   for (int i = 0; i < result_start.size(); ++i) {
-     int add_time=result_start[i].second.leavingTime / (60 * 24);
-      if (result_start[i].second.endSaleDate + add_time >= wanted_date) {
+     int add_time=result_start[i].leavingTime / (60 * 24);
+      if (result_start[i].endSaleDate + add_time >= wanted_date) {
       if (isReleased(result_start[i].trainID)) {
         int levT_f = result_start[i].leavingTime;
         int start_time = wanted_date - levT_f / (24 * 60);
