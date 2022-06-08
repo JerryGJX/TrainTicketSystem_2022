@@ -83,7 +83,7 @@ class TrainManager {
 
   struct TrainStation {
     JerryGJX::trainIDType trainID{};
-    JerryGJX::stationType station{};
+    //JerryGJX::stationType station{};
     int rank = 0, priceSum = 0;//rank表示从始发站向下的站次，priceSum表示始发站到该站的总价格
     JerryGJX::Day startSaleDate{}, endSaleDate{};
     int startTime{}, arrivingTime{}, leavingTime{};

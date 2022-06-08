@@ -168,7 +168,7 @@ void TrainManager::releaseTrain(const std::string &trainID_) {
   TrainStation train_station(trainID_, b_tr_ca.startSellDate, b_tr_ca.endSellDate);
 
   for (int i = 0; i < b_tr_ca.stationNum; ++i) {
-    train_station.station = tr_ca.stations[i];
+    //train_station.station = tr_ca.stations[i];
     train_station.rank = i;
     train_station.priceSum = tr_ca.sumPrice[i];
     train_station.startTime = b_tr_ca.startTime;
