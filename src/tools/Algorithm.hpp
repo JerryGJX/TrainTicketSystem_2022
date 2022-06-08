@@ -7,26 +7,24 @@
 
 namespace JerryGJX {
 template<class T, class Compare=std::less<T>>
-void Sort(sjtu::vector<T> &a, int l, int r) {
+void Sort(sjtu::vector<T> &A, int l, int r) {
   if (l >= r)return;
-  T ca = a[l];
-  int lp = l, rp = r;
-  do {
-    while (lp < rp && Compare()(a[rp], ca))--rp;
-    if (lp < rp) {
-      a[lp] = a[rp];
-      ++lp;
+  int low = l, high = r;
+  T pivot = A[low];
+  while (low < high) {
+    while (low < high && A[high] >= pivot) {
+      --high;
     }
-    while (lp < rp && Compare()(ca, a[lp]))++lp;
-    if (lp < rp) {
-      a[rp] = a[lp];
-      --rp;
+    A[low] = A[high];
+    while (low < high && A[low] <= pivot) {
+      ++low;
     }
-  } while (lp != rp);
-  a[lp] = ca;
-  int mid = lp;
-  Sort(a, l, mid - 1);
-  Sort(a, mid + 1, r);
+    A[high] = A[low];
+  }
+  A[low] = pivot;
+
+  Sort(A, l, low - 1);
+  Sort(A, low + 1, r);
 }
 
 //int ToHour(std::string &str) {
