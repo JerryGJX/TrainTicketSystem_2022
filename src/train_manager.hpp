@@ -33,7 +33,7 @@ struct Train {
 };
 
 struct BasicTrain {
-  JerryGJX::trainIDType trainID{};
+  //JerryGJX::trainIDType trainID{};
   int stationNum{}, totalSeatNum{};
   bool isReleased = false;
   JerryGJX::Minute startTime{};
@@ -50,7 +50,8 @@ struct BasicTrain {
              int start_sell_date,
              int end_sell_date,
              char type)
-      : trainID(train_id),
+      :
+      //trainID(train_id),
         stationNum(station_num),
         totalSeatNum(total_seat_num),
         isReleased(is_released),
@@ -60,7 +61,7 @@ struct BasicTrain {
         type(type) {}
 
   BasicTrain(const BasicTrain &rhs) {
-    trainID = rhs.trainID;
+    //trainID = rhs.trainID;
     stationNum = rhs.stationNum;
     totalSeatNum = rhs.totalSeatNum;
     isReleased = rhs.isReleased;
