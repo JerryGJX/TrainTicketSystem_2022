@@ -55,7 +55,7 @@ class User {
 
 class UserManager {
  private:
-  Bptree<ull, User, 203, 27> userDatabase;//username -> User(class)
+  Bptree<ull, User, 339, 67> userDatabase;//username -> User(class)
   sjtu::linked_hashmap<ull, int> onlineUser;//维护在线用户 username->privilege
   //Bptree<ull, std::pair<int, bool>> onlineUserBackUp;
   std::hash<std::string> hash_str;
