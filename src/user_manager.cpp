@@ -93,7 +93,7 @@ bool UserManager::Logout(sjtu::linked_hashmap<std::string, std::string> &info) {
 bool UserManager::queryProfile(const sjtu::linked_hashmap<std::string, std::string> &info,
                                std::string &result) {
   User ta_ca;
-  if (!userDatabase.find(CalHash(info["-u"]), ta_ca) || !isLogin(info["-c"]))return false;
+  if (!isLogin(info["-c"]) ||!userDatabase.find(CalHash(info["-u"]), ta_ca))return false;
   if (onlineUser[CalHash(info["-c"])] <= ta_ca.privilege && info["-c"] != ta_ca.username.str())return false;
   result = ta_ca.to_string();
   return true;
