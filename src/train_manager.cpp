@@ -175,7 +175,7 @@ void TrainManager::releaseTrain(const std::string &trainID_) {
     train_station.arrivingTime = tr_ca.arrivingTime[i];
     train_station.leavingTime = tr_ca.leavingTime[i];
     stationDataBase.insert(std::make_pair(std::make_pair(std::make_pair(CalHash(tr_ca.stations[i]),
-                                                                        b_tr_ca.startSellDate), CalHash(trainID_)),
+                                                                        b_tr_ca.startSellDate), tr_hash),
                                           train_station));
   }
 
@@ -236,10 +236,10 @@ void TrainManager::QueryTicket(sjtu::linked_hashmap<std::string, std::string> &i
   ull start_hash = CalHash(startStation), terminal_hash = CalHash(endStation);
   sjtu::vector<std::pair<std::pair<std::pair<ull, int>, ull>, TrainStation>> result_start, result_terminal;
   stationDataBase.range_search(std::make_pair(std::make_pair(start_hash, 0), 0),
-                               std::make_pair(std::make_pair(start_hash, wanted_date), 0),
+                               std::make_pair(std::make_pair(start_hash, wanted_date+1), 0),
                                result_start);
   stationDataBase.range_search(std::make_pair(std::make_pair(terminal_hash, 0), 0),
-                               std::make_pair(std::make_pair(terminal_hash, wanted_date), 0),
+                               std::make_pair(std::make_pair(terminal_hash, wanted_date+1), 0),
                                result_terminal);
   //sjtu::linked_hashmap<ull, int> find_same;
 
@@ -329,10 +329,10 @@ void TrainManager::QueryTransfer(sjtu::linked_hashmap<std::string, std::string> 
 //  stationDataBase.range_search(std::make_pair(terminal_hash, 0), std::make_pair(terminal_hash + 1, 0), result_terminal);
 
   stationDataBase.range_search(std::make_pair(std::make_pair(start_hash, 0), 0),
-                               std::make_pair(std::make_pair(start_hash, wanted_date), 0),
+                               std::make_pair(std::make_pair(start_hash, wanted_date+1), 0),
                                result_start);
   stationDataBase.range_search(std::make_pair(std::make_pair(terminal_hash, 0), 0),
-                               std::make_pair(std::make_pair(terminal_hash, wanted_date), 0),
+                               std::make_pair(std::make_pair(terminal_hash, wanted_date+1), 0),
                                result_terminal);
 
 
