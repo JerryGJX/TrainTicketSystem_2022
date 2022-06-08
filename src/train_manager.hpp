@@ -155,8 +155,8 @@ class TrainManager {
 
   class PairPairHash {
    public:
-    ull operator()(const std::pair<std::pair<ull, int>, ull> &ValueType) const {
-      return ValueType.first.first+ValueType.first.second + ValueType.second;
+    ull operator()(const std::pair<ull, std::pair<int, ull>> &ValueType) const {
+      return ValueType.first + ValueType.second.first + ValueType.second.second;
     }
   };
 
@@ -165,7 +165,7 @@ class TrainManager {
   Bptree<ull, BasicTrain, 338, 65> basicTrainBackUp;//
   Bptree<std::pair<JerryGJX::Day, ull>, DayTrain, 253, 8, PairHash<JerryGJX::Day, ull>>
       DayTrainToSeat;//(第几天，hash(trainID))
-  Bptree<std::pair<std::pair<ull, int>, ull>, TrainStation, 201, 36, PairPairHash>
+  Bptree<std::pair<ull, std::pair<int, ull>>, TrainStation, 201, 36, PairPairHash>
       stationDataBase;//(HashStation，HashTrain）
 
 
