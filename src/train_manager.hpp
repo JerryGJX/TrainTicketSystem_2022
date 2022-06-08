@@ -153,12 +153,20 @@ class TrainManager {
     }
   };
 
+  class PairPairHash {
+   public:
+    ull operator()(const std::pair<std::pair<ull, int>, ull> &ValueType) const {
+      return ValueType.first.first+ValueType.first.second + ValueType.second;
+    }
+  };
+
   Bptree<ull, Train, 338, 3> trainDataBase;
   sjtu::linked_hashmap<ull, BasicTrain> basicTrainDatabase;
   Bptree<ull, BasicTrain, 338, 65> basicTrainBackUp;//
   Bptree<std::pair<JerryGJX::Day, ull>, DayTrain, 253, 8, PairHash<JerryGJX::Day, ull>>
       DayTrainToSeat;//(第几天，hash(trainID))
-  Bptree<std::pair<ull, ull>, TrainStation, 201, 36, PairHash<ull, ull>> stationDataBase;//(HashStation，HashTrain）
+  Bptree<std::pair<std::pair<ull, int>, ull>, TrainStation, 201, 36, PairPairHash>
+      stationDataBase;//(HashStation，HashTrain）
 
 
 
@@ -177,8 +185,6 @@ class TrainManager {
                const std::string &filename_dtts,
                const std::string &filename_sdb,
                const std::string &filename_btb);
-
-
 
   void addTrain(const std::string &trainID_,
                 int stationNum_,
