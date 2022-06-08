@@ -332,7 +332,7 @@ void TrainManager::QueryTransfer(sjtu::linked_hashmap<std::string, std::string> 
                                std::make_pair(start_hash, std::make_pair(wanted_date + 1, 0)),
                                result_start);
   stationDataBase.range_search(std::make_pair(terminal_hash, std::make_pair(0, 0)),
-                               std::make_pair(terminal_hash, std::make_pair(wanted_date + 1, 0)),
+                               std::make_pair(terminal_hash, std::make_pair(wanted_date + 90, 0)),
                                result_terminal);
 
   sjtu::linked_hashmap<ull, std::pair<int, int>> startTime_permit;//trainIDHash,pair(start_date,rank in result_start)
