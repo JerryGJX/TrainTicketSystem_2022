@@ -253,8 +253,8 @@ void TrainManager::QueryTicket(sjtu::linked_hashmap<std::string, std::string> &i
     while (j < result_terminal.size() && result_start[i].first.second > result_terminal[j].first.second)j++;
     if (j >= result_terminal.size())break;
     if (result_start[i].second.trainID == result_terminal[j].second.trainID) {
-      if (result_start[i].second.startSaleDate + result_start[i].second.leavingTime / (60 * 24) <= wanted_date
-          && result_start[i].second.endSaleDate + result_start[i].second.leavingTime / (60 * 24) >= wanted_date) {
+      int add_time=result_start[i].second.leavingTime / (60 * 24);
+      if (result_start[i].second.endSaleDate + add_time >= wanted_date) {
         if (result_start[i].second.rank < result_terminal[j].second.rank) {
           int ranker;
           if (if_time)ranker = result_terminal[j].second.arrivingTime - result_start[i].second.leavingTime;
@@ -337,8 +337,8 @@ void TrainManager::QueryTransfer(sjtu::linked_hashmap<std::string, std::string> 
 
   sjtu::linked_hashmap<ull, std::pair<int, int>> startTime_permit;//trainIDHash,pair(start_date,rank in result_start)
   for (int i = 0; i < result_start.size(); ++i) {
-    if (result_start[i].startSaleDate + result_start[i].leavingTime / (60 * 24) <= wanted_date
-        && result_start[i].endSaleDate + result_start[i].leavingTime / (60 * 24) >= wanted_date) {
+     int add_time=result_start[i].second.leavingTime / (60 * 24);
+      if (result_start[i].second.endSaleDate + add_time >= wanted_date) {
       if (isReleased(result_start[i].trainID)) {
         int levT_f = result_start[i].leavingTime;
         int start_time = wanted_date - levT_f / (24 * 60);
