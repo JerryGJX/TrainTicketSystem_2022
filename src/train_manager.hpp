@@ -221,18 +221,18 @@ class TrainManager {
    * @brief 将不同火车到达同一站视为不同站
    */
 
-  void QueryTicket(sjtu::linked_hashmap<std::string, std::string> &info, sjtu::vector<std::string> &result);
+  void QueryTicket(std::string *info, sjtu::vector<std::string> &result);
   /**
    * @param info 传入是price还是time
    * @brief 直接输出结果
    */
-  void QueryTransfer(sjtu::linked_hashmap<std::string, std::string> &info, sjtu::vector<std::string> &result);
+  void QueryTransfer(std::string *info, sjtu::vector<std::string> &result);
 
   /**
    * @param order_manager_ 用于修改下单信息
    * @brief 判断用户是否登录在commandParser中完成
    */
-  std::string BuyTicket(sjtu::linked_hashmap<std::string, std::string> &info, OrderManager &order_manager_);
+  std::string BuyTicket(std::string *info, OrderManager &order_manager_);
 
   bool RefundTicket(const std::string &username_, int rank_, OrderManager &order_manager_);//从新到旧第rank_个(1-base)
 

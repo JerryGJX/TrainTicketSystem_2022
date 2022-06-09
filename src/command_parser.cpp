@@ -39,7 +39,7 @@ void CommandParser::Run() {
     }
     if (!all_blank_flag) {
       sjtu::vector<std::string> parser_list;
-      sjtu::linked_hashmap<std::string, std::string> parser_list_to_use;
+      std::string parser_list_to_use[15];
 
       SplitString(parser_carrier, parser_list, ' ');
       std::cout << parser_list[0] << " ";
@@ -48,7 +48,8 @@ void CommandParser::Run() {
       int time_tag = std::stoi(timestamp);
       std::string cmd_type = parser_list[1];
       for (int i = 2; i < parser_list.size(); i += 2) {
-        parser_list_to_use.insert(std::make_pair(parser_list[i], parser_list[i + 1]));
+        parser_list_to_use[GetInfoRank(parser_list[i][1])]=parser_list[i + 1];
+        //parser_list_to_use.insert(std::make_pair(parser_list[i], ));
       }
 
 //      if (cmd_type == "exit") {
@@ -62,85 +63,85 @@ void CommandParser::Run() {
 }
 
 //------------------user manager-----------------
-void CommandParser::ParseAddUser(sjtu::linked_hashmap<std::string, std::string> &cmd) {
+void CommandParser::ParseAddUser(std::string *cmd) {
   if (user_manager.AddUser(cmd))Success();
   else Failure();
 }
-void CommandParser::ParseLogin(sjtu::linked_hashmap<std::string, std::string> &cmd) {
+void CommandParser::ParseLogin(std::string *cmd) {
   if (user_manager.Login(cmd))Success();
   else Failure();
 }
-void CommandParser::ParseLogout(sjtu::linked_hashmap<std::string, std::string> &cmd) {
+void CommandParser::ParseLogout(std::string *cmd) {
   if (user_manager.Logout(cmd))Success();
   else Failure();
 }
-void CommandParser::ParseQueryProfile(sjtu::linked_hashmap<std::string, std::string> &cmd) {
+void CommandParser::ParseQueryProfile(std::string *cmd) {
   std::string result;
   if (!user_manager.queryProfile(cmd, result))Failure();
   else std::cout << result << "\n";
 
 }
-void CommandParser::ParseModifyProfile(sjtu::linked_hashmap<std::string, std::string> &cmd) {
+void CommandParser::ParseModifyProfile(std::string *cmd) {
   std::string result;
   if (!user_manager.modifyProfile(cmd, result))Failure();
   else std::cout << result << "\n";
 }
 
 //------------------train manager-----------------
-void CommandParser::ParseAddTrain(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-  if (ifTAdd(cmd["-i"])) {
+void CommandParser::ParseAddTrain(std::string *cmd) {
+  if (ifTAdd(cmd[JerryGJX::_i])) {
     Failure();
     return;
   }
 
   sjtu::vector<std::string> stations, _prices, _travelTimes, _stopoverTimes, saleDate;
   sjtu::vector<int> prices, travelTimes, stopoverTimes;
-  SplitString(cmd["-s"], stations, '|');
-  SplitString(cmd["-p"], _prices, '|');
-  SplitString(cmd["-t"], _travelTimes, '|');
-  SplitString(cmd["-o"], _stopoverTimes, '|');
-  SplitString(cmd["-d"], saleDate, '|');
+  SplitString(cmd[JerryGJX::_s], stations, '|');
+  SplitString(cmd[JerryGJX::_p], _prices, '|');
+  SplitString(cmd[JerryGJX::_t], _travelTimes, '|');
+  SplitString(cmd[JerryGJX::_o], _stopoverTimes, '|');
+  SplitString(cmd[JerryGJX::_d], saleDate, '|');
   for (auto &_price: _prices)prices.push_back(std::stoi(_price));
   for (auto &_travelTime: _travelTimes)travelTimes.push_back(std::stoi(_travelTime));
-  if (std::stoi(cmd["-n"]) > 2)
+  if (std::stoi(cmd[JerryGJX::_n]) > 2)
     for (auto &_stopoverTime: _stopoverTimes)
       stopoverTimes.push_back(std::stoi(_stopoverTime));
-  char type = cmd["-y"][0];
+  char type = cmd[JerryGJX::_y][0];
 
-  train_manager.addTrain(cmd["-i"],
-                         std::stoi(cmd["-n"]),
-                         std::stoi(cmd["-m"]),
+  train_manager.addTrain(cmd[JerryGJX::_i],
+                         std::stoi(cmd[JerryGJX::_n]),
+                         std::stoi(cmd[JerryGJX::_m]),
                          stations,
                          prices,
-                         cmd["-x"],
+                         cmd[JerryGJX::_x],
                          travelTimes,
                          stopoverTimes,
                          saleDate, type);
   Success();
 }
-void CommandParser::ParseDeleteTrain(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-  if (!ifTAdd(cmd["-i"]) || ifTRel(cmd["-i"])) {
+void CommandParser::ParseDeleteTrain(std::string *cmd) {
+  if (!ifTAdd(cmd[JerryGJX::_i]) || ifTRel(cmd[JerryGJX::_i])) {
     Failure();
     return;
   }
-  train_manager.deleteTrain(cmd["-i"]);
+  train_manager.deleteTrain(cmd[JerryGJX::_i]);
   Success();
 }
-void CommandParser::ParseReleaseTrain(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-  if (!ifTAdd(cmd["-i"]) || ifTRel(cmd["-i"])) {
+void CommandParser::ParseReleaseTrain(std::string *cmd) {
+  if (!ifTAdd(cmd[JerryGJX::_i]) || ifTRel(cmd[JerryGJX::_i])) {
     Failure();
     return;
   }
-  train_manager.releaseTrain(cmd["-i"]);
+  train_manager.releaseTrain(cmd[JerryGJX::_i]);
   Success();
 }
-void CommandParser::ParseQueryTrain(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-  if (!ifTAdd(cmd["-i"])) {
+void CommandParser::ParseQueryTrain(std::string *cmd) {
+  if (!ifTAdd(cmd[JerryGJX::_i])) {
     Failure();
     return;
   }
   sjtu::vector<std::string> result;
-  if (!train_manager.queryTrain(cmd["-i"], cmd["-d"], result)) {
+  if (!train_manager.queryTrain(cmd[JerryGJX::_i], cmd[JerryGJX::_d], result)) {
     Failure();
     return;
   }
@@ -149,20 +150,20 @@ void CommandParser::ParseQueryTrain(sjtu::linked_hashmap<std::string, std::strin
   //Success();
 }
 
-void CommandParser::ParseQueryTicket(sjtu::linked_hashmap<std::string, std::string> &cmd) {
+void CommandParser::ParseQueryTicket(std::string *cmd) {
   sjtu::vector<std::string> result;
   train_manager.QueryTicket(cmd, result);
   for (auto &i: result)std::cout << i << "\n";
 }
 
-void CommandParser::ParseQueryTransfer(sjtu::linked_hashmap<std::string, std::string> &cmd) {
+void CommandParser::ParseQueryTransfer(std::string *cmd) {
   sjtu::vector<std::string> result;
   train_manager.QueryTransfer(cmd, result);
   for (auto &i: result)std::cout << i << "\n";
 }
 
-void CommandParser::ParseBuyTicket(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-  if (!ifUReg(cmd["-u"]) || !ifULog(cmd["-u"]) || !ifTAdd(cmd["-i"]) || !ifTRel(cmd["-i"])) {
+void CommandParser::ParseBuyTicket(std::string *cmd) {
+  if (!ifUReg(cmd[JerryGJX::_u]) || !ifULog(cmd[JerryGJX::_u]) || !ifTAdd(cmd[JerryGJX::_i]) || !ifTRel(cmd[JerryGJX::_i])) {
     Failure();
     return;
   }
@@ -170,37 +171,37 @@ void CommandParser::ParseBuyTicket(sjtu::linked_hashmap<std::string, std::string
   std::cout << ans << "\n";
 }
 
-void CommandParser::ParseRefundTicket(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-  if (!ifULog(cmd["-u"])) {
+void CommandParser::ParseRefundTicket(std::string *cmd) {
+  if (!ifULog(cmd[JerryGJX::_u])) {
     Failure();
     return;
   }
   int rank = 1;
-  if (cmd.find("-n") != cmd.end())rank = std::stoi(cmd["-n"]);
-  if (train_manager.RefundTicket(cmd["-u"], rank, order_manager))Success();
+  if (!cmd[JerryGJX::_n].empty())rank = std::stoi(cmd[JerryGJX::_n]);
+  if (train_manager.RefundTicket(cmd[JerryGJX::_u], rank, order_manager))Success();
   else Failure();
 
 }
 
 //------------------order manager-----------------
-void CommandParser::ParseQueryOrder(sjtu::linked_hashmap<std::string, std::string> &cmd) {
-  if (!ifUReg(cmd["-u"]) || !ifULog(cmd["-u"])) {
+void CommandParser::ParseQueryOrder(std::string *cmd) {
+  if (!ifUReg(cmd[JerryGJX::_u]) || !ifULog(cmd[JerryGJX::_u])) {
     Failure();
     return;
   }
   sjtu::vector<std::string> ans;
-  order_manager.QueryOrder(cmd["-u"], ans);
+  order_manager.QueryOrder(cmd[JerryGJX::_u], ans);
   std::cout << ans[0] << "\n";
   for (int i = ans.size() - 1; i >= 1; --i)std::cout << ans[i] << "\n";
 }
 
-void CommandParser::ParseClean(sjtu::linked_hashmap<std::string, std::string> &cmd) {
+void CommandParser::ParseClean(std::string *cmd) {
   user_manager.Clean();
   train_manager.Clean();
   order_manager.Clean();
   Success();
 }
-void CommandParser::ParseExit(sjtu::linked_hashmap<std::string, std::string> &cmd) {
+void CommandParser::ParseExit(std::string *cmd) {
   user_manager.Exit();
   train_manager.Exit();
   order_manager.Exit();
@@ -252,6 +253,25 @@ bool CommandParser::ifTAdd(const std::string &trainID_) {
 }
 bool CommandParser::ifTRel(const std::string &trainID_) {
   return train_manager.isReleased(trainID_);
+}
+JerryGJX::infoType CommandParser::GetInfoRank(char tag) {
+  switch(tag){
+    case 'c':return JerryGJX::_c;
+    case 'd':return JerryGJX::_d;
+    case 'f':return JerryGJX::_f;
+    case 'g':return JerryGJX::_g;
+    case 'i':return JerryGJX::_i;
+    case 'm':return JerryGJX::_m;
+    case 'n':return JerryGJX::_n;
+    case 'o':return JerryGJX::_o;
+    case 'p':return JerryGJX::_p;
+    case 'q':return JerryGJX::_q;
+    case 's':return JerryGJX::_s;
+    case 't':return JerryGJX::_t;
+    case 'u':return JerryGJX::_u;
+    case 'x':return JerryGJX::_x;
+    default:return JerryGJX::_y;
+  }
 }
 
 

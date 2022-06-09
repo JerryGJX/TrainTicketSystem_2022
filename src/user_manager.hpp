@@ -66,7 +66,7 @@ class UserManager {
 
   //bool Empty() const;
 
-  bool AddUser(sjtu::linked_hashmap<std::string, std::string> &info);//该函数只负责添加用户，能否插入由ParserCommander判断
+  bool AddUser(std::string *info);//该函数只负责添加用户，能否插入由ParserCommander判断
 
   bool isReg(const std::string &username_);
 
@@ -74,14 +74,14 @@ class UserManager {
 
   bool checkPassword(const std::string &username_, const std::string &password_);
 
-  bool Login(sjtu::linked_hashmap<std::string, std::string> &info);//该函数只负责用户登录，能否登录由ParserCommander判断
+  bool Login(std::string *info);//该函数只负责用户登录，能否登录由ParserCommander判断
 
-  bool Logout(sjtu::linked_hashmap<std::string, std::string> &info);//该函数只负责用户退出，能否退出由ParserCommander判断
+  bool Logout(std::string *info);//该函数只负责用户退出，能否退出由ParserCommander判断
   /**
    * @brief 该函数只负责返回信息，能否查询由ParserCommander判断
    * @return 被查询用户的<username>，<name>，<mailAddr>和<privilege>
    */
-  bool queryProfile(const sjtu::linked_hashmap<std::string, std::string> &info, std::string &result);
+  bool queryProfile(std::string *info, std::string &result);
 
   /**
    * @brief 以读出，删除再插入的方式实现
@@ -90,7 +90,7 @@ class UserManager {
    * @param order_manager_ 用于应对修改uid的情况
    * @return 被修改用户的<username>，<name>，<mailAddr>和<privilege>
    */
-  bool modifyProfile(sjtu::linked_hashmap<std::string, std::string> &info, std::string &result);
+  bool modifyProfile(std::string *info, std::string &result);
 
   void Clean();
 

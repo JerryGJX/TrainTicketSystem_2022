@@ -30,7 +30,10 @@ class CommandParser {
   /**
    * @brief 根据指令的第一个单词查找对应的函数，供 run 函数使用
    */
-  sjtu::linked_hashmap<std::string, void (CommandParser::*)(sjtu::linked_hashmap<std::string, std::string> &)> mapFunction;
+  sjtu::linked_hashmap<std::string, void (CommandParser::*)(std::string *)> mapFunction;
+
+  JerryGJX::infoType GetInfoRank(char tag);
+
  public:
   CommandParser(UserManager &user_manager_, TrainManager &train_manager_, OrderManager &order_manager_);
 
@@ -44,26 +47,26 @@ class CommandParser {
    * @brief 解析 add_user -c -u -p -n -m -g -c（<cur_username>），创建一个账户名为 -u（<username>），密码为 -p（<password>），用户真实姓名为 -n（<name>），用户邮箱为 -m（<mailAddr>），权限为 -g（<privilege>）的用户
    * @param cmd 传入参数
    */
-  void ParseAddUser(sjtu::linked_hashmap<std::string, std::string> &cmd);
-  void ParseLogin(sjtu::linked_hashmap<std::string, std::string> &cmd);
-  void ParseLogout(sjtu::linked_hashmap<std::string, std::string> &cmd);
-  void ParseQueryProfile(sjtu::linked_hashmap<std::string, std::string> &cmd);
-  void ParseModifyProfile(sjtu::linked_hashmap<std::string, std::string> &cmd);
+  void ParseAddUser(std::string *info);
+  void ParseLogin(std::string *info);
+  void ParseLogout(std::string *info);
+  void ParseQueryProfile(std::string *info);
+  void ParseModifyProfile(std::string *info);
 
-  void ParseAddTrain(sjtu::linked_hashmap<std::string, std::string> &cmd);
-  void ParseDeleteTrain(sjtu::linked_hashmap<std::string, std::string> &cmd);
-  void ParseReleaseTrain(sjtu::linked_hashmap<std::string, std::string> &cmd);
-  void ParseQueryTrain(sjtu::linked_hashmap<std::string, std::string> &cmd);
-  void ParseQueryTicket(sjtu::linked_hashmap<std::string, std::string> &cmd);
-  void ParseQueryTransfer(sjtu::linked_hashmap<std::string, std::string> &cmd);
-  void ParseBuyTicket(sjtu::linked_hashmap<std::string, std::string> &cmd);
+  void ParseAddTrain(std::string *info);
+  void ParseDeleteTrain(std::string *info);
+  void ParseReleaseTrain(std::string *info);
+  void ParseQueryTrain(std::string *info);
+  void ParseQueryTicket(std::string *info);
+  void ParseQueryTransfer(std::string *info);
+  void ParseBuyTicket(std::string *info);
 
 
-  void ParseQueryOrder(sjtu::linked_hashmap<std::string, std::string> &cmd);
-  void ParseRefundTicket(sjtu::linked_hashmap<std::string, std::string> &cmd);
-//  void ParseRollback(sjtu::linked_hashmap<std::string, std::string> &cmd);
-  void ParseClean(sjtu::linked_hashmap<std::string, std::string> &cmd);
-  void ParseExit(sjtu::linked_hashmap<std::string, std::string> &cmd);
+  void ParseQueryOrder(std::string *info);
+  void ParseRefundTicket(std::string *info);
+//  void ParseRollback(std::string *info);
+  void ParseClean(std::string *info);
+  void ParseExit(std::string *info);
 
 
   //---------------------tool----------------------
