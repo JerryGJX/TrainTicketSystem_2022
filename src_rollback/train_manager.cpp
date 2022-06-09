@@ -607,11 +607,11 @@ void TrainManager::Exit() {
 
 void TrainManager::RollBack(int target_time) {
   //todo
-  for (size_t i = rollbackData.size() - 1; i >= 0; ++i) {
+  for (int i = rollbackData.size() - 1; i >= 0; --i) {
     if (rollbackData[i].first < target_time)break;
     if (rollbackData[i].second.first == toOut)
       basicTrainDatabase.erase(basicTrainDatabase.find(rollbackData[i].second.second));
-    else basicTrainDatabase.insert(TOInData[i]);
+    else basicTrainDatabase.insert(TOInData[rollbackData[i].second.second]);
     rollbackData.pop_back();
   }
 

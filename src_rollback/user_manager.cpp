@@ -129,6 +129,7 @@ void UserManager::Exit() {
 }
 void UserManager::RollBack(int target_time) {
  //todo
+ onlineUser.clear();
  userDatabase.rollback(target_time);
 }
 void UserManager::GetTime(int time_tag) {

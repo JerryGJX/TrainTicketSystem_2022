@@ -194,6 +194,7 @@ void CommandParser::ParseRollback(sjtu::linked_hashmap<std::string, std::string>
   user_manager.RollBack(TargetTime);
   train_manager.RollBack(TargetTime);
   order_manager.RollBack(TargetTime);
+  Success();
 }
 
 void CommandParser::ParseClean(sjtu::linked_hashmap<std::string, std::string> &cmd) {
