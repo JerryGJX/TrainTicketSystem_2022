@@ -160,6 +160,7 @@ class TrainManager {
     }
   };
 
+  int TimeTag = 0;
   Bptree<ull, Train, 338, 3> trainDataBase;
   sjtu::linked_hashmap<ull, BasicTrain> basicTrainDatabase;
   Bptree<ull, BasicTrain, 338, 65> basicTrainBackUp;//
@@ -168,7 +169,11 @@ class TrainManager {
   Bptree<std::pair<ull, std::pair<int, ull>>, TrainStation, 339, 101, PairPairHash>
       stationDataBase;//(HashStation，HashTrain）
 
+  //--------rollback-----------
+  enum Op { toIn, toOut };
 
+  sjtu::vector<std::pair<int, std::pair<Op, ull>>> rollbackData;//Toin表示在rollback时要插入，最后一个int表示toin时数据在ToInData中的下标
+  sjtu::vector<std::pair<ull,BasicTrain>> TOInData;
 
   //------------缓存区-----------
   //对于queryticket和querytrain的vector的缓存
@@ -239,6 +244,9 @@ class TrainManager {
 
   void Exit();
 
+  void RollBack(int target_time);
+
+  void GetTime(int time_tag);
 };
 
 #endif //COMMAND_PARSER_HPP__TRAIN_MANAGER_HPP_

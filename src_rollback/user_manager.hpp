@@ -55,6 +55,8 @@ class User {
 
 class UserManager {
  private:
+
+  int TimeTag = 0;
   Bptree<ull, User, 339, 67> userDatabase;//username -> User(class)
   sjtu::linked_hashmap<ull, int> onlineUser;//维护在线用户 username->privilege
   //Bptree<ull, std::pair<int, bool>> onlineUserBackUp;
@@ -96,6 +98,11 @@ class UserManager {
 
   void Exit();
 
+//----------rollback-----------
+
+  void RollBack(int target_time);
+
+  void GetTime(int time_tag);
 };
 
 #endif //COMMAND_PARSER_HPP__USER_MANAGER_HPP_

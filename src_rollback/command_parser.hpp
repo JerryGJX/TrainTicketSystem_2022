@@ -24,13 +24,16 @@
 
 class CommandParser {
  private:
+
+  int TimeTag = 0;
   UserManager &user_manager;
   TrainManager &train_manager;
   OrderManager &order_manager;
   /**
    * @brief 根据指令的第一个单词查找对应的函数，供 run 函数使用
    */
-  sjtu::linked_hashmap<std::string, void (CommandParser::*)(sjtu::linked_hashmap<std::string, std::string> &)> mapFunction;
+  sjtu::linked_hashmap<std::string, void (CommandParser::*)(sjtu::linked_hashmap<std::string, std::string> &)>
+      mapFunction;
  public:
   CommandParser(UserManager &user_manager_, TrainManager &train_manager_, OrderManager &order_manager_);
 
@@ -58,10 +61,9 @@ class CommandParser {
   void ParseQueryTransfer(sjtu::linked_hashmap<std::string, std::string> &cmd);
   void ParseBuyTicket(sjtu::linked_hashmap<std::string, std::string> &cmd);
 
-
   void ParseQueryOrder(sjtu::linked_hashmap<std::string, std::string> &cmd);
   void ParseRefundTicket(sjtu::linked_hashmap<std::string, std::string> &cmd);
-//  void ParseRollback(sjtu::linked_hashmap<std::string, std::string> &cmd);
+  void ParseRollback(sjtu::linked_hashmap<std::string, std::string> &cmd);
   void ParseClean(sjtu::linked_hashmap<std::string, std::string> &cmd);
   void ParseExit(sjtu::linked_hashmap<std::string, std::string> &cmd);
 
@@ -72,6 +74,9 @@ class CommandParser {
 
   static void Success();
   static void Failure();
+
+  //-----------rollback-----------------
+  void PutInTag(int time_tag);
 
   //-------userManager easy form-----------------
   bool ifUReg(const std::string &username_);

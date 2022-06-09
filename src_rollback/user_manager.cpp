@@ -127,6 +127,12 @@ void UserManager::Clean() {
 void UserManager::Exit() {
 
 }
+void UserManager::RollBack(int target_time) {
+ //todo
+}
+void UserManager::GetTime(int time_tag) {
+  TimeTag = time_tag;
+}
 
 
 

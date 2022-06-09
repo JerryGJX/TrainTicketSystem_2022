@@ -19,7 +19,7 @@ CommandParser::CommandParser(UserManager &user_manager_, TrainManager &train_man
   mapFunction.insert(std::make_pair("buy_ticket", &CommandParser::ParseBuyTicket));
   mapFunction.insert(std::make_pair("query_order", &CommandParser::ParseQueryOrder));
   mapFunction.insert(std::make_pair("refund_ticket", &CommandParser::ParseRefundTicket));
-//  mapFunction.insert(std::make_pair("rollback", &CommandParser::ParseRollback));
+  mapFunction.insert(std::make_pair("rollback", &CommandParser::ParseRollback));
   mapFunction.insert(std::make_pair("clean", &CommandParser::ParseClean));
   mapFunction.insert(std::make_pair("exit", &CommandParser::ParseExit));
 }
@@ -45,17 +45,12 @@ void CommandParser::Run() {
       std::cout << parser_list[0] << " ";
       std::string timestamp = parser_list[0].substr(1, parser_list[0].length() - 2);
       //std::cout << "!!DEBUG!! " << timestamp << std::endl;
-      int time_tag = std::stoi(timestamp);
+      TimeTag = std::stoi(timestamp);
+      PutInTag(TimeTag);
       std::string cmd_type = parser_list[1];
       for (int i = 2; i < parser_list.size(); i += 2) {
         parser_list_to_use.insert(std::make_pair(parser_list[i], parser_list[i + 1]));
       }
-
-//      if (cmd_type == "exit") {
-//
-//        user_manager.exit();
-//
-//        std::cout << "bye\n";
       if (mapFunction.find(cmd_type) != mapFunction.end()) (this->*mapFunction[cmd_type])(parser_list_to_use);
     }
   }
@@ -148,19 +143,16 @@ void CommandParser::ParseQueryTrain(sjtu::linked_hashmap<std::string, std::strin
   for (int i = 1; i < result.size(); ++i)std::cout << result[i] << "\n";
   //Success();
 }
-
 void CommandParser::ParseQueryTicket(sjtu::linked_hashmap<std::string, std::string> &cmd) {
   sjtu::vector<std::string> result;
   train_manager.QueryTicket(cmd, result);
   for (auto &i: result)std::cout << i << "\n";
 }
-
 void CommandParser::ParseQueryTransfer(sjtu::linked_hashmap<std::string, std::string> &cmd) {
   sjtu::vector<std::string> result;
   train_manager.QueryTransfer(cmd, result);
   for (auto &i: result)std::cout << i << "\n";
 }
-
 void CommandParser::ParseBuyTicket(sjtu::linked_hashmap<std::string, std::string> &cmd) {
   if (!ifUReg(cmd["-u"]) || !ifULog(cmd["-u"]) || !ifTAdd(cmd["-i"]) || !ifTRel(cmd["-i"])) {
     Failure();
@@ -169,7 +161,6 @@ void CommandParser::ParseBuyTicket(sjtu::linked_hashmap<std::string, std::string
   std::string ans = train_manager.BuyTicket(cmd, order_manager);
   std::cout << ans << "\n";
 }
-
 void CommandParser::ParseRefundTicket(sjtu::linked_hashmap<std::string, std::string> &cmd) {
   if (!ifULog(cmd["-u"])) {
     Failure();
@@ -192,6 +183,17 @@ void CommandParser::ParseQueryOrder(sjtu::linked_hashmap<std::string, std::strin
   order_manager.QueryOrder(cmd["-u"], ans);
   std::cout << ans[0] << "\n";
   for (int i = ans.size() - 1; i >= 1; --i)std::cout << ans[i] << "\n";
+}
+
+void CommandParser::ParseRollback(sjtu::linked_hashmap<std::string, std::string> &cmd) {
+  int TargetTime=stoi(cmd["-t"]);
+  if(TimeTag<TargetTime) {
+    Failure();
+    return;
+  }
+  user_manager.RollBack(TargetTime);
+  train_manager.RollBack(TargetTime);
+  order_manager.RollBack(TargetTime);
 }
 
 void CommandParser::ParseClean(sjtu::linked_hashmap<std::string, std::string> &cmd) {
@@ -239,6 +241,13 @@ void CommandParser::Failure() {
   std::cout << "-1\n";
 }
 
+//-----------rollback-----------
+void CommandParser::PutInTag(int time_tag) {
+  user_manager.GetTime(time_tag);
+  train_manager.GetTime(time_tag);
+  order_manager.GetTime(time_tag);
+}
+
 //-------userManager easy form-----------------
 int CommandParser::ifULog(const std::string &username_) {
   return user_manager.isLogin(username_);
@@ -253,6 +262,8 @@ bool CommandParser::ifTAdd(const std::string &trainID_) {
 bool CommandParser::ifTRel(const std::string &trainID_) {
   return train_manager.isReleased(trainID_);
 }
+
+
 
 
 

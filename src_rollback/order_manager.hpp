@@ -84,6 +84,8 @@ class OrderManager {
     }
   };
 
+
+  int TimeTag=0;
   Bptree<std::pair<ull, int>, Order, 339, 38,PairHash<ull,int>> orderDataBase;//hashUid,oid
   Bptree<std::pair<std::pair<int, ull>, int>, PendingOrder, 254, 144,PairPairHash> pendingQueue;//(第几天(指始发天数)，hash(trainID)),oid
 
@@ -120,6 +122,10 @@ class OrderManager {
   void Clean();
 
   void Exit();
+
+  void RollBack(int target_time);
+
+  void GetTime(int time_tag);
 };
 
 #endif //TRAIN_MANAGER_HPP__ORDER_MANAGER_HPP_

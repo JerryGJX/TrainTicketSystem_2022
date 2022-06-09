@@ -156,6 +156,11 @@ void TrainManager::deleteTrain(const std::string &trainID_) {
   for (int i = 0; i < b_tr_ca.stationNum; ++i) {
     stationDataBase.erase(std::make_pair(CalHash(tr_ca.stations[i]), std::make_pair(b_tr_ca.startSellDate, tr_hash)));
   }
+
+
+  //rollback
+  rollbackData.push_back(std::make_pair(TimeTag, std::make_pair(toIn, TOInData.size())));
+  TOInData.push_back(std::make_pair(tr_hash, b_tr_ca));
 }
 
 void TrainManager::releaseTrain(const std::string &trainID_) {
@@ -179,6 +184,8 @@ void TrainManager::releaseTrain(const std::string &trainID_) {
                                           train_station));
   }
 
+  //rollback
+  rollbackData.push_back(std::make_pair(TimeTag, std::make_pair(toOut, tr_hash)));//todo
 }
 
 bool TrainManager::queryTrain(const std::string &trainID_,
@@ -253,8 +260,9 @@ void TrainManager::QueryTicket(sjtu::linked_hashmap<std::string, std::string> &i
     while (j < result_terminal.size() && result_start[i].first.second > result_terminal[j].first.second)j++;
     if (j >= result_terminal.size())break;
     if (result_start[i].second.trainID == result_terminal[j].second.trainID) {
-      int add_time=result_start[i].second.leavingTime / (60 * 24);
-      if (result_start[i].second.endSaleDate + add_time >= wanted_date&&result_start[i].second.startSaleDate + add_time <= wanted_date) {
+      int add_time = result_start[i].second.leavingTime / (60 * 24);
+      if (result_start[i].second.endSaleDate + add_time >= wanted_date
+          && result_start[i].second.startSaleDate + add_time <= wanted_date) {
         if (result_start[i].second.rank < result_terminal[j].second.rank) {
           int ranker;
           if (if_time)ranker = result_terminal[j].second.arrivingTime - result_start[i].second.leavingTime;
@@ -337,11 +345,12 @@ void TrainManager::QueryTransfer(sjtu::linked_hashmap<std::string, std::string> 
 
   sjtu::linked_hashmap<ull, std::pair<int, int>> startTime_permit;//trainIDHash,pair(start_date,rank in result_start)
   for (int i = 0; i < result_start.size(); ++i) {
-    int add_time=result_start[i].leavingTime / (60 * 24);
-      if (result_start[i].endSaleDate + add_time >= wanted_date&&result_start[i].startSaleDate + add_time <= wanted_date) {
-        int levT_f = result_start[i].leavingTime;
-        int start_time = wanted_date - levT_f / (24 * 60);
-        startTime_permit.insert(std::make_pair(CalHash(result_start[i].trainID), std::make_pair(start_time, i)));
+    int add_time = result_start[i].leavingTime / (60 * 24);
+    if (result_start[i].endSaleDate + add_time >= wanted_date
+        && result_start[i].startSaleDate + add_time <= wanted_date) {
+      int levT_f = result_start[i].leavingTime;
+      int start_time = wanted_date - levT_f / (24 * 60);
+      startTime_permit.insert(std::make_pair(CalHash(result_start[i].trainID), std::make_pair(start_time, i)));
     }
   }
 
@@ -594,6 +603,20 @@ void TrainManager::Exit() {
 //    basicTrainBackUp.find(T.first, ca);
 //    std::cout << ca.trainID << "\n";
   }
+}
+
+void TrainManager::RollBack(int target_time) {
+  //todo
+  for (size_t i = rollbackData.size() - 1; i >= 0; ++i) {
+    if (rollbackData[i].first < target_time)break;
+    if (rollbackData[i].second.first == toOut)
+      basicTrainDatabase.erase(basicTrainDatabase.find(rollbackData[i].second.second));
+    else basicTrainDatabase.insert(TOInData[i]);
+    rollbackData.pop_back();
+  }
+}
+void TrainManager::GetTime(int time_tag) {
+  TimeTag = time_tag;
 }
 
 //----------tools------------------

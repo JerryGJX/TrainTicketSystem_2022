@@ -141,6 +141,13 @@ void OrderManager::Clean() {
 }
 void OrderManager::Exit() {}
 
+void OrderManager::RollBack(int target_time) {
+  //todo
+}
+void OrderManager::GetTime(int time_tag) {
+  TimeTag = time_tag;
+}
+
 
 
 
