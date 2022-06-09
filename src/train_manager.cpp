@@ -613,9 +613,18 @@ std::string TrainManager::Ticket::Print() {
   JerryGJX::Time ca;
   std::string start_t = (ca + start_time).ToStr();
   std::string end_t = (ca + end_time).ToStr();
-  std::string ans =
-      trainID + " " + startStation + " " + start_t + " -> "
-          + endStation + " " + end_t + " " + std::to_string(cost)
-          + " " + std::to_string(seat);
+  std::string ans =trainID ;
+  ans+= " " ;
+  ans+= startStation;
+  ans+= " ";
+  ans+= start_t;
+  ans+= " -> ";
+  ans+= endStation;
+  ans += " " ;
+  ans+= end_t;
+  ans+= " ";
+  ans+= std::to_string(cost);
+  ans+= " ";
+  ans+= std::to_string(seat);
   return ans;
 }
