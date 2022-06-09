@@ -31,7 +31,7 @@ private:
    sjtu::linked_hashmap<Key, Value, Hash, Equal> Cache;
    void CalLimit() {
       CacheLimit = (1 << 17) / sizeof(std::pair<Key, Value>);
-      CacheLimit = std::min(CacheLimit,80000);
+      CacheLimit = std::min(CacheLimit,50000);
    }
    bool CacheInsert(const Key &key_, Value &value_) {
       if (Cache.find(key_) != Cache.end())return false;
