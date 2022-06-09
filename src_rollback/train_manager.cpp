@@ -119,6 +119,9 @@ void TrainManager::addTrain(const std::string &trainID_,
   basicTrainDatabase.insert(std::make_pair(tidHash, b_tr_ca));
   basicTrainBackUp.insert(tidHash, b_tr_ca,TimeTag);
 
+  //rollback
+  rollbackData.push_back(std::make_pair(TimeTag, std::make_pair(toRemove, tidHash)));
+
 //  TrainStation train_station(trainID_, s_date_rank, e_date_rank);
 //
 //  for (int i = 0; i < stationNum_; ++i) {
@@ -159,8 +162,8 @@ void TrainManager::deleteTrain(const std::string &trainID_) {
 
 
   //rollback
-  rollbackData.push_back(std::make_pair(TimeTag, std::make_pair(toIn, TOInData.size())));
-  TOInData.push_back(std::make_pair(tr_hash, b_tr_ca));
+  rollbackData.push_back(std::make_pair(TimeTag, std::make_pair(toAdd, TOAddData.size())));
+  TOAddData.push_back(std::make_pair(tr_hash, b_tr_ca));
 }
 
 void TrainManager::releaseTrain(const std::string &trainID_) {
@@ -185,7 +188,7 @@ void TrainManager::releaseTrain(const std::string &trainID_) {
   }
 
   //rollback
-  rollbackData.push_back(std::make_pair(TimeTag, std::make_pair(toOut, tr_hash)));//todo
+  rollbackData.push_back(std::make_pair(TimeTag, std::make_pair(toDown, tr_hash)));//todo
 }
 
 bool TrainManager::queryTrain(const std::string &trainID_,
@@ -609,9 +612,15 @@ void TrainManager::RollBack(int target_time) {
   //todo
   for (int i = rollbackData.size() - 1; i >= 0; --i) {
     if (rollbackData[i].first < target_time)break;
-    if (rollbackData[i].second.first == toOut)
-      basicTrainDatabase.erase(basicTrainDatabase.find(rollbackData[i].second.second));
-    else basicTrainDatabase.insert(TOInData[rollbackData[i].second.second]);
+
+    bool A=basicTrainDatabase.find(rollbackData[i].second.second)->first;
+    BasicTrain Ca=basicTrainDatabase.find(rollbackData[i].second.second)->second;
+
+
+    if (rollbackData[i].second.first == toRemove)basicTrainDatabase.erase(basicTrainDatabase.find(rollbackData[i].second.second));
+    else if(rollbackData[i].second.first == toDown)basicTrainDatabase[rollbackData[i].second.second].isReleased = false;
+    else basicTrainDatabase.insert(TOAddData[rollbackData[i].second.second]);
+
     rollbackData.pop_back();
   }
 

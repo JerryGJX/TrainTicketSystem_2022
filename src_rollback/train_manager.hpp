@@ -170,10 +170,10 @@ class TrainManager {
       stationDataBase;//(HashStation，HashTrain）
 
   //--------rollback-----------
-  enum Op { toIn, toOut };
+  enum Op {toAdd, toRemove,toDown};
 
   sjtu::vector<std::pair<int, std::pair<Op, ull>>> rollbackData;//Toin表示在rollback时要插入，最后一个int表示toin时数据在ToInData中的下标
-  sjtu::vector<std::pair<ull,BasicTrain>> TOInData;
+  sjtu::vector<std::pair<ull,BasicTrain>> TOAddData;
 
   //------------缓存区-----------
   //对于queryticket和querytrain的vector的缓存

@@ -204,6 +204,7 @@ public:
    Bptree(const std::string &_prefix_name) : prefix_name(_prefix_name) {
       leaf_node_manager.initialise(prefix_name + "_leaf_node");
       normal_node_manager.initialise(prefix_name + "_normal_node");
+      stack_for_rollback.initialise(prefix_name+"_rollback_node");
       get_root();
       get_normal_node_number();
       get_size();
