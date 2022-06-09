@@ -25,11 +25,29 @@ private:
    class Bptree_leaf_node;
    class Bptree_normal_node;
    class operation_info;
+
+  enum op_type {_insert_, _erase_, _modify_};
+  //用于回滚的信息记录类
+//  class operation_info {
+//    int time;
+//    op_type type;
+//    Key key;
+//    Value value;
+//
+//    operation_info(int _time, op_type _type, Key _key, Value _value = {}) {
+//      time = _time; type = _type;
+//      key = _key; value = _value;
+//    }
+//  };
+//
+//
+
+
    Bptree_normal_node root_node;
    MemoryRiver<Bptree_leaf_node, 0> leaf_node_manager;     // info：leaf_node个数
    MemoryRiver<Bptree_normal_node, 3> normal_node_manager; // info：root的编号，normal_node个数，bptree中元素个数
    StackForRollback<operation_info> stack_for_rollback;
-   enum op_type {_insert_, _erase_, _modify_};
+
 
    //Cache
    int CacheLimit;
@@ -138,7 +156,16 @@ private:
    class Bptree_leaf_node {
    public:
       friend Bptree;
-   private:
+     Bptree_leaf_node(const Bptree_leaf_node &obj) {
+        size = obj.size;
+        predecessor = obj.predecessor;
+        succssor = obj.succssor;
+        for (int i = 0; i <= L; ++i) {
+           key_list[i] = obj.key_list[i];
+           value_list[i] = obj.value_list[i];
+        }
+     }
+    private:
       int size;
       int predecessor, succssor;
       Key key_list[L + 1];
@@ -150,18 +177,26 @@ private:
          size = 0;
          predecessor = succssor = -1;
       }
-      Bptree_leaf_node(const Bptree_leaf_node &obj) {
-         size = obj.size;
-         predecessor = obj.predecessor;
-         succssor = obj.succssor;
-         for (int i = 0; i <= L; ++i) {
-            key_list[i] = obj.key_list[i];
-            value_list[i] = obj.value_list[i];
-         }
-      }
-      //析构函数
+     //析构函数
       ~Bptree_leaf_node() {}
    };
+
+
+  //用于回滚的信息记录类
+  class operation_info {
+    friend Bptree;
+    int time;
+    op_type type;
+    Key key;
+    Value value;
+   public:
+    operation_info()=default;
+
+    operation_info(int _time, op_type _type, Key _key, Value _value = {}) {
+      time = _time; type = _type;
+      key = _key; value = _value;
+    }
+  };
 
 //BpTree正文
 public:
@@ -483,7 +518,7 @@ private:
          if (node.size == 0) return -1; // BpTree为空树
          for (int i = 0; i < node.size; ++i) {
             if (i + 1 == node.size || key < node.key_list[i]) {
-               return dfs_modify(node.children[i], node.is_lowest, key, value);
+               return dfs_modify(node.children[i], node.is_lowest, key, value,value2);
             }
          }
          return -1;
@@ -629,7 +664,7 @@ private:
          bool found = 0;
          for (int i = 0; i < self.size; ++i) {
             if (i + 1 == self.size || key < self.key_list[i]) {
-               found = dfs_erase(self.children[i], self.is_lowest, i, self, key);
+               found = dfs_erase(self.children[i], self.is_lowest, i, self, key,value2);
                break;
             }
          }

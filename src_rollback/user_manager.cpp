@@ -64,7 +64,7 @@ bool UserManager::AddUser(sjtu::linked_hashmap<std::string, std::string> &info) 
   } else info["-g"] = std::to_string(10);
 
   User freshman(info["-u"], info["-p"], info["-n"], info["-m"], std::stoi(info["-g"]));
-  userDatabase.insert(std::make_pair(CalHash(info["-u"]), freshman));
+  userDatabase.insert(CalHash(info["-u"]), freshman,TimeTag);
   return true;
 }
 
@@ -112,8 +112,8 @@ bool UserManager::modifyProfile(sjtu::linked_hashmap<std::string, std::string> &
     if (ta_ca.privilege >= onlineUser[CalHash(info["-c"])])return false;
     if (isLogin(info["-u"]))onlineUser[CalHash(info["-u"])] = ta_ca.privilege;
   }
-  userDatabase.erase(CalHash(info["-u"]));
-  userDatabase.insert(std::make_pair(CalHash(info["-u"]), ta_ca));
+  userDatabase.erase(CalHash(info["-u"]),TimeTag);
+  userDatabase.insert(CalHash(info["-u"]), ta_ca,TimeTag);
 
   result = ta_ca.to_string();
   return true;
@@ -129,6 +129,7 @@ void UserManager::Exit() {
 }
 void UserManager::RollBack(int target_time) {
  //todo
+ userDatabase.rollback(target_time);
 }
 void UserManager::GetTime(int time_tag) {
   TimeTag = time_tag;

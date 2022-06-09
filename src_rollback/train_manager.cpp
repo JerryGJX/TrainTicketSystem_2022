@@ -111,13 +111,13 @@ void TrainManager::addTrain(const std::string &trainID_,
 
   Train tr_ca(trainID_, stations, sumPrice, arrivingTimes, leavingTimes);
   ull tidHash = CalHash(trainID_);
-  trainDataBase.insert(std::make_pair(tidHash, tr_ca));
+  trainDataBase.insert(tidHash, tr_ca ,TimeTag);
 
   int s_date_rank = startSellDate.ToDay(), e_date_rank = endSellDate.ToDay();
 
   BasicTrain b_tr_ca(trainID_, stationNum_, totalSeatNum_, false, startTime, s_date_rank, e_date_rank, type_);
   basicTrainDatabase.insert(std::make_pair(tidHash, b_tr_ca));
-  basicTrainBackUp.insert(std::make_pair(tidHash, b_tr_ca));
+  basicTrainBackUp.insert(tidHash, b_tr_ca,TimeTag);
 
 //  TrainStation train_station(trainID_, s_date_rank, e_date_rank);
 //
@@ -148,13 +148,13 @@ void TrainManager::deleteTrain(const std::string &trainID_) {
   BasicTrain b_tr_ca = basicTrainDatabase[tr_hash];
   int s_date_rank = b_tr_ca.startSellDate, e_date_rank = b_tr_ca.endSellDate;
   for (int i = s_date_rank; i <= e_date_rank; ++i) {
-    DayTrainToSeat.erase(std::make_pair(i, tr_hash));
+    DayTrainToSeat.erase(std::make_pair(i, tr_hash),TimeTag);
   }
   basicTrainDatabase.erase(basicTrainDatabase.find(tr_hash));
-  basicTrainBackUp.erase(tr_hash);
-  trainDataBase.erase(tr_hash);
+  basicTrainBackUp.erase(tr_hash,TimeTag);
+  trainDataBase.erase(tr_hash,TimeTag);
   for (int i = 0; i < b_tr_ca.stationNum; ++i) {
-    stationDataBase.erase(std::make_pair(CalHash(tr_ca.stations[i]), std::make_pair(b_tr_ca.startSellDate, tr_hash)));
+    stationDataBase.erase(std::make_pair(CalHash(tr_ca.stations[i]), std::make_pair(b_tr_ca.startSellDate, tr_hash)),TimeTag);
   }
 
 
@@ -179,9 +179,9 @@ void TrainManager::releaseTrain(const std::string &trainID_) {
     train_station.startTime = b_tr_ca.startTime;
     train_station.arrivingTime = tr_ca.arrivingTime[i];
     train_station.leavingTime = tr_ca.leavingTime[i];
-    stationDataBase.insert(std::make_pair(std::make_pair(CalHash(tr_ca.stations[i]),
-                                                         std::make_pair(b_tr_ca.startSellDate, tr_hash)),
-                                          train_station));
+    stationDataBase.insert(std::make_pair(CalHash(tr_ca.stations[i]),
+                                          std::make_pair(b_tr_ca.startSellDate, tr_hash)),
+                                          train_station,TimeTag);
   }
 
   //rollback
@@ -523,8 +523,8 @@ std::string TrainManager::BuyTicket(sjtu::linked_hashmap<std::string, std::strin
 
   if (seat >= wanted_seat) {
     dt_ca.rangeAdd(f_rank, t_rank - 1, -wanted_seat);
-    DayTrainToSeat.erase(std::make_pair(start_date, tr_hash));
-    DayTrainToSeat.insert(std::make_pair(std::make_pair(start_date, tr_hash), dt_ca));
+    DayTrainToSeat.erase(std::make_pair(start_date, tr_hash),TimeTag);
+    DayTrainToSeat.insert(std::make_pair(start_date, tr_hash), dt_ca,TimeTag);
     order_manager_.AddOrder(info["-u"], or_ca);
     return std::to_string(price * wanted_seat);
   } else {
@@ -581,8 +581,8 @@ bool TrainManager::RefundTicket(const std::string &username_, int rank_, OrderMa
       order_manager_.PendingToSuccess(pod_ca.uidHash, pod_ca.orderID);
       order_manager_.RemovePendingOrder(start_date, trHash, pod_ca.orderID);
     }
-    DayTrainToSeat.erase(std::make_pair(start_date, trHash));
-    DayTrainToSeat.insert(std::make_pair(std::make_pair(start_date, trHash), dt_ca));
+    DayTrainToSeat.erase(std::make_pair(start_date, trHash),TimeTag);
+    DayTrainToSeat.insert(std::make_pair(start_date, trHash), dt_ca,TimeTag);
   }
   return true;
 }
@@ -598,7 +598,7 @@ void TrainManager::Clean() {
 void TrainManager::Exit() {
   //basicTrainBackUp.clear();
   for (auto &T: basicTrainDatabase) {
-    basicTrainBackUp.modify(T.first, T.second);
+    basicTrainBackUp.modify(T.first, T.second,TimeTag);
 //    BasicTrain ca;
 //    basicTrainBackUp.find(T.first, ca);
 //    std::cout << ca.trainID << "\n";
@@ -614,6 +614,11 @@ void TrainManager::RollBack(int target_time) {
     else basicTrainDatabase.insert(TOInData[i]);
     rollbackData.pop_back();
   }
+
+  trainDataBase.rollback(target_time);
+  basicTrainBackUp.rollback(target_time);
+  DayTrainToSeat.rollback(target_time);
+  stationDataBase.rollback(target_time);
 }
 void TrainManager::GetTime(int time_tag) {
   TimeTag = time_tag;

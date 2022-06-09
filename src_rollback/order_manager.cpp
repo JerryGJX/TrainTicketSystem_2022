@@ -115,25 +115,25 @@ void OrderManager::QueryPendingOrderPrivate(int date_, ull tidHash_, sjtu::vecto
 }
 
 void OrderManager::AddOrder(const std::string &username_, Order &order_) {
-  orderDataBase.insert(std::make_pair(std::make_pair(CalHash(username_), order_.orderID), order_));
+  orderDataBase.insert(std::make_pair(CalHash(username_), order_.orderID), order_,TimeTag);
 }
 
 void OrderManager::RemoveOrder(ull uidHash_, int Oid_) {
-  orderDataBase.erase(std::make_pair(uidHash_, Oid_));
+  orderDataBase.erase(std::make_pair(uidHash_, Oid_),TimeTag);
 }
 
 void OrderManager::AddPendingOrder(int date_, ull tidHash_, int Oid_, PendingOrder &pending_order_) {
-  pendingQueue.insert(std::make_pair(std::make_pair(std::make_pair(date_, tidHash_), Oid_), pending_order_));
+  pendingQueue.insert(std::make_pair(std::make_pair(date_, tidHash_), Oid_), pending_order_,TimeTag);
 }
 void OrderManager::RemovePendingOrder(int date_, ull tidHash_, int Oid_) {
-  pendingQueue.erase(std::make_pair(std::make_pair(date_, tidHash_), Oid_));
+  pendingQueue.erase(std::make_pair(std::make_pair(date_, tidHash_), Oid_),TimeTag);
 }
 void OrderManager::PendingToSuccess(ull uidHash_, int orderID_) {
   Order or_ca;
   orderDataBase.find(std::make_pair(uidHash_, orderID_), or_ca);
-  orderDataBase.erase(std::make_pair(uidHash_, orderID_));
+  orderDataBase.erase(std::make_pair(uidHash_, orderID_),TimeTag);
   or_ca.orderStatus = JerryGJX::SUCCESS;
-  orderDataBase.insert(std::make_pair(std::make_pair(uidHash_, orderID_), or_ca));
+  orderDataBase.insert(std::make_pair(std::make_pair(uidHash_, orderID_), or_ca),TimeTag);
 }
 void OrderManager::Clean() {
   orderDataBase.clear();
@@ -142,7 +142,8 @@ void OrderManager::Clean() {
 void OrderManager::Exit() {}
 
 void OrderManager::RollBack(int target_time) {
-  //todo
+  orderDataBase.rollback(target_time);
+  pendingQueue.rollback(target_time);
 }
 void OrderManager::GetTime(int time_tag) {
   TimeTag = time_tag;
