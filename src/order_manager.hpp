@@ -9,6 +9,7 @@
 #include "tools/Time.hpp"
 #include "ACMstl/bpTree.hpp"
 #include "ACMstl/Vector.hpp"
+#include "tools/Algorithm.hpp"
 
 #include <iostream>
 //#include <map>
@@ -77,15 +78,15 @@ class OrderManager {
     }
   };
 
-  class PairPairHash {
-   public:
-    ull operator()(const std::pair<std::pair<int, ull>, int> &ValueType) const {
-      return ValueType.first.first+ValueType.first.second + ValueType.second;
-    }
-  };
+//  class PairPairHash {
+//   public:
+//    ull operator()(const std::pair<std::pair<int, ull>, int> &ValueType) const {
+//      return ValueType.first.first+ValueType.first.second + ValueType.second;
+//    }
+//  };
 
-  Bptree<std::pair<ull, int>, Order, 339, 38,PairHash<ull,int>> orderDataBase;//hashUid,oid
-  Bptree<std::pair<std::pair<int, ull>, int>, PendingOrder, 254, 144,PairPairHash> pendingQueue;//(第几天(指始发天数)，hash(trainID)),oid
+  Bptree<std::pair<ull, int>, Order, 339, 38,JerryGJX::pair_hash> orderDataBase;//hashUid,oid
+  Bptree<std::pair<std::pair<int, ull>, int>, PendingOrder, 254, 144,JerryGJX::pair_pair_hash_nd> pendingQueue;//(第几天(指始发天数)，hash(trainID)),oid
 
   //  void OrderDataBase_RangeFind(const std::pair<ull, int> &lp,
 //                               const std::pair<ull, int> &rp, std::vector<Order> &result);

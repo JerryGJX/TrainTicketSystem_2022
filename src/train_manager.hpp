@@ -146,27 +146,27 @@ class TrainManager {
     }
   };
 
-  template<class T1, class T2>
-  class PairHash {
-   public:
-    ull operator()(const std::pair<T1, T2> &ValueType) const {
-      return ValueType.first + ValueType.second;
-    }
-  };
+//  template<class T1, class T2>
+//  class PairHash {
+//   public:
+//    ull operator()(const std::pair<T1, T2> &ValueType) const {
+//      return ValueType.first + ValueType.second;
+//    }
+//  };
 
-  class PairPairHash {
-   public:
-    ull operator()(const std::pair<ull, std::pair<int, ull>> &ValueType) const {
-      return ValueType.first + ValueType.second.first + ValueType.second.second;
-    }
-  };
+//  class PairPairHash {
+//   public:
+//    ull operator()(const std::pair<ull, std::pair<int, ull>> &ValueType) const {
+//      return ValueType.first + ValueType.second.first + ValueType.second.second;
+//    }
+//  };
 
   Bptree<ull, Train, 338, 3> trainDataBase;
   sjtu::linked_hashmap<ull, BasicTrain> basicTrainDatabase;
   Bptree<ull, BasicTrain, 338, 65> basicTrainBackUp;//
-  Bptree<std::pair<JerryGJX::Day, ull>, DayTrain, 339, 18, PairHash<JerryGJX::Day, ull>>
+  Bptree<std::pair<JerryGJX::Day, ull>, DayTrain, 339, 18, JerryGJX::pair_hash>
       DayTrainToSeat;//(第几天，hash(trainID))
-  Bptree<std::pair<ull, std::pair<int, ull>>, TrainStation, 339, 101, PairPairHash>
+  Bptree<std::pair<ull, std::pair<int, ull>>, TrainStation, 339, 101, JerryGJX::pair_pair_hash>
       stationDataBase;//(HashStation，HashTrain）
 
 
