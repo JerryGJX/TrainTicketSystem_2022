@@ -26,7 +26,7 @@ public:
 
   ~StackForRollback() {
     file.seekp(0);
-    file.write(reinterpret_cast<char *>(&size), sizeof(int));
+    file.write(reinterpret_cast<char *>(&_size), sizeof(int));
     file.close();
   }
 

@@ -2,10 +2,12 @@
 #define BPTREE_HPP
 #define debug(x) cout << #x << ':' << (x) << endl;
 #include "memory_manager.hpp"
-#include "stack_for_rollback.hpp"
-#include <iostream>
 #include "UnorderedMap.hpp"
 #include "Vector.hpp"
+#include "stack_for_rollback.hpp"
+//#include <vector>
+//#include <assert.h>
+#include <iostream>
 using namespace std;
 
 template<
@@ -33,8 +35,8 @@ private:
    int CacheLimit;
    sjtu::linked_hashmap<Key, Value, Hash, Equal> Cache;
    void CalLimit() {
-      CacheLimit = (1 << 16) / sizeof(std::pair<Key, Value>);
-      CacheLimit = std::min(CacheLimit, 25000);
+      CacheLimit = (1 << 17) / sizeof(std::pair<Key, Value>);
+      CacheLimit = std::min(CacheLimit,50000);
    }
    bool CacheInsert(const Key &key_, Value &value_) {
       if (Cache.find(key_) != Cache.end())return false;
@@ -70,7 +72,7 @@ private:
    //将根节点写入文件
    void write_root() {
       normal_node_manager.write_info(root, 1);
-      normal_node_manager.write(root_node, root);
+      normal_node_manager.update(root_node, root);
    }
    //从文件中读取normal_node个数
    void get_normal_node_number() {
@@ -87,6 +89,16 @@ private:
    //将Bptree中元素个数写入文件
    void write_size() {
       normal_node_manager.write_info(_size, 3);
+   }
+   //从硬盘中读取normal_node，根节点从内存中读
+   void read_normal_node(Bptree_normal_node &node, int pos) {
+      if (pos == root) node = root_node;
+      else normal_node_manager.read(node, pos);
+   }
+   //将normal_node写入硬盘，如果是根节点只写入内存
+   void modify_normal_node(Bptree_normal_node &node, int pos) {
+      if (pos == root) root_node = node;
+      else normal_node_manager.update(node, pos);
    }
 
    // 一般节点类
@@ -105,10 +117,6 @@ private:
          size = 0;
          is_lowest = 1;
          for (int i = 0; i <= M; ++i) children[i] = -1;
-      }
-      //从文件中的index构造
-      Bptree_normal_node(int index) {
-         read_normal_node(*this, index);
       }
       //拷贝构造
       Bptree_normal_node(const Bptree_normal_node &obj) {
@@ -155,19 +163,6 @@ private:
       ~Bptree_leaf_node() {}
    };
 
-   //用于回滚的信息记录类
-   class operation_info {
-      int time;
-      op_type type;
-      Key key; 
-      Value value;
-
-      operation_info(int _time, op_type _type, Key _key, Value _value = {}) {
-         time = _time; type = _type;
-         key = key; value = _value;
-      }
-   };
-
 //BpTree正文
 public:
    //构造函数
@@ -182,9 +177,10 @@ public:
          ++normal_node_number;
       }
       is_rollback = 0;
-
+      
       //Cache
       CalLimit();
+
    }
    //析构函数
    ~Bptree() {
@@ -199,7 +195,6 @@ public:
       root_node = Bptree_normal_node();
       leaf_node_manager.clear();
       normal_node_manager.clear();
-      is_rollback = 0;
 
       //Cache
       Cache.clear();
@@ -219,7 +214,7 @@ public:
 
       //return dfs_find(root, 0, key, result) != -1;
    }
-   //插入节点，失败返回0（如果给定key值已有节点，也会返回0）
+      //插入节点，失败返回0（如果给定key值已有节点，也会返回0）
    bool insert(const Key &key, const Value &value, int time) {
       Bptree_normal_node virtual_root;
       virtual_root.size = 1;
@@ -457,7 +452,8 @@ private:
          }
          return -1;
       } else {
-         Bptree_normal_node node(pos);
+         Bptree_normal_node node;
+         read_normal_node(node, pos);
          if (node.size == 0) return -1; // BpTree为空树
          for (int i = 0; i < node.size; ++i) {
             if (i + 1 == node.size || key < node.key_list[i]) {
@@ -482,11 +478,12 @@ private:
          }
          return -1;
       } else {
-         Bptree_normal_node node(pos);
+         Bptree_normal_node node;
+         read_normal_node(node, pos);
          if (node.size == 0) return -1; // BpTree为空树
          for (int i = 0; i < node.size; ++i) {
             if (i + 1 == node.size || key < node.key_list[i]) {
-               return dfs_modify(node.children[i], node.is_lowest, key, value, value2);
+               return dfs_modify(node.children[i], node.is_lowest, key, value);
             }
          }
          return -1;
@@ -534,7 +531,8 @@ private:
          }
          return 1;
       } else {
-         Bptree_normal_node self(pos);
+         Bptree_normal_node self;
+         read_normal_node(self, pos);
          if (pos == root) parent.key_min = self.key_min;
          if (self.size == 0) { //如果是空树
             Bptree_leaf_node tmp;
@@ -544,9 +542,7 @@ private:
             self.children[0] = leaf_node_manager.write(tmp);
             self.size = 1;
             self.key_min = key;
-            if (pos != root) {
-               normal_node_manager.update(self, pos);
-            }
+            modify_normal_node(self, pos);
             return 1;
          }
          for (int i = 0; i < self.size; ++i) {
@@ -559,12 +555,12 @@ private:
             parent.key_min = self.key_min;
          }
          if (self.size <= M) {
-            if (pos != root) normal_node_manager.update(self, pos);
+            modify_normal_node(self, pos);
          } else {
             int new_index;
             std::pair<Bptree_normal_node, Bptree_normal_node> tmp = split(self, pos, new_index);
-            normal_node_manager.update(tmp.first, pos);
-            normal_node_manager.update(tmp.second, new_index);
+            modify_normal_node(tmp.first, pos);
+            modify_normal_node(tmp.second, new_index);
             for (int i = parent.size; i >= rank + 1; --i) {
                if (i != rank + 1) {
                   parent.children[i] = parent.children[i - 1];
@@ -627,12 +623,13 @@ private:
          }
          return flag;
       } else {
-         Bptree_normal_node self(pos);
+         Bptree_normal_node self;
+         read_normal_node(self, pos);
          if (self.size == 0) return 0;
          bool found = 0;
          for (int i = 0; i < self.size; ++i) {
             if (i + 1 == self.size || key < self.key_list[i]) {
-               found = dfs_erase(self.children[i], self.is_lowest, i, self, key, value2);
+               found = dfs_erase(self.children[i], self.is_lowest, i, self, key);
                break;
             }
          }
@@ -643,7 +640,7 @@ private:
                normal_node_manager.read(root_node, root);
                --normal_node_number;
             } else if (self.size >= (M + 1) / 2 || pos == root) {
-               normal_node_manager.update(self, pos);
+               modify_normal_node(self, pos);
             } else {
                Bptree_normal_node brother;
                if (rank + 1 != parent.size) {
@@ -715,7 +712,7 @@ private:
       int id1 = parent.children[rank], id2 = parent.children[rank + 1];
       if (node1.size == (M + 1) / 2 || node2.size == (M + 1) / 2) {
          node1 = merge(node1, node2);
-         normal_node_manager.update(node1, id1);
+         modify_normal_node(node1, id1);
          normal_node_manager.Delete(id2);
          --parent.size;
          for (int i = rank + 1; i < parent.size; ++i) {
@@ -738,8 +735,8 @@ private:
             }
          }
          parent.key_list[rank] = node2.key_min;
-         normal_node_manager.update(node1, id1);
-         normal_node_manager.update(node2, id2);
+         modify_normal_node(node1, id1);
+         modify_normal_node(node2, id2);
          return 0;
       } else {
          for (int i = node2.size; i > 0; --i) {
@@ -754,8 +751,8 @@ private:
          node2.key_list[0] = node2.key_min;
          node2.key_min = node1.key_list[node1.size - 1];
          parent.key_list[rank] = node2.key_min;
-         normal_node_manager.update(node1, id1);
-         normal_node_manager.update(node2, id2);
+         modify_normal_node(node1, id1);
+         modify_normal_node(node2, id2);
          return 0;
       }
    }
@@ -766,7 +763,7 @@ private:
    //lower_bound的辅助函数
    int dfs_lower_bound(int pos, const Key &key) {
       Bptree_normal_node self;
-      normal_node_manager.read(self, pos);
+      read_normal_node(self, pos);
       if (self.size == 0) return -1;
       for (int i = self.size - 1; i >= 0; --i) {
          if (i == 0 || key >= self.key_list[i - 1]) {
@@ -779,11 +776,6 @@ private:
          }
       }
       return -1;
-   }
-   //从硬盘中读取normal_node,根节点从内存中读
-   void read_normal_node(Bptree_normal_node &node, int pos) {
-      if (pos == root) node = root_node;
-      else normal_node_manager.read(node, pos);
    }
 };
 #endif
