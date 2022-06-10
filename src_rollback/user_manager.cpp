@@ -3,37 +3,34 @@
 
 //---------------------------------class User----------------------------------
 
-User::User(const std::string &username_,
-           const std::string &password_,
+User::User(const std::string &password_,
            const std::string &name_,
            const std::string &mailAddr_,
            int privilege_) {
-  username = username_;
   password = password_;
   name = name_;
   mailAddr = mailAddr_;
   privilege = privilege_;
 }
 User::User(const User &lhs) {
-  username = lhs.username;
+  //username = lhs.username;
   password = lhs.password;
   name = lhs.name;
   mailAddr = lhs.mailAddr;
   privilege = lhs.privilege;
 }
-bool User::operator<(const User &rhs) const {
-  return username < rhs.username;
-}
-bool User::operator>(const User &rhs) const {
-  return rhs < *this;
-}
-bool User::operator<=(const User &rhs) const {
-  return !(rhs < *this);
-}
-bool User::operator>=(const User &rhs) const {
-  return !(*this < rhs);
-
-}
+//bool User::operator<(const User &rhs) const {
+//  return username < rhs.username;
+//}
+//bool User::operator>(const User &rhs) const {
+//  return rhs < *this;
+//}
+//bool User::operator<=(const User &rhs) const {
+//  return !(rhs < *this);
+//}
+//bool User::operator>=(const User &rhs) const {
+//  return !(*this < rhs);
+//}
 
 //-------------------------------class UserManager--------------------------------------
 UserManager::UserManager(const std::string &filenameUD) : userDatabase(filenameUD) {}
@@ -63,7 +60,7 @@ bool UserManager::AddUser(std::string *info) {
     if (userDatabase.find(CalHash(info[JerryGJX::_u]), u_ca))return false;
   } else info[JerryGJX::_g] = std::to_string(10);
 
-  User freshman(info[JerryGJX::_u], info[JerryGJX::_p], info[JerryGJX::_n], info[JerryGJX::_m], std::stoi(info[JerryGJX::_g]));
+  User freshman(info[JerryGJX::_p], info[JerryGJX::_n], info[JerryGJX::_m], std::stoi(info[JerryGJX::_g]));
   userDatabase.insert(CalHash(info[JerryGJX::_u]), freshman,TimeTag);
   return true;
 }
@@ -94,15 +91,17 @@ bool UserManager::queryProfile(std::string *info,
                                std::string &result) {
   User ta_ca;
   if (!isLogin(info[JerryGJX::_c]) ||!userDatabase.find(CalHash(info[JerryGJX::_u]), ta_ca))return false;
-  if (onlineUser[CalHash(info[JerryGJX::_c])] <= ta_ca.privilege && info[JerryGJX::_c] != ta_ca.username.str())return false;
-  result = ta_ca.to_string();
+  if (onlineUser[CalHash(info[JerryGJX::_c])] <= ta_ca.privilege && CalHash(info[JerryGJX::_c]) != CalHash(info[JerryGJX::_u]))return false;
+  result.reserve(100);
+  result=info[JerryGJX::_u];
+  result += ta_ca.to_string();
   return true;
 }
 bool UserManager::modifyProfile(std::string *info,
                                 std::string &result) {
   User ta_ca;
   if (!userDatabase.find(CalHash(info[JerryGJX::_u]), ta_ca) || !isLogin(info[JerryGJX::_c]))return false;
-  if (onlineUser[CalHash(info[JerryGJX::_c])] <= ta_ca.privilege && info[JerryGJX::_c] != ta_ca.username.str())return false;
+  if (onlineUser[CalHash(info[JerryGJX::_c])] <= ta_ca.privilege && CalHash(info[JerryGJX::_c]) != CalHash(info[JerryGJX::_u]))return false;
 
   if (!info[JerryGJX::_p].empty())ta_ca.password = info[JerryGJX::_p];
   if (!info[JerryGJX::_n].empty())ta_ca.name = info[JerryGJX::_n];
@@ -114,8 +113,9 @@ bool UserManager::modifyProfile(std::string *info,
   }
   userDatabase.erase(CalHash(info[JerryGJX::_u]),TimeTag);
   userDatabase.insert(CalHash(info[JerryGJX::_u]), ta_ca,TimeTag);
-
-  result = ta_ca.to_string();
+  result.reserve(100);
+  result=info[JerryGJX::_u];
+  result += ta_ca.to_string();
   return true;
 }
 

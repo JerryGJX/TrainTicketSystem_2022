@@ -27,28 +27,28 @@ class User {
   friend class Usermanager;
  public:
   JerryGJX::passwordType password;
-  JerryGJX::usernameType username;
+  //JerryGJX::usernameType username;
   JerryGJX::nameType name;
   JerryGJX::mailAddrType mailAddr;
   int privilege{};
 
   User() = default;
-  User(const std::string &username_,
-       const std::string &password_,
+  User(const std::string &password_,
        const std::string &name_,
        const std::string &mailAddr_,
        int privilege_);
   User(const User &lhs);
 
-  bool operator<(const User &rhs) const;
-  bool operator>(const User &rhs) const;
-  bool operator<=(const User &rhs) const;
-  bool operator>=(const User &rhs) const;
+//  bool operator<(const User &rhs) const;
+//  bool operator>(const User &rhs) const;
+//  bool operator<=(const User &rhs) const;
+//  bool operator>=(const User &rhs) const;
 
   std::string to_string() {
     std::string ans;
-    ans += username.str() + " " + name.str() + " ";
-    ans += mailAddr.str() + " " + std::to_string(privilege);
+    ans += +" " + name.str() + " ";
+    ans += mailAddr.str() + " ";
+    ans += std::to_string(privilege);
     return ans;
   }
 };
