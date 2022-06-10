@@ -52,12 +52,11 @@ void CommandParser::Run() {
         //parser_list_to_use.insert(std::make_pair(parser_list[i], ));
       }
 
-//      if (cmd_type == "exit") {
-//
-//        user_manager.exit();
-//
-//        std::cout << "bye\n";
-      if (mapFunction.find(cmd_type) != mapFunction.end()) (this->*mapFunction[cmd_type])(parser_list_to_use);
+      if (mapFunction.find(cmd_type) != mapFunction.end()){
+        PutInTag(TimeTag);
+        (this->*mapFunction[cmd_type])(parser_list_to_use);
+      }
+
     }
   }
 }
@@ -245,6 +244,14 @@ void CommandParser::SplitString(const std::string &cmd, sjtu::vector<std::string
   }
 }
 
+
+void CommandParser::PutInTag(int time_tag) {
+  user_manager.GetTime(time_tag);
+  train_manager.GetTime(time_tag);
+  order_manager.GetTime(time_tag);
+}
+
+
 void CommandParser::Success() {
   std::cout << "0\n";
 }
@@ -285,6 +292,7 @@ JerryGJX::infoType CommandParser::GetInfoRank(char tag) {
     default:return JerryGJX::_y;
   }
 }
+
 
 
 
