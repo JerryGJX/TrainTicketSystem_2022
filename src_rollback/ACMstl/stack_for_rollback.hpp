@@ -11,20 +11,21 @@ using std::ofstream;
 
 template<class T>
 class StackForRollback {
-private:
+ private:
   const int info_len = 1;
   int _size;
   fstream file;
   string file_name;
   constexpr static int sizeofT = sizeof(T);
-public:
+ public:
   StackForRollback() = default;
 
-  StackForRollback(const string& file_name) : file_name(file_name) {
+  StackForRollback(const string &file_name) : file_name(file_name) {
     initialise();
   }
 
   ~StackForRollback() {
+    file.open(file_name);
     file.seekp(0);
     file.write(reinterpret_cast<char *>(&_size), sizeof(int));
     file.close();
@@ -53,15 +54,19 @@ public:
 
   //在文件末尾写入类对象t
   void push(T &t) {
-    file.seekp(sizeof(int) + (_size++) * sizeofT);
+    file.open(file_name);
+    file.seekp(sizeof(int) * info_len + (_size++) * sizeofT);
     file.write(reinterpret_cast<char *> (&t), sizeofT);
+    file.close();
   }
 
   //读出文件末尾的元素写入t
   void top(T &t) {
     if (_size == 0) return;
-    file.seekg((_size - 1) * sizeofT);
+    file.open(file_name);
+    file.seekg(sizeof(int) * info_len + (_size - 1) * sizeofT);
     file.read(reinterpret_cast<char *> (&t), sizeofT);
+    file.close();
   }
 
   void pop() {
@@ -82,6 +87,5 @@ public:
     return !_size;
   }
 };
-
 
 #endif //STACK_FOR_ROLLBACK_HPP

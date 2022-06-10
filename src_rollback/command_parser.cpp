@@ -45,7 +45,7 @@ void CommandParser::Run() {
       std::cout << parser_list[0] << " ";
       std::string timestamp = parser_list[0].substr(1, parser_list[0].length() - 2);
       //std::cout << "!!DEBUG!! " << timestamp << std::endl;
-      int time_tag = std::stoi(timestamp);
+      TimeTag = std::stoi(timestamp);
       std::string cmd_type = parser_list[1];
       for (int i = 2; i < parser_list.size(); i += 2) {
         parser_list_to_use[GetInfoRank(parser_list[i][1])]=parser_list[i + 1];
