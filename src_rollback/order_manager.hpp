@@ -20,7 +20,7 @@ using JerryGJX::ull;
 struct Order {
   JerryGJX::orderStatusType orderStatus{};
   JerryGJX::trainIDType trainID{};
-  JerryGJX::usernameType username{};
+  //JerryGJX::usernameType username{};
   int startRank{}, endRank{};//要求是trainManager产生
   JerryGJX::stationType startStation{}, endStation{};
   JerryGJX::CalendarTime startDay{};
@@ -30,7 +30,7 @@ struct Order {
   Order() = default;
   Order(JerryGJX::orderStatusType order_status,
         const JerryGJX::trainIDType &train_id,
-        const JerryGJX::usernameType &username,
+        //const JerryGJX::usernameType &username,
         int start_rank,
         int end_rank,
         const JerryGJX::stationType &start_station,

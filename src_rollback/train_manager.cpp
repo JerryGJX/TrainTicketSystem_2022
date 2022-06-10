@@ -522,7 +522,7 @@ std::string TrainManager::BuyTicket(std::string *info,
 
   int Oid = order_manager_.QueryOid() + 1;
 
-  Order or_ca(JerryGJX::SUCCESS, info[JerryGJX::_i], info[JerryGJX::_u], f_rank, t_rank,
+  Order or_ca(JerryGJX::SUCCESS, info[JerryGJX::_i], f_rank, t_rank,
               info[JerryGJX::_f], info[JerryGJX::_t], start_date, b_tr_ca.startTime, levT_f,
               arvT_t, Oid, price, wanted_seat);
 
@@ -557,18 +557,18 @@ bool TrainManager::RefundTicket(const std::string &username_, int rank_, OrderMa
   Order target_order = order_list[ra_ca];
   if (target_order.orderStatus == JerryGJX::REFUNDED)return false;
   else if (target_order.orderStatus == JerryGJX::PENDING) {
-    order_manager_.RemoveOrder(CalHash(target_order.username.str()), target_order.orderID);
+    order_manager_.RemoveOrder(CalHash(username_), target_order.orderID);
     target_order.orderStatus = JerryGJX::REFUNDED;
-    order_manager_.AddOrder(target_order.username.str(), target_order);
+    order_manager_.AddOrder(username_, target_order);
     order_manager_.RemovePendingOrder(target_order.startDay.ToDay(),
                                       CalHash(target_order.trainID.str()),
                                       target_order.orderID);
   } else {
     int start_date = target_order.startDay.ToDay();
     ull trHash = CalHash(target_order.trainID.str());
-    order_manager_.RemoveOrder(CalHash(target_order.username.str()), target_order.orderID);
+    order_manager_.RemoveOrder(CalHash(username_), target_order.orderID);
     target_order.orderStatus = JerryGJX::REFUNDED;
-    order_manager_.AddOrder(target_order.username.str(), target_order);
+    order_manager_.AddOrder(username_, target_order);
     sjtu::vector<PendingOrder> pending_order_list;
     order_manager_.QueryPendingOrderPrivate(start_date, trHash, pending_order_list);
 
