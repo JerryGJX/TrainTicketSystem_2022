@@ -186,9 +186,18 @@ struct Time {
   }
 
   std::string ToStr() const {
-    std::string ans;
-    ans += calendar_time.ToStr() + ' ';
-    ans += clock_time.ToStr();
+   std::string ans(11, '\0');
+    ans[0] = calendar_time.mm / 10 + '0';
+    ans[1] = calendar_time.mm % 10 + '0';
+    ans[2] = '-';
+    ans[3] = calendar_time.dd / 10 + '0';
+    ans[4] = calendar_time.dd % 10 + '0';
+    ans[5] = ' ';
+    ans[6] = clock_time.hor / 10 + '0';
+    ans[7] = clock_time.hor % 10 + '0';
+    ans[8] = ':';
+    ans[9] = clock_time.min / 10 + '0';
+    ans[10] = clock_time.min % 10 + '0';
     return ans;
   }
 

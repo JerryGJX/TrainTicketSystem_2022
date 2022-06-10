@@ -42,6 +42,7 @@ using Minute = int;
  */
 enum orderStatusType { SUCCESS, PENDING, REFUNDED };
 
+enum infoType{_c,_d,_f,_g,_i,_m,_n,_o,_p,_q,_s,_t,_u,_x,_y};//_y==14
 }
 
 #endif //TRAIN_MANAGER_CPP__MYDEFS_HPP_

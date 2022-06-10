@@ -33,7 +33,7 @@ struct Train {
 };
 
 struct BasicTrain {
-  JerryGJX::trainIDType trainID{};
+  //JerryGJX::trainIDType trainID{};
   int stationNum{}, totalSeatNum{};
   bool isReleased = false;
   JerryGJX::Minute startTime{};
@@ -50,7 +50,8 @@ struct BasicTrain {
              int start_sell_date,
              int end_sell_date,
              char type)
-      : trainID(train_id),
+      :
+      //trainID(train_id),
         stationNum(station_num),
         totalSeatNum(total_seat_num),
         isReleased(is_released),
@@ -60,7 +61,7 @@ struct BasicTrain {
         type(type) {}
 
   BasicTrain(const BasicTrain &rhs) {
-    trainID = rhs.trainID;
+    //trainID = rhs.trainID;
     stationNum = rhs.stationNum;
     totalSeatNum = rhs.totalSeatNum;
     isReleased = rhs.isReleased;
@@ -145,31 +146,30 @@ class TrainManager {
     }
   };
 
-  template<class T1, class T2>
-  class PairHash {
-   public:
-    ull operator()(const std::pair<T1, T2> &ValueType) const {
-      return ValueType.first + ValueType.second;
-    }
-  };
+//  template<class T1, class T2>
+//  class PairHash {
+//   public:
+//    ull operator()(const std::pair<T1, T2> &ValueType) const {
+//      return ValueType.first + ValueType.second;
+//    }
+//  };
 
-  class PairPairHash {
-   public:
-    ull operator()(const std::pair<ull, std::pair<int, ull>> &ValueType) const {
-      return ValueType.first + ValueType.second.first + ValueType.second.second;
-    }
-  };
-
+//  class PairPairHash {
+//   public:
+//    ull operator()(const std::pair<ull, std::pair<int, ull>> &ValueType) const {
+//      return ValueType.first + ValueType.second.first + ValueType.second.second;
+//    }
+//  };
   int TimeTag = 0;
   Bptree<ull, Train, 338, 3> trainDataBase;
   sjtu::linked_hashmap<ull, BasicTrain> basicTrainDatabase;
   Bptree<ull, BasicTrain, 338, 65> basicTrainBackUp;//
-  Bptree<std::pair<JerryGJX::Day, ull>, DayTrain, 339, 18, PairHash<JerryGJX::Day, ull>>
+  Bptree<std::pair<JerryGJX::Day, ull>, DayTrain, 339, 18, JerryGJX::pair_hash>
       DayTrainToSeat;//(第几天，hash(trainID))
-  Bptree<std::pair<ull, std::pair<int, ull>>, TrainStation, 339, 101, PairPairHash>
+  Bptree<std::pair<ull, std::pair<int, ull>>, TrainStation, 339, 101, JerryGJX::pair_pair_hash>
       stationDataBase;//(HashStation，HashTrain）
 
-  //--------rollback-----------
+//--------rollback-----------
   enum Op {toAdd, toRemove,toDown};
 
   sjtu::vector<std::pair<int, std::pair<Op, ull>>> rollbackData;//Toin表示在rollback时要插入，最后一个int表示toin时数据在ToInData中的下标
@@ -225,18 +225,18 @@ class TrainManager {
    * @brief 将不同火车到达同一站视为不同站
    */
 
-  void QueryTicket(sjtu::linked_hashmap<std::string, std::string> &info, sjtu::vector<std::string> &result);
+  void QueryTicket(std::string *info, sjtu::vector<std::string> &result);
   /**
    * @param info 传入是price还是time
    * @brief 直接输出结果
    */
-  void QueryTransfer(sjtu::linked_hashmap<std::string, std::string> &info, sjtu::vector<std::string> &result);
+  void QueryTransfer(std::string *info, sjtu::vector<std::string> &result);
 
   /**
    * @param order_manager_ 用于修改下单信息
    * @brief 判断用户是否登录在commandParser中完成
    */
-  std::string BuyTicket(sjtu::linked_hashmap<std::string, std::string> &info, OrderManager &order_manager_);
+  std::string BuyTicket(std::string *info, OrderManager &order_manager_);
 
   bool RefundTicket(const std::string &username_, int rank_, OrderManager &order_manager_);//从新到旧第rank_个(1-base)
 
