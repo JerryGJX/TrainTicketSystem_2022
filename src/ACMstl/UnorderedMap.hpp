@@ -45,8 +45,8 @@ class linked_hashmap {
 
   Node *head = nullptr, *tail = nullptr;
   Node **storageList = nullptr;
-  const int default_capacity = 25678, LoadFactor = 4;
-  int Capacity = 25678, NodeNum = 0;
+  const int default_capacity = 13669, LoadFactor = 4;
+  int Capacity = 13669, NodeNum = 0;
 
   void reSize() {
     for (Node *i = head->nxt; i != tail; i = i->nxt) {
