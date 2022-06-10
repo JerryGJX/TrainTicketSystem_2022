@@ -9,7 +9,7 @@ OrderManager order_manager("orderData","pendingData");
 CommandParser command_parser(user_manager,train_manager,order_manager);
 int main() {
 //  freopen("test1.ans", "w", stdout);
-//  freopen("../src/test/data/basic_2/1.in", "r", stdin);
+//  freopen("../src_rollback/test/data_rollback/basic_1/1.in", "r", stdin);
   std::ios::sync_with_stdio(false);
 
   while (true) {

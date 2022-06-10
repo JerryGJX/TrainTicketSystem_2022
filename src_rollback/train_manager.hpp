@@ -5,6 +5,7 @@
 
 # include "tools/Char.hpp"
 # include "ACMstl/bptree_rollback.hpp"
+#include "ACMstl/stack_for_rollback.hpp"
 # include "ACMstl/UnorderedMap.hpp"
 #include "ACMstl/Map.hpp"
 #include "ACMstl/Vector.hpp"
@@ -171,9 +172,17 @@ class TrainManager {
 
 //--------rollback-----------
   enum Op {toAdd, toRemove,toDown};
-
-  sjtu::vector<std::pair<int, std::pair<Op, ull>>> rollbackData;//Toin表示在rollback时要插入，最后一个int表示toin时数据在ToInData中的下标
-  sjtu::vector<std::pair<ull,BasicTrain>> TOAddData;
+struct RollBackInfo{
+  int TimeTag=0;
+  Op op=toAdd;
+  ull tidHash=0;
+  BasicTrain data{};
+  RollBackInfo()=default;
+  RollBackInfo(int time_tag, Op op, ull tid_hash, const BasicTrain &data=BasicTrain())
+      : TimeTag(time_tag), op(op), tidHash(tid_hash), data(data) {}
+};
+  //sjtu::vector<std::pair<int, std::pair<Op, ull>>> rollbackData;//Toin表示在rollback时要插入，最后一个int表示toin时数据在ToInData中的下标
+  StackForRollback<RollBackInfo> rollbackData;
 
   //------------缓存区-----------
   //对于queryticket和querytrain的vector的缓存
