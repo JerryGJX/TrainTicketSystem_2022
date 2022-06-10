@@ -10,21 +10,16 @@ template<class T, class Compare=std::less<T>>
 void Sort(sjtu::vector<T> &A, int l, int r) {
   if (l >= r)return;
   int low = l, high = r;
-  T pivot = A[low];
-  while (low < high) {
-    while (low < high && A[high] >= pivot) {
-      --high;
-    }
-    A[low] = A[high];
-    while (low < high && A[low] <= pivot) {
-      ++low;
-    }
-    A[high] = A[low];
+  T key=A[low+std::rand()%(high-low+1)];
+  //T pivot = A[low];
+  while (low <= high) {
+    while (A[high] > key) high--;
+    while (A[low] < key) low++;
+    if(low<=high) std::swap(A[low++],A[high--]);
   }
-  A[low] = pivot;
 
-  Sort(A, l, low - 1);
-  Sort(A, low + 1, r);
+  Sort(A, l, high);
+  Sort(A, low, r);
 }
 
 
