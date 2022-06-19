@@ -345,22 +345,22 @@ public:
 
 ```cpp
 private:
-	//从文件中读取根节点
-	void get_root();
-	//将根节点写入文件
-	void write_root();
-	//从文件中读取normal_node个数
-	void get_normal_node_number();
-	//将normal_node个数写入文件
-	void write_normal_node_number();
-	//从文件中读取Bptree中元素个数
-	void get_size();
-	//将Bptree中元素个数写入文件
-	void write_size();
-	//从硬盘中读取normal_node，根节点从内存中读
-	void read_normal_node(Bptree_normal_node &node, int pos);
-	//将normal_node写入硬盘，如果是根节点只写入内存
-	void modify_normal_node(Bptree_normal_node &node, int pos);
+   //从文件中读取根节点
+   void get_root();
+   //将根节点写入文件
+   void write_root();
+   //从文件中读取normal_node个数
+   void get_normal_node_number();
+   //将normal_node个数写入文件
+   void write_normal_node_number();
+   //从文件中读取Bptree中元素个数
+   void get_size();
+   //将Bptree中元素个数写入文件
+   void write_size();
+   //从硬盘中读取normal_node，根节点从内存中读
+   void read_normal_node(Bptree_normal_node &node, int pos);
+   //将normal_node写入硬盘，如果是根节点只写入内存
+   void modify_normal_node(Bptree_normal_node &node, int pos);
    //find的辅助函数，如果找到返回叶节点的index，否则返回-1
    int dfs_find(int pos, bool is_leaf, const Key &key, Value &result);
    //modify的辅助函数，如果找到返回叶节点的index，否则返回-1
