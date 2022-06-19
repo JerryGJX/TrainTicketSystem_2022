@@ -341,6 +341,65 @@ public:
 }
 ```
 
+- B+树类中一些辅助函数定义
+
+```cpp
+private:
+	//从文件中读取根节点
+	void get_root();
+	//将根节点写入文件
+	void write_root();
+	//从文件中读取normal_node个数
+	void get_normal_node_number();
+	//将normal_node个数写入文件
+	void write_normal_node_number();
+	//从文件中读取Bptree中元素个数
+	void get_size();
+	//将Bptree中元素个数写入文件
+	void write_size();
+	//从硬盘中读取normal_node，根节点从内存中读
+	void read_normal_node(Bptree_normal_node &node, int pos);
+	//将normal_node写入硬盘，如果是根节点只写入内存
+	void modify_normal_node(Bptree_normal_node &node, int pos);
+   //find的辅助函数，如果找到返回叶节点的index，否则返回-1
+   int dfs_find(int pos, bool is_leaf, const Key &key, Value &result);
+   //modify的辅助函数，如果找到返回叶节点的index，否则返回-1
+   int dfs_modify(int pos, bool is_leaf, const Key &key, const Value &value);
+   //insert的辅助函数
+   bool dfs_insert(int pos, bool is_leaf, int rank, Bptree_normal_node &parent, const Key &key, const Value &value);
+   //erase的辅助函数
+   bool dfs_erase(int pos, bool is_leaf, int rank, Bptree_normal_node &parent, const Key &key);
+   //在叶节点删除某个值后，在node1和node2之间调整使他们满足Bptree对size的要求，返回是否进行了merge操作
+   bool maintain_size_decrease_leaf(int rank,
+                                    Bptree_leaf_node &node1,
+                                    Bptree_leaf_node &node2,
+                                    Bptree_normal_node &parent);
+   //在普通节点删除某个值后，在node1和node2之间调整使他们满足Bptree对size的要求，返回是否进行了merge操作
+   bool maintain_size_decrease_normal(int rank,
+                                      Bptree_normal_node &node1,
+                                      Bptree_normal_node &node2,
+                                      Bptree_normal_node &parent);
+	//查找不超过key的最后一个叶节点，存在返回index，不存在返回-1
+   int lower_bound(const Key &key);
+   //lower_bound的辅助函数
+   int dfs_lower_bound(int pos, const Key &key);
+```
+
+-  B+树类中一些缓存函数定义
+
+```cpp
+private:
+   int CacheLimit;
+   sjtu::linked_hashmap<Key, Value, Hash, Equal> Cache;
+   void CalLimit();
+   bool CacheInsert(const Key &key_, Value &value_);
+   bool CacheRemove(const Key &key_);
+   bool CacheFind(const Key &key_, Value &result);
+   bool CacheModify(const Key &key_, const Value &rhs);
+```
+
+   
+
 ### 用户部分
 
 #### 用户信息类（in `user_manager.hpp`）
