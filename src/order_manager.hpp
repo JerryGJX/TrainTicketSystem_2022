@@ -10,7 +10,7 @@
 #include "ACMstl/bpTree.hpp"
 #include "ACMstl/Vector.hpp"
 #include "tools/Algorithm.hpp"
-
+#include "tools/Error.hpp"
 #include <iostream>
 //#include <map>
 //#include <vector>

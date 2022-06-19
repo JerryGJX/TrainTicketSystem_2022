@@ -10,7 +10,7 @@
 #include "order_manager.hpp"
 #include "train_manager.hpp"
 #include "user_manager.hpp"
-
+#include "tools/Error.hpp"
 //#include <vector>
 //#include <unordered_map>
 
@@ -75,7 +75,7 @@ class CommandParser {
 
   static void Success();
   static void Failure();
-
+  static void Failure(const std::string &);
   //-------userManager easy form-----------------
   bool ifUReg(const std::string &username_);
   int ifULog(const std::string &username_);

@@ -12,7 +12,7 @@
 #include "tools/Algorithm.hpp"
 #include "tools/Time.hpp"
 #include "order_manager.hpp"
-
+#include "tools/Error.hpp"
 //#include <utility>
 //#include <vector>
 //#include <map>

@@ -9,6 +9,7 @@
 #include "ACMstl/Vector.hpp"
 #include "mydefs.hpp"
 #include "tools/Algorithm.hpp"
+#include "tools/Error.hpp"
 
 
 //#include <map>

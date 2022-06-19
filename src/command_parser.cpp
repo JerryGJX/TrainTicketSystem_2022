@@ -42,13 +42,13 @@ void CommandParser::Run() {
       std::string parser_list_to_use[15];
 
       SplitString(parser_carrier, parser_list, ' ');
-      std::cout << parser_list[0] << " ";
+      //std::cout << parser_list[0] << " ";
       std::string timestamp = parser_list[0].substr(1, parser_list[0].length() - 2);
       //std::cout << "!!DEBUG!! " << timestamp << std::endl;
       int time_tag = std::stoi(timestamp);
       std::string cmd_type = parser_list[1];
       for (int i = 2; i < parser_list.size(); i += 2) {
-        parser_list_to_use[GetInfoRank(parser_list[i][1])]=parser_list[i + 1];
+        parser_list_to_use[GetInfoRank(parser_list[i][1])] = parser_list[i + 1];
         //parser_list_to_use.insert(std::make_pair(parser_list[i], ));
       }
 
@@ -57,7 +57,14 @@ void CommandParser::Run() {
 //        user_manager.exit();
 //
 //        std::cout << "bye\n";
-      if (mapFunction.find(cmd_type) != mapFunction.end()) (this->*mapFunction[cmd_type])(parser_list_to_use);
+
+      try {
+        if (mapFunction.find(cmd_type) != mapFunction.end()) (this->*mapFunction[cmd_type])(parser_list_to_use);
+      } catch (Error &get_error) {
+        Failure();
+        std::cerr << get_error << std::endl;
+      }
+
     }
   }
 }
@@ -90,6 +97,7 @@ void CommandParser::ParseModifyProfile(std::string *cmd) {
 //------------------train manager-----------------
 void CommandParser::ParseAddTrain(std::string *cmd) {
   if (ifTAdd(cmd[JerryGJX::_i])) {
+    throw Error("Train Is Added");
     Failure();
     return;
   }
@@ -120,31 +128,39 @@ void CommandParser::ParseAddTrain(std::string *cmd) {
   Success();
 }
 void CommandParser::ParseDeleteTrain(std::string *cmd) {
-  if (!ifTAdd(cmd[JerryGJX::_i]) || ifTRel(cmd[JerryGJX::_i])) {
-    Failure();
-    return;
-  }
+  if (!ifTAdd(cmd[JerryGJX::_i]))
+    throw Error("Train Isn't Added");
+  if (ifTRel(cmd[JerryGJX::_i]))
+    throw Error("Train Is Released");
+//    Failure();
+//    return;
+
   train_manager.deleteTrain(cmd[JerryGJX::_i]);
   Success();
 }
 void CommandParser::ParseReleaseTrain(std::string *cmd) {
-  if (!ifTAdd(cmd[JerryGJX::_i]) || ifTRel(cmd[JerryGJX::_i])) {
-    Failure();
-    return;
-  }
+  if (!ifTAdd(cmd[JerryGJX::_i]))
+    throw Error("Train Isn't Added");
+  if (ifTRel(cmd[JerryGJX::_i]))
+    throw Error("Train Is Released");
   train_manager.releaseTrain(cmd[JerryGJX::_i]);
   Success();
 }
 void CommandParser::ParseQueryTrain(std::string *cmd) {
-  if (!ifTAdd(cmd[JerryGJX::_i])) {
-    Failure();
-    return;
-  }
+  if (!ifTAdd(cmd[JerryGJX::_i]))
+    throw Error("Train Isn't Added");
+//  {
+//    Failure();
+//    return;
+//  }
+
   sjtu::vector<std::string> result;
-  if (!train_manager.queryTrain(cmd[JerryGJX::_i], cmd[JerryGJX::_d], result)) {
-    Failure();
-    return;
-  }
+  //if (
+  train_manager.queryTrain(cmd[JerryGJX::_i], cmd[JerryGJX::_d], result);
+  //) {
+//    Failure();
+//    return;
+  //}
   std::cout << result[0] << " ";
   for (int i = 1; i < result.size(); ++i)std::cout << result[i] << "\n";
   //Success();
@@ -163,32 +179,48 @@ void CommandParser::ParseQueryTransfer(std::string *cmd) {
 }
 
 void CommandParser::ParseBuyTicket(std::string *cmd) {
-  if (!ifUReg(cmd[JerryGJX::_u]) || !ifULog(cmd[JerryGJX::_u]) || !ifTAdd(cmd[JerryGJX::_i]) || !ifTRel(cmd[JerryGJX::_i])) {
-    Failure();
-    return;
-  }
+  if (!ifUReg(cmd[JerryGJX::_u]))
+    throw Error("Target User Isn't Added");
+  if (!ifULog(cmd[JerryGJX::_u]))
+    throw Error("Target User Isn't Online");
+  if (!ifTAdd(cmd[JerryGJX::_i]))
+    throw Error("Train Isn't Added");
+  if (!ifTRel(cmd[JerryGJX::_i]))
+    throw Error("Train Isn't Released");
+//  {
+//    Failure();
+//    return;
+//  }
   std::string ans = train_manager.BuyTicket(cmd, order_manager);
   std::cout << ans << "\n";
 }
 
 void CommandParser::ParseRefundTicket(std::string *cmd) {
-  if (!ifULog(cmd[JerryGJX::_u])) {
-    Failure();
-    return;
-  }
+  if (!ifULog(cmd[JerryGJX::_u]))
+    throw Error("Target User Isn't Online");
+//  {
+//    Failure();
+//    return;
+//  }
   int rank = 1;
   if (!cmd[JerryGJX::_n].empty())rank = std::stoi(cmd[JerryGJX::_n]);
   if (train_manager.RefundTicket(cmd[JerryGJX::_u], rank, order_manager))Success();
-  else Failure();
+  //else
+
+    //Failure();
 
 }
 
 //------------------order manager-----------------
 void CommandParser::ParseQueryOrder(std::string *cmd) {
-  if (!ifUReg(cmd[JerryGJX::_u]) || !ifULog(cmd[JerryGJX::_u])) {
-    Failure();
-    return;
-  }
+  if (!ifUReg(cmd[JerryGJX::_u]))
+    throw Error("Target User Isn't Added");
+  if (!ifULog(cmd[JerryGJX::_u]))
+    throw Error("Target User Isn't Online");
+//    {
+//    Failure();
+//    return;
+//  }
   sjtu::vector<std::string> ans;
   order_manager.QueryOrder(cmd[JerryGJX::_u], ans);
   std::cout << ans[0] << "\n";
@@ -239,6 +271,10 @@ void CommandParser::Success() {
 void CommandParser::Failure() {
   std::cout << "-1\n";
 }
+void CommandParser::Failure(const string &description) {
+  std::cout << "-1\n";
+  throw Error(description);
+}
 
 //-------userManager easy form-----------------
 int CommandParser::ifULog(const std::string &username_) {
@@ -255,7 +291,7 @@ bool CommandParser::ifTRel(const std::string &trainID_) {
   return train_manager.isReleased(trainID_);
 }
 JerryGJX::infoType CommandParser::GetInfoRank(char tag) {
-  switch(tag){
+  switch (tag) {
     case 'c':return JerryGJX::_c;
     case 'd':return JerryGJX::_d;
     case 'f':return JerryGJX::_f;

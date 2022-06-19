@@ -185,10 +185,14 @@ bool TrainManager::queryTrain(const std::string &trainID_,
                               const std::string &date_,
                               sjtu::vector<std::string> &result) {
   JerryGJX::Day wanted_date = JerryGJX::CalendarTime(date_).ToDay();
-  if (!isAdded(trainID_))return false;
+  if (!isAdded(trainID_))
+    throw Error("Train Isn't Added");
+    //return false;
   ull tr_hash = CalHash(trainID_);
   BasicTrain b_tr_ca = basicTrainDatabase[tr_hash];
-  if (wanted_date < b_tr_ca.startSellDate || wanted_date > b_tr_ca.endSellDate)return false;
+  if (wanted_date < b_tr_ca.startSellDate || wanted_date > b_tr_ca.endSellDate)
+    throw Error("Isn't Sell Date");
+    //return false;
   Train tr_ca;
   trainDataBase.find(tr_hash, tr_ca);
 
@@ -539,9 +543,13 @@ bool TrainManager::RefundTicket(const std::string &username_, int rank_, OrderMa
   sjtu::vector<Order> order_list;
   order_manager_.QueryOrderPrivate(username_, order_list);
   int ra_ca = (int) order_list.size() - rank_;
-  if (ra_ca < 0)return false;
+  if (ra_ca < 0)
+    throw Error("Order Number Isn't Enough");
+    //return false;
   Order target_order = order_list[ra_ca];
-  if (target_order.orderStatus == JerryGJX::REFUNDED)return false;
+  if (target_order.orderStatus == JerryGJX::REFUNDED)
+    throw Error("Order Is Refunded");
+    //return false;
   else if (target_order.orderStatus == JerryGJX::PENDING) {
     order_manager_.RemoveOrder(CalHash(target_order.username.str()), target_order.orderID);
     target_order.orderStatus = JerryGJX::REFUNDED;
