@@ -11,294 +11,230 @@ A train ticket management system based on B+ Tree
 
  
 
-## 模块划分及功能
+## 文件结构 & 运行逻辑
 
-### 划分
+```
+├── CMakeLists.txt
+├── README.md
+├── development
+│   ├── Ticket System 2021 development file.md 
+│   └── frontpageDevelopmentDoc.md
+├── src
+│   ├── ACMstl
+│   │   ├── Map.hpp
+│   │   ├── UnorderedMap.hpp
+│   │   ├── Vector.hpp
+│   │   ├── bpTree.hpp
+│   │   ├── bptree_rollback.hpp
+│   │   ├── exceptions.hpp
+│   │   ├── memory_manager.hpp
+│   │   └── stack_for_rollback.hpp
+│   ├── command_parser.cpp
+│   ├── command_parser.hpp
+│   ├── main.cpp
+│   ├── mydefs.hpp
+│   ├── order_manager.cpp
+│   ├── order_manager.hpp
+│   ├── tools
+│   │   ├── Algorithm.hpp
+│   │   ├── Char.hpp
+│   │   ├── Error.hpp
+│   │   └── Time.hpp
+│   ├── train_manager.cpp
+│   ├── train_manager.hpp
+│   ├── user_manager.cpp
+│   └── user_manager.hpp
+└── src_rollback
+    ├── ACMstl
+    │   ├── Map.hpp
+    │   ├── UnorderedMap.hpp
+    │   ├── Vector.hpp
+    │   ├── bpTree.hpp
+    │   ├── bptree_rollback.hpp
+    │   ├── exceptions.hpp
+    │   ├── memory_manager.hpp
+    │   └── stack_for_rollback.hpp
+    ├── command_parser.cpp
+    ├── command_parser.hpp
+    ├── main.cpp
+    ├── mydefs.hpp
+    ├── order_manager.cpp
+    ├── order_manager.hpp
+    ├── tools
+    │   ├── Algorithm.hpp
+    │   ├── Char.hpp
+    │   └── Time.hpp
+    ├── train_manager.cpp
+    ├── train_manager.hpp
+    ├── user_manager.cpp
+    └── user_manager.hpp
+```
 
-#### 数据结构相关
+- `src/` 中为主体逻辑代码：
+  - `main.cpp` 为主入口，构造manager类，将输入的指令传给命令解析类。
+  - `command_parser.hpp` 负责解析命令，调用对应的执行函数。
+  - `user_manager.hpp` 用户管理类，执行和用户相关的操作。
+  - `train_manager.hpp` 火车管理类，执行和火车、车票相关的操作。
+  - `order_manager.hpp` 订单管理类，执行添加删除pending order以及添加，查找order
+- `src_rollback/` 含有回滚功能的主体逻辑代码。
+- 通过 `CMakeLists.txt` 控制是否含有回滚功能。 
 
-- 模板B+树（BpTree.cpp）
+## 数据存储结构
 
-- 外存顺序读写类（Queue.cpp）
+### 内存：
 
-- 变长数组类（Vector.cpp）//可能不需要
+- 在线用户，value存下登录用户的权限。
+- trainID ——> 火车基础信息（数据量较大小但需求较的数据）
 
-- 内存查找类（UnorderedMap.cpp）
+## 外存：
 
-#### 工具部件
+- userID  ——> 用户信息
+  
+- trainID ——> 火车信息（数据量较大但需求较小的数据）
+- trainID ——> 火车基础信息（数据量较大小但需求较的数据）
+- （站名，（开始售卖日期，trainID））——> 火车通过车站的信息
+- （日期，trainID）——> 火车票数信息
 
-- 支持比较的字符串类（Char.cpp）
-- hash,sort等工具函数（Algorithm.cpp）
+- （userID，order编号）——> 订单信息
+- （(第几天(指始发天数)，trainID),order编号）——> 候补订单信息
 
-#### 后端逻辑相关
+> 为优化 B+ 树的比较操作，上文的“ID”均为哈希值
+## 实现框架
 
-- 指令解析类（command_parser.cpp）
-- 订单管理类（order_manager.cpp）
-- 火车管理类（train_manager.cpp）
-- 用户管理类（user_manager.cpp）
+### 工具类 & 数据结构
+
+#### 定长字符串类（in `tools/Char.hpp`）
+
+```c++
+template<int maxLength = 65>
+struct Char {
+  // +1 是因为要存结尾 '\0'
+  char content[maxLength + 1]{};
+  // 默认为空字符串
+  Char();
+
+  Char(const std::string &s);
+
+  Char(const char *cstr);
+
+  operator std::string() const { return str(); };
+
+  std::string str() const { return std::string(content); };
+
+  // 赋值操作
+  Char &operator=(const Char<maxLength> &that);
+
+  bool operator<(const Char<maxLength> &that) const;
+
+  bool operator>(const Char<maxLength> &that) const;
+
+  bool operator<=(const Char<maxLength> &that) const;
+
+  bool operator>=(const Char<maxLength> &that) const;
+
+  bool operator==(const Char<maxLength> &that) const;
+
+  bool operator!=(const Char<maxLength> &that) const;
+};
+```
 
 
+#### 时间类（in `tools/Time.hpp`）
 
-## 主体逻辑设计
+```c++
+namespace JerryGJX {
+constexpr int mon[13] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+constexpr int monSum[13] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
 
+struct CalendarTime {
+  int mm, dd;
+  
+  CalendarTime &operator=(const CalendarTime &rhs);
 
+  bool operator<(const CalendarTime &rhs) const;
 
+  bool operator>(const CalendarTime &rhs) const;
 
+  bool operator<=(const CalendarTime &rhs) const;
 
-![](C:\Users\JerryGuo\Desktop\TrainTicketSystem_2022\development\示意图.png)
+  bool operator>=(const CalendarTime &rhs) const;
 
+  CalendarTime operator+(int x);
 
+  CalendarTime operator-(int x);
 
+  CalendarTime &operator+=(int x);
 
+  bool operator==(const CalendarTime &rhs) const;
 
+  bool operator!=(const CalendarTime &rhs) const;
 
+  std::string ToStr() const;
 
+  int ToDay() const {
+    return monSum[mm - (mm != 0)] + dd;
+  }
 
+  int ToHour() const {
+    return (monSum[mm - (mm != 0)] + dd) * 24;
+  }
 
-### 指令解析类（command_parser.cpp）
+};
 
-#### 重要成员
+struct ClockTime {
+  int hor, min, day;
+  bool operator==(const ClockTime &rhs) const {
+    return hor == rhs.hor &&
+        min == rhs.min;
+  }
+  bool operator!=(const ClockTime &rhs) const {
+    return !(rhs == *this);
+  }
+  bool operator<(const ClockTime &rhs) const {
+    if (hor < rhs.hor)return true;
+    if (rhs.hor < hor)return false;
+    return min < rhs.min;
+  }
+  bool operator>(const ClockTime &rhs) const {
+    return rhs < *this;
+  }
+  bool operator<=(const ClockTime &rhs) const {
+    return !(rhs < *this);
+  }
+  bool operator>=(const ClockTime &rhs) const {
+    return !(*this < rhs);
+  }
 
-```cpp
-  UserManager &user_manager_;
-  TrainManager &train_manager_;
-  OrderManager &order_manager_;
-UnorderedMap<std::string, void (CommandParser::*)(Vector<std::string> &)> mapFunction;
+  ClockTime operator+(int x);
+
+  ClockTime &operator+=(int x);
+
+  std::string ToStr() const;
+
+  int ToMin() const;
+};
+
+struct Time {
+  CalendarTime calendar_time;
+  ClockTime clock_time;
+  explicit Time(int mm_ = 0, int dd_ = 0, int hor_ = 0, int min_ = 0) : calendar_time(mm_, dd_),
+                                                                        clock_time(hor_, min_) {}
+
+  Time(const std::string &str, int num);
+
+  Time operator+(int x);
+
+  Time &operator+=(int x);
+
+  std::string ToStr() const;
+
+};
+}
 ```
 
 
 
-#### 功能与实现
-
-- ```main```函数中完成三个manager的构造后引用传入 ``` CommanParser ```构造函数中，用于处理三者相互调用
-
-- ```run```函数负责不断读入，之后利用```mapFunction```调用其他成员函数执行操作
-  
-- ```cpp
-  void ParseAddUser(Vector<std::string> &cmd);
-  void ParseLogin(Vector<std::string> &cmd);
-  void ParseLogout(Vector<std::string> &cmd);
-  void ParseQueryProfile(Vector<std::string> &cmd);
-  void ParseModifyProfile(Vector<std::string> &cmd);
-  void ParseAddTrain(Vector<std::string> &cmd);
-  void ParseReleaseTrain(Vector<std::string> &cmd);
-  void ParseQueryTrain(Vector<std::string> &cmd);
-  void ParseQueryTicket(Vector<std::string> &cmd);
-  void ParseQueryTransfer(Vector<std::string> &cmd);
-  void ParseBuyTicket(Vector<std::string> &cmd);
-  void ParseQueryOrder(Vector<std::string> &cmd);
-  void ParseRefundTicket(Vector<std::string> &cmd);
-  void ParseRollback(Vector<std::string> &cmd);
-  void ParseClean(Vector<std::string> &cmd);
-  void ParseExit(Vector<std::string> &cmd);
-  ```
-  等成员函数负责调用三个manager的对应成员函数以执行指令
-  
-
-### Manager类
-
-### ``` UserManager ```类
-
-#### 重要数据成员
-
-```cpp
-Bptree<JerryGJX::usernameType , User> userDatabase;
-
-UnorderedMap<JerryGJX::usernameType , User> onlineUser;//是否要换为bpt？
-```
-
-#### 成员函数
-
-- ```cpp
-  void AddUser(const std::string username_,
-             const std::string password_,
-             const std::string name_,
-             const std::string mailAddr_,
-             const int privilege_);
-  ```
-  该函数只负责添加用户，能否插入由```ParserCommander```判断
-
-- ```cpp
-  bool isRegistered(const std::string username_);
-  ```
-  ```UserDataBase```中该用户是否存在
-
-- ```cpp
-  int isLogin(const std::string username_);
-  ```
-  ```onlineUser```中该用户是否存在，存在则返回对应privilege，否则返回-1
-
-- ```cpp
-  void Login(const std::string &username_, const std::string &password_);
-  ```
-  用户登录
-  
-- ```cpp
-  void Logout(const std::string &username_);
-  ```
-
-  用户登出
-
-- ```cpp
-  Vector<std::string> queryProfile(const std::string &username_);
-  ```
-
-  查询一名用户的信息
-
-- ```cpp
-  Vector<std::string> modifyProfile(const std::string &username_, const UnorderedMap<std::string, std::string> &info,OrderManager* order_manager_);
-  ```
-
-  修改一名用户的信息
-
-### ```TrainManager```类
-
-#### 工具结构体
-
-- ```Train```
-
-  存储火车所有信息
-
-  ```cpp
-  struct Train {
-    bool isReleased;
-    JerryGJX::trainIDType trainID;
-    int stationNum;
-    JerryGJX::stationType stations[JerryGJX::max_stationNum];
-    int totalSeatNum;
-    int sumPrice[JerryGJX::max_stationNum];//存价格前缀和，且sumPrice[0]=0
-    JerryGJX::timeType startTime;
-    JerryGJX::timeType arrivingTime[JerryGJX::max_stationNum];//存到达时间，且arrivingTime[0]=0
-    JerryGJX::timeType leavingTime[JerryGJX::max_stationNum];//存离站时间，且leavingTime[0]=startTime
-    JerryGJX::timeType startSellDate;
-    JerryGJX::timeType endSellDate;
-    char type;
-  };
-  ```
-
-- ```DayTrain```
-
-  ```cpp
-  struct DayTrain {
-    int seatRemain[JerryGJX::max_stationNum];
-  };
-  ```
-
-  用于由（date，trainID）查询剩余座位，应对```QueryTrain```函数
-
-  ```cpp
-  Bptree<std::pair < JerryGJX::timeType, JerryGJX::trainIDType>,DayTrain>
-  DayTrainToSeat;
-  ```
-
-- ```TrainStation```
-
-  ```cpp
-  struct TrainStation {
-    JerryGJX::trainIDType trainID;
-    JerryGJX::stationType station;
-    int rank, priceSum;//rank表示从始发站向下的站次，priceSum表示始发站到该站的总价格
-    JerryGJX::timeType startSaleDate, endSaleDate, arrivingTime, leavingTime;
-  };
-  ```
-
-  用于
-
-  ```cpp
-  Bptree<std::pair < JerryGJX::stationType, JerryGJX::trainIDType>,TrainStation>
-  stationDataBase;
-  ```
-
-  配合bpt范围搜索之后遍历，实现
-
-  ```cpp
-  void QueryTicket(std::string startStation_,
-                   std::string terminalStation_,
-                   UnorderedMap<std::string, std::string> info);
-  void QueryTransfer(std::string startStation_,
-                       std::string terminalStation_,
-                       UnorderedMap<std::string, std::string> info);
-  ```
-
-- ```Ticket```
-
-  ```cpp
-  struct Ticket {
-    TrainStation startStation, endStation;
-  };
-  ```
-
-  
-
-#### 成员函数
-
-- ```cpp
-  void addTrain(const std::string trainID_,
-                const int stationNum_,
-                const int totalSeatNum_,
-                Vector<std::string> stations,
-                Vector<int> Price_,
-                const std::string startTime_,
-                Vector<std::string> travelTimes_,
-                Vector<std::string> stopoverTimes_,
-                Vector<std::string> saleDate_,
-                const char type_);
-  ```
-  增加一辆火车
-
-- ```cpp
-  bool isAdded(const std::string trainID_);
-  ```
-  询问火车是否存在
-
-- ```cpp
-  void releaseTrain(const std::string trainID_);
-  ```
-  释放一辆火车
-
-- ```cpp
-  bool isReleased(const std::string trainID_);
-  ```
-  询问是否release
-
-- ```cpp
-  void queryTrain(JerryGJX::trainIDType trainId_, JerryGJX::timeType targetDate_);
-  ```
-
-  询问符合条件的火车
-
-- ```cpp
-  void QueryTicket(std::string startStation_,
-                   std::string terminalStation_,
-                   UnorderedMap<std::string, std::string> info);
-  ```
-  询问票
-
-- ```cpp
-  void QueryTransfer(std::string startStation_,
-                     std::string terminalStation_,
-                     UnorderedMap<std::string, std::string> info);
-  ```
-  询问符合条件的换乘路线
-
-- ```cpp
-  void BuyTicket(const std::string username_,
-                 const std::string trainID_,
-                 const std::string date_,
-                 const int number,
-                 const std::string startStation_,
-                 const std::string terminalStation_,
-                 const bool if_wait,
-                 OrderManager* order_manager_);
-  ```
-  买票
-
-- ```cpp
-  void Clear();
-  ```
-  清除
-
-### 模板B+树（BpTree.cpp）
+#### B+ 树（in `ACMstl/bpTree.hpp`）
 
 - B+树类定义
 
@@ -389,4 +325,289 @@ class Bptree_leaf_node {
     //查找后继
     Bptree_leaf_node* find_successor() const {};
 }
+```
+
+### 用户部分
+
+#### 用户信息类（in `user_manager.hpp`）
+
+```c++
+class User {
+  friend class Usermanager;
+ public:
+  JerryGJX::passwordType password;  // 密码
+  JerryGJX::nameType name;          // 真实姓名
+  JerryGJX::mailAddrType mailAddr;  // 邮件地址
+  int privilege{};                  // 权限 [0, 10] 
+}；
+```
+
+#### 用户管理类（in `user_manager.hpp`）
+
+```c++
+class UserManager {
+ private:
+  int TimeTag = 0;
+  Bptree<ull, User, 339, 67> userDatabase;//username -> User(class)
+  sjtu::linked_hashmap<ull, int> onlineUser;//维护在线用户 username->privilege
+ public:
+  explicit UserManager(const std::string &filenameUD);
+
+  ull CalHash(const std::string &username_);
+
+  bool AddUser(std::string *info);
+
+  bool isReg(const std::string &username_);
+
+  bool isLogin(const std::string &username_);
+
+  bool checkPassword(const std::string &username_, const std::string &password_);
+
+  bool Login(std::string *info);
+
+  bool Logout(std::string *info);
+
+  bool queryProfile(std::string *info, std::string &result);
+
+  bool modifyProfile(std::string *info, std::string &result);
+
+  void Clean();
+
+  void Exit();
+
+//----------rollback-----------
+
+  void RollBack(int target_time);
+
+  void GetTime(int time_tag);
+
+};
+```
+
+### 火车 & 车票部分
+
+#### 火车信息（in `train_manager.hpp`）
+
+```c++
+struct Train {
+  JerryGJX::trainIDType trainID;
+  JerryGJX::stationType stations[JerryGJX::max_stationNum];//0 base
+  int sumPrice[JerryGJX::max_stationNum]{};//存价格前缀和，且sumPrice[0]=0
+  int arrivingTime[JerryGJX::max_stationNum]{};//存到达时间，且arrivingTime[0]=0
+  int leavingTime[JerryGJX::max_stationNum]{};//存离站时间，且leavingTime[0]=startTime
+};
+```
+
+
+#### 火车基础信息（in `train_manager.hpp`）
+
+```c++
+struct BasicTrain {
+  int stationNum{}, totalSeatNum{};
+  bool isReleased = false;
+  JerryGJX::Minute startTime{};
+  JerryGJX::Day startSellDate = 0;
+  JerryGJX::Day endSellDate = 0;
+  char type{};
+};
+```
+
+
+#### 火车通过车站的信息（in `train_manager.hpp`）
+
+```c++
+struct TrainStation {
+    JerryGJX::trainIDType trainID{};
+    int rank = 0, priceSum = 0;//rank表示从始发站向下的站次，priceSum表示始发站到该站的总价格
+    JerryGJX::Day startSaleDate{}, endSaleDate{};
+    int startTime{}, arrivingTime{}, leavingTime{};
+  };
+```
+
+#### 火车票量信息（in `train_manager.hpp`）
+
+```c++
+struct DayTrain {
+    int seatRemain[JerryGJX::max_stationNum]{};
+    int findMin(int lp, int rp);
+    void rangeAdd(int lp, int rp, int d);
+  };
+```
+
+
+
+#### 火车管理类（in `train_manager.hpp`）
+
+```c++
+class TrainManager {
+ private:
+  struct Ticket {
+    std::string trainID{};
+    std::string startStation{}, endStation{};
+    int start_time{}, end_time{};//在一年中的第几分钟
+    int cost{}, seat{};
+    
+    [[nodiscard]] int lastTime() const {
+      return end_time - start_time;
+    }
+    std::string Print();
+  };
+
+  struct Transfer {
+    Ticket tk1{}, tk2{};
+    [[nodiscard]] int totTime() const {
+      return tk2.end_time - tk1.start_time;
+    }
+    [[nodiscard]] int totCost() const {
+      return tk1.cost + tk2.cost;
+    }
+  };
+  int TimeTag = 0;
+  Bptree<ull, Train, 338, 3> trainDataBase;
+  //trainID->Train
+  sjtu::linked_hashmap<ull, BasicTrain> basicTrainDatabase;
+  //trainID->BasicTrain
+  Bptree<ull, BasicTrain, 338, 65> basicTrainBackUp;
+  //用于在开关程序的时候保存信息
+  Bptree<std::pair<JerryGJX::Day, ull>, DayTrain, 339, 18, JerryGJX::pair_hash>
+      DayTrainToSeat;
+      //(第几天，trainID)->车票信息
+  Bptree<std::pair<ull, std::pair<int, ull>>, TrainStation, 339, 101, JerryGJX::pair_pair_hash>
+      stationDataBase;
+      //（站名，（开始售卖日期，trainID））——> 火车通过车站的信息
+
+  //--------rollback-----------
+  enum Op {toAdd, toRemove,toDown};
+  struct RollBackInfo{
+  int TimeTag=0;
+  Op op=toAdd;
+  ull tidHash=0;
+  BasicTrain data{}；
+  };
+  StackForRollback<RollBackInfo> rollbackData;
+  //为实现内存中的回滚而写
+
+  std::hash<std::string> hash_str;
+
+ public:
+  TrainManager(const std::string &filename_tdb,
+               const std::string &filename_dtts,
+               const std::string &filename_sdb,
+               const std::string &filename_btb);
+
+  void addTrain(const std::string &trainID_,
+                int stationNum_,
+                int totalSeatNum_,
+                sjtu::vector<std::string> &stations,
+                sjtu::vector<int> &Price_,
+                const std::string &startTime_,
+                sjtu::vector<int> &travelTimes_,
+                sjtu::vector<int> &stopoverTimes_,
+                sjtu::vector<std::string> &saleDate_,
+                char type_);
+
+  bool isAdded(const std::string &trainID_);
+
+  void deleteTrain(const std::string &trainID_);
+
+  void releaseTrain(const std::string &trainID_);
+
+  bool queryTrain(const std::string &trainID_, const std::string &date_, sjtu::vector<std::string> &result);
+
+  bool isReleased(const std::string &trainID_);
+
+  ull CalHash(const std::string &str_);
+
+
+  void QueryTicket(std::string *info, sjtu::vector<std::string> &result);
+  
+  void QueryTransfer(std::string *info, sjtu::vector<std::string> &result);
+
+  std::string BuyTicket(std::string *info, OrderManager &order_manager_);
+
+  bool RefundTicket(const std::string &username_, int rank_, OrderManager &order_manager_);//从新到旧第rank_个(1-base)
+
+  void Clean();
+
+  void Exit();
+
+  void RollBack(int target_time);
+
+  void GetTime(int time_tag);
+};
+```
+
+
+#### 订单信息（in `order_manager.hpp`）
+
+```c++
+struct Order {
+  JerryGJX::orderStatusType orderStatus{};
+  JerryGJX::trainIDType trainID{};
+  int startRank{}, endRank{};//要求是trainManager产生
+  JerryGJX::stationType startStation{}, endStation{};
+  JerryGJX::CalendarTime startDay{};
+  int startTime{}, leavingTime{}, arrivingTime{};//全部用分钟为单位，后两者为绝对分钟数
+  int orderID{}, price{}, num{};
+};
+```
+
+#### 候补订单信息（in `order_manager.hpp`）
+
+```c++
+struct PendingOrder {
+  ull tidHash{}, uidHash{};
+  int startRank{}, endRank{};
+  int orderID{}, num{};
+  JerryGJX::CalendarTime startDay{};
+};
+```
+
+#### 订单管理类（in `order_manager.hpp`）
+
+```c++
+class OrderManager {
+  template<class T1, class T2>
+  class PairHash {
+   public:
+    ull operator()(const std::pair<T1, T2> &ValueType) const {
+      return ValueType.first + ValueType.second;
+    }
+  };
+  int TimeTag=0;
+  Bptree<std::pair<ull, int>, Order, 339, 38,JerryGJX::pair_hash> orderDataBase;//hashUid,oid
+  Bptree<std::pair<std::pair<int, ull>, int>, PendingOrder, 254, 144,JerryGJX::pair_pair_hash_nd> pendingQueue;
+  //(第几天(指始发天数)，hash(trainID)),oid
+  std::hash<std::string> hash_str;
+ public:
+  OrderManager(const std::string &filenameO, const std::string &filenameP);
+
+  int QueryOid();
+  ull CalHash(const std::string &str_);
+  std::string OrderStr(Order &order_);
+
+  void QueryOrderPrivate(const std::string &username_, sjtu::vector<Order> &result);
+
+  void QueryOrder(const std::string &username_, sjtu::vector<std::string> &result);
+
+  void QueryPendingOrderPrivate(int date_, ull tidHash_, sjtu::vector<PendingOrder> &result);
+
+  void AddOrder(const std::string &username_, Order &order_);
+
+  void RemoveOrder(ull uidHash_, int Oid_);
+
+  void AddPendingOrder(int date_, ull tidHash_, int Oid_, PendingOrder &pending_order_);
+
+  void RemovePendingOrder(int date_, ull tidHash_, int Oid_);
+
+  void PendingToSuccess(ull uidHash_, int orderID_);//修改order情况
+
+  void Clean();
+
+  void Exit();
+
+  void RollBack(int target_time);
+
+  void GetTime(int time_tag);
+};
 ```
