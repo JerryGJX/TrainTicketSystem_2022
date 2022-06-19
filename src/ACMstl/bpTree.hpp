@@ -145,6 +145,7 @@ private:
          size = 0;
          predecessor = succssor = -1;
       }
+      //拷贝构造函数
       Bptree_leaf_node(const Bptree_leaf_node &obj) {
          size = obj.size;
          predecessor = obj.predecessor;
@@ -280,7 +281,7 @@ public:
          index = leaf.succssor;
       }
    }
-
+   //另一个版本的range_search
    void range_search(const Key &key_l, const Key &key_r, sjtu::vector<std::pair<Key, Value>> &result) {
       result.clear();
       int index = lower_bound(key_l);

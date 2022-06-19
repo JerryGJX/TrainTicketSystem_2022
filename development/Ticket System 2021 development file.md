@@ -239,91 +239,105 @@ struct Time {
 - B+树类定义
 
 ```cpp
-template <class Key, class Value, class Compare = std::less<Key>>
-class Bptree{
-    class Bptree_normal_node;
-    class Bptree_leaf_node;
-    friend Bptree_normal_node;
-    friend Bptree_leaf_node;
-  private:    
-    const int children_maximum, record_maximum; // 最多允许的孩子数、记录数，对应于书上的 M 和 L
-    int root, self_position; //根节点
-  public:
-    //构造函数
-    Bptree() {
-      MemoryRiver<Bptree_normal_node> normal_node_list;
-      MemoryRiver<Bptree_leaf_node> leaf_node_list;
-      // todo
-    }
-    //析构函数
-    ~BpTree() {}
-    //插入节点，失败返回0
-    bool insert(const &std::pair<Key, Value> data);
-    //删除节点，失败返回0
-    bool delete(const &std::pair<Key, Value> data);
-    //查找大于等于key_search的第一个叶节点，不存在返回NULL
-    Bptree_leaf_node lower_bound(Key &key_search) const {};
-    //查找大于key_search的第一个叶节点，不存在返回NULL
-    Bptree_leaf_node upper_bound(Key &key_search) const {};
-    //查找Key值在[key_l, key_r)中间的值
-    vector<Bptree_leaf_node> range_search(Key &key_l, Key &key_r) const {};
+template<
+   class Key,
+   class Value,
+   int M = 70, int L = 70,
+   class Hash = std::hash<Key>,
+   class Equal = std::equal_to<Key>
+>
+class Bptree {
+private:
+   int root, _size, normal_node_number;
+   std::string prefix_name;
+   class Bptree_leaf_node;
+   class Bptree_normal_node;
+   Bptree_normal_node root_node;
+   MemoryRiver<Bptree_leaf_node, 0> leaf_node_manager;     // info：leaf_node个数
+   MemoryRiver<Bptree_normal_node, 3> normal_node_manager; // info：root的编号，normal_node个数，bptree中元素个数
+
+public:
+	//构造函数
+	Bptree(const std::string &_prefix_name);
+	//析构函数
+	~BpTree();
+   //清空Bptree
+   void clear();
+   //查看bptree中元素个数
+   int size();
+	//查看是否有插入指定key值的元素, 如果有将value返回到result中
+   bool find(const Key &key, Value &result);
+   //插入节点，失败返回0（如果给定key值已有节点，也会返回0）
+   bool insert(const Key &key, const Value &value);
+   //另一个版本的insert
+   bool insert(const std::pair<Key, Value> &data);
+   //删除节点，失败返回0
+   bool erase(const Key &key);
+   //修改指定key值的元素，如果不存在返回0
+   bool modify(const Key &key, const Value &value);
+   //另一个版本的modify
+   bool modify(const std::pair<Key, Value> &data);
+   //查找Key值在[key_l, key_r)中间的值,按key升序放入rusult
+   void range_search(const Key &key_l, const Key &key_r, sjtu::vector<Value> &result);
+   //另一个版本的range_search
+   void range_search(const Key &key_l, const Key &key_r, sjtu::vector<std::pair<Key, Value>> &result);
+private:
+   //将两个低于数量限制的普通节点合并
+   //node1应该是node2相邻的左兄弟
+   Bptree_normal_node merge(const Bptree_normal_node &node1, const Bptree_normal_node &node2);
+   //将两个低于数量限制的叶子节点合并
+   //node1应该是node2相邻的左兄弟
+   Bptree_leaf_node merge(const Bptree_leaf_node &node1, const Bptree_leaf_node &node2);
+   //超过数量限制时拆分普通节点
+   //index为obj在文件中的位置，拆分后的节点应被写入index和new_index
+   std::pair<Bptree_normal_node, Bptree_normal_node> split(const Bptree_normal_node &obj,
+                                                           const int &index,
+                                                           int &new_index);
+   //超过数量限制时拆分叶子节点
+   //index为obj在文件中的位置，拆分后的节点应被写入index和new_index
+   std::pair<Bptree_leaf_node, Bptree_leaf_node> split(const Bptree_leaf_node &obj, const int &index, int &new_index);
 };
 ```
 
 - B+树普通节点类定义
 
 ```cpp
-template <class Key, class Value, class Compare = std::les<Key>>
 class Bptree_normal_node {
-  public:
-    friend Bptree;
-  private:
-    int parent;
-    int self_position;
-    int children[M + 1]; //0-base，多出一个用做拆分时的临时节点
-    Key key_list[M];
-    
-  public:
-    //构造函数
-    Bptree_normal_node() {} 
-    Bptree_normal_node(Bptree_normal_node &obj) {}
-    //析构函数
-    ~Bptree_normal_node() {}
-    //超过数量限制时拆分节点
-    std::pair<Bptree_normal_node，Bptree_normal_node> split();
-    //将两个低于数量限制的节点合并
-    Bptree_normal_node merge(Bptree_normal_node &node1, Bptree_normal_node &node2);
+public:
+   friend Bptree;
+private:
+   int size;
+   bool is_lowest;
+   int children[M + 1]; //0-base，多出一个用做拆分时的临时节点
+   Key key_min, key_list[M];
+public:
+   //构造函数
+   Bptree_normal_node();
+   //拷贝构造
+   Bptree_normal_node(const Bptree_normal_node &obj);
+   //析构函数
+   ~Bptree_normal_node();
 }
 ```
 
 - B+树叶子节点类定义
 
 ```cpp
-template <class Key, class Value, class Compare = std::les<Key>>
 class Bptree_leaf_node {
-  public:
-    friend Bptree;
-  private:
-    int parent;
-    int self_position
-    int predecessor, successor;
-    Key key_list[L];
-    Value value_list[L];
-  
-  public:  
-    //构造函数
-    Bptree_leaf_node() {} 
-    Bptree_leaf_node(Bptree_leaf_node &obj) {}
-    //析构函数
-    ~Bptree_leaf_node() {}
-    //超过数量限制时拆分节点
-    std::pair<Bptree_leaf_node，Bptree_leaf_node> split();
-    //将两个低于数量限制的节点合并
-    Bptree_leaf_node merge(Bptree_leaf_node &node1, Bptree_leaf_node &node2);
-    //查找前驱 
-    Bptree_leaf_node* find_predecessor() const {};
-    //查找后继
-    Bptree_leaf_node* find_successor() const {};
+public:
+   friend Bptree;
+private:
+   int size;
+   int predecessor, succssor;
+   Key key_list[L + 1];
+   Value value_list[L + 1];
+public:
+   //构造函数
+   Bptree_leaf_node();
+   //拷贝构造函数
+   Bptree_leaf_node(const Bptree_leaf_node &obj);
+   //析构函数
+   ~Bptree_leaf_node();
 }
 ```
 
