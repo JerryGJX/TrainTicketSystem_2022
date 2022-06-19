@@ -1,28 +1,22 @@
 # 前端开发文档
 | 成员                                           | 分工             |
 | ---------------------------------------------- | ---------------- |
-| 郭俊贤 [JerryGJX](https://github.com/JerryGJX) |  |
-| 冯跃洋 [Vexoben](https://github.com/Vexoben)   |  |
+| 郭俊贤 [JerryGJX](https://github.com/JerryGJX) | html部分，部分js简单交互 |
+| 冯跃洋 [Vexoben](https://github.com/Vexoben)   | python及flusk部分，及部分js简单交互 |
 
 
 ## 网页服务器
 ### 服务器
-- 可能阿里云
-
-### 收发请求
-- Nginx
+- 腾讯云
 
 ### 页面更改
-- php
-- 部分更改：AJAX
-
+- js
 
 ## 前后端交互
-获取表单：javascript
+- python+flusk
 
-发送表单：http请求
-
-网页与后端通信：socket
+## 页面设计模板
+- https://fomantic-ui.com/
 
 
 
