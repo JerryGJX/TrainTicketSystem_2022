@@ -257,15 +257,15 @@ private:
    MemoryRiver<Bptree_normal_node, 3> normal_node_manager; // info：root的编号，normal_node个数，bptree中元素个数
 
 public:
-	//构造函数
-	Bptree(const std::string &_prefix_name);
-	//析构函数
-	~BpTree();
+   //构造函数
+   Bptree(const std::string &_prefix_name);
+   //析构函数
+   ~BpTree();
    //清空Bptree
    void clear();
    //查看bptree中元素个数
    int size();
-	//查看是否有插入指定key值的元素, 如果有将value返回到result中
+   //查看是否有插入指定key值的元素, 如果有将value返回到result中
    bool find(const Key &key, Value &result);
    //插入节点，失败返回0（如果给定key值已有节点，也会返回0）
    bool insert(const Key &key, const Value &value);
