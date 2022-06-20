@@ -19,6 +19,7 @@
 - https://fomantic-ui.com/
 
 ## html设计
+```
 ├── add_train.html
 ├── add_user.html
 ├── buy_ticket.html
@@ -32,3 +33,4 @@
 ├── ticket.html
 ├── train.html
 └── user.html
+```
