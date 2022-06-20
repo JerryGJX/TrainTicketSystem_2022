@@ -4,88 +4,105 @@
 #include <fstream>
 #include <iostream>
 
-using std::string;
 using std::fstream;
 using std::ifstream;
 using std::ofstream;
+using std::string;
 
-template<class T>
-class StackForRollback {
- private:
+template <class T>
+class StackForRollback
+{
+private:
   const int info_len = 1;
   int _size;
   fstream file;
   string file_name;
   constexpr static int sizeofT = sizeof(T);
- public:
+
+public:
   StackForRollback() = default;
 
-  StackForRollback(const string &file_name) : file_name(file_name) {
+  StackForRollback(const string &file_name) : file_name(file_name)
+  {
     initialise();
   }
 
-  ~StackForRollback() {
+  ~StackForRollback()
+  {
     file.open(file_name);
     file.seekp(0);
     file.write(reinterpret_cast<char *>(&_size), sizeof(int));
     file.close();
   }
 
-  void initialise(string FN = "") {
-    if (FN != "") {
+  void initialise(string FN = "")
+  {
+    if (FN != "")
+    {
       file_name = FN + "_rollback";
     }
     file.open(file_name);
-    if (!file) {
+    if (!file)
+    {
       file.close();
       file.open(file_name, std::ios::out);
       int tmp = 0;
-      for (int i = 0; i < info_len; ++i) {
+      for (int i = 0; i < info_len; ++i)
+      {
         file.seekp(i * sizeof(int));
         file.write(reinterpret_cast<char *>(&tmp), sizeof(int));
       }
       _size = 0;
-    } else {
+    }
+    else
+    {
       file.seekg(0);
-      file.read(reinterpret_cast<char *> (&_size), sizeof(int));
+      file.read(reinterpret_cast<char *>(&_size), sizeof(int));
     }
     file.close();
   }
 
   //在文件末尾写入类对象t
-  void push(T &t) {
+  void push(T &t)
+  {
     file.open(file_name);
     file.seekp(sizeof(int) * info_len + (_size++) * sizeofT);
-    file.write(reinterpret_cast<char *> (&t), sizeofT);
+    file.write(reinterpret_cast<char *>(&t), sizeofT);
     file.close();
   }
 
   //读出文件末尾的元素写入t
-  void top(T &t) {
-    if (_size == 0) return;
+  void top(T &t)
+  {
+    if (_size == 0)
+      return;
     file.open(file_name);
     file.seekg(sizeof(int) * info_len + (_size - 1) * sizeofT);
-    file.read(reinterpret_cast<char *> (&t), sizeofT);
+    file.read(reinterpret_cast<char *>(&t), sizeofT);
     file.close();
   }
 
-  void pop() {
+  void pop()
+  {
     --_size;
   }
 
-  void clear() {
+  void clear()
+  {
     _size = 0;
     file.open(file_name, std::ios::out | std::ios::trunc);
     file.close();
   }
 
-  int size() {
+  int size()
+  {
     return _size;
   }
 
-  bool empty() {
+  bool empty()
+  {
     return !_size;
   }
 };
 
-#endif //STACK_FOR_ROLLBACK_HPP
+#endif // STACK_FOR_ROLLBACK_HPP

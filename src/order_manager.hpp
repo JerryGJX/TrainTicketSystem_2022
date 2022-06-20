@@ -17,16 +17,17 @@
 
 using JerryGJX::ull;
 
-struct Order {
+struct Order
+{
   JerryGJX::orderStatusType orderStatus{};
   JerryGJX::trainIDType trainID{};
   JerryGJX::usernameType username{};
-  int startRank{}, endRank{};//要求是trainManager产生
+  int startRank{}, endRank{}; //要求是trainManager产生
   JerryGJX::stationType startStation{}, endStation{};
   JerryGJX::CalendarTime startDay{};
-  int startTime{}, leavingTime{}, arrivingTime{};//全部用分钟为单位，后两者为绝对分钟数
+  int startTime{}, leavingTime{}, arrivingTime{}; //全部用分钟为单位，后两者为绝对分钟数
   int orderID{}, price{}, num{};
-  //todo
+  // todo
   Order() = default;
   Order(JerryGJX::orderStatusType order_status,
         const JerryGJX::trainIDType &train_id,
@@ -44,7 +45,8 @@ struct Order {
         int num);
 };
 
-struct PendingOrder {
+struct PendingOrder
+{
   ull tidHash{}, uidHash{};
   int startRank{}, endRank{};
   int orderID{}, num{};
@@ -66,36 +68,40 @@ struct PendingOrder {
         num(num) { startDay += start_day; }
 };
 
-class OrderManager {
+class OrderManager
+{
   /**
-    * @brief 为了由uid查订单，pair.second为订单号，用于防碰撞，bpt需要支持范围查询
-    */
-  template<class T1, class T2>
-  class PairHash {
-   public:
-    ull operator()(const std::pair<T1, T2> &ValueType) const {
+   * @brief 为了由uid查订单，pair.second为订单号，用于防碰撞，bpt需要支持范围查询
+   */
+  template <class T1, class T2>
+  class PairHash
+  {
+  public:
+    ull operator()(const std::pair<T1, T2> &ValueType) const
+    {
       return ValueType.first + ValueType.second;
     }
   };
 
-//  class PairPairHash {
-//   public:
-//    ull operator()(const std::pair<std::pair<int, ull>, int> &ValueType) const {
-//      return ValueType.first.first+ValueType.first.second + ValueType.second;
-//    }
-//  };
+  //  class PairPairHash {
+  //   public:
+  //    ull operator()(const std::pair<std::pair<int, ull>, int> &ValueType) const {
+  //      return ValueType.first.first+ValueType.first.second + ValueType.second;
+  //    }
+  //  };
 
-  Bptree<std::pair<ull, int>, Order, 339, 38,JerryGJX::pair_hash> orderDataBase;//hashUid,oid
-  Bptree<std::pair<std::pair<int, ull>, int>, PendingOrder, 254, 144,JerryGJX::pair_pair_hash_nd> pendingQueue;//(第几天(指始发天数)，hash(trainID)),oid
+  Bptree<std::pair<ull, int>, Order, 339, 38, JerryGJX::pair_hash> orderDataBase;                                // hashUid,oid
+  Bptree<std::pair<std::pair<int, ull>, int>, PendingOrder, 254, 144, JerryGJX::pair_pair_hash_nd> pendingQueue; //(第几天(指始发天数)，hash(trainID)),oid
 
   //  void OrderDataBase_RangeFind(const std::pair<ull, int> &lp,
-//                               const std::pair<ull, int> &rp, std::vector<Order> &result);
-//
-//  void PendingQueue_RangeFind(const std::pair<std::pair<int, ull>, int> &lp,
-//                              const std::pair<std::pair<int, ull>, int> &rp,
-//                              std::vector<PendingOrder> &result);
+  //                               const std::pair<ull, int> &rp, std::vector<Order> &result);
+  //
+  //  void PendingQueue_RangeFind(const std::pair<std::pair<int, ull>, int> &lp,
+  //                              const std::pair<std::pair<int, ull>, int> &rp,
+  //                              std::vector<PendingOrder> &result);
   std::hash<std::string> hash_str;
- public:
+
+public:
   OrderManager(const std::string &filenameO, const std::string &filenameP);
 
   int QueryOid();
@@ -116,11 +122,11 @@ class OrderManager {
 
   void RemovePendingOrder(int date_, ull tidHash_, int Oid_);
 
-  void PendingToSuccess(ull uidHash_, int orderID_);//修改order情况
+  void PendingToSuccess(ull uidHash_, int orderID_); //修改order情况
 
   void Clean();
 
   void Exit();
 };
 
-#endif //TRAIN_MANAGER_HPP__ORDER_MANAGER_HPP_
+#endif // TRAIN_MANAGER_HPP__ORDER_MANAGER_HPP_

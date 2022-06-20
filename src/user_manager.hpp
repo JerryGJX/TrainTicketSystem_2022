@@ -3,14 +3,13 @@
 #ifndef COMMAND_PARSER_HPP__USER_MANAGER_HPP_
 #define COMMAND_PARSER_HPP__USER_MANAGER_HPP_
 
-# include "tools/Char.hpp"
-# include "ACMstl/bpTree.hpp"
-# include "ACMstl/UnorderedMap.hpp"
+#include "tools/Char.hpp"
+#include "ACMstl/bpTree.hpp"
+#include "ACMstl/UnorderedMap.hpp"
 #include "ACMstl/Vector.hpp"
 #include "mydefs.hpp"
 #include "tools/Algorithm.hpp"
 #include "tools/Error.hpp"
-
 
 //#include <map>
 //#include <unordered_map>
@@ -20,13 +19,14 @@
  * @brief 用户相关
  */
 
-
 using JerryGJX::ull;
 
 class UserManager;
-class User {
+class User
+{
   friend class Usermanager;
- public:
+
+public:
   JerryGJX::passwordType password;
   JerryGJX::usernameType username;
   JerryGJX::nameType name;
@@ -46,7 +46,8 @@ class User {
   bool operator<=(const User &rhs) const;
   bool operator>=(const User &rhs) const;
 
-  std::string to_string() {
+  std::string to_string()
+  {
     std::string ans;
     ans += username.str() + " " + name.str() + " ";
     ans += mailAddr.str() + " " + std::to_string(privilege);
@@ -54,49 +55,40 @@ class User {
   }
 };
 
-class UserManager {
- private:
-  Bptree<ull, User, 339, 67> userDatabase;//username -> User(class)
-  sjtu::linked_hashmap<ull, int> onlineUser;//维护在线用户 username->privilege
-  //Bptree<ull, std::pair<int, bool>> onlineUserBackUp;
+class UserManager
+{
+private:
+  Bptree<ull, User, 339, 67> userDatabase;   // username -> User(class)
+  sjtu::linked_hashmap<ull, int> onlineUser; //维护在线用户 username->privilege
+  // Bptree<ull, std::pair<int, bool>> onlineUserBackUp;
   std::hash<std::string> hash_str;
- public:
+
+public:
   explicit UserManager(const std::string &filenameUD);
 
   ull CalHash(const std::string &username_);
 
-  //bool Empty() const;
+  // bool Empty() const;
 
-  bool AddUser(std::string *info);//该函数只负责添加用户，能否插入由ParserCommander判断
+  bool AddUser(std::string *info);
 
   bool isReg(const std::string &username_);
 
-  bool isLogin(const std::string &username_);//onlineUser中该用户是否存在，存在则返回对应privilege，否则返回-1
+  bool isLogin(const std::string &username_);
 
   bool checkPassword(const std::string &username_, const std::string &password_);
 
-  bool Login(std::string *info);//该函数只负责用户登录，能否登录由ParserCommander判断
+  bool Login(std::string *info);
 
-  bool Logout(std::string *info);//该函数只负责用户退出，能否退出由ParserCommander判断
-  /**
-   * @brief 该函数只负责返回信息，能否查询由ParserCommander判断
-   * @return 被查询用户的<username>，<name>，<mailAddr>和<privilege>
-   */
+  bool Logout(std::string *info);
+
   bool queryProfile(std::string *info, std::string &result);
 
-  /**
-   * @brief 以读出，删除再插入的方式实现
-   * @param username_ 待修改用户的用户名
-   * @param cmd 存有经过确认的待修改信息 e.g. password->target password
-   * @param order_manager_ 用于应对修改uid的情况
-   * @return 被修改用户的<username>，<name>，<mailAddr>和<privilege>
-   */
   bool modifyProfile(std::string *info, std::string &result);
 
   void Clean();
 
   void Exit();
-
 };
 
-#endif //COMMAND_PARSER_HPP__USER_MANAGER_HPP_
+#endif // COMMAND_PARSER_HPP__USER_MANAGER_HPP_

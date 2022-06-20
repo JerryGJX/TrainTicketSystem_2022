@@ -18,5 +18,17 @@
 ## 页面设计模板
 - https://fomantic-ui.com/
 
-
-
+## html设计
+├── add_train.html
+├── add_user.html
+├── buy_ticket.html
+├── front.html
+├── login.html
+├── modify_user.html
+├── personal_profile.html
+├── query_ticket.html
+├── refund_ticket.html
+├── register.html
+├── ticket.html
+├── train.html
+└── user.html
